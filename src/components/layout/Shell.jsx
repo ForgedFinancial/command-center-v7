@@ -7,6 +7,8 @@ import StatusBar from './StatusBar'
 import ToastContainer from '../shared/ToastContainer'
 import ConnectionBanner from '../shared/ConnectionBanner'
 import OrgChart from '../tabs/OrgChart'
+import AgentDetailPanel from '../shared/AgentDetailPanel'
+import Workspaces from '../tabs/Workspaces'
 
 // ========================================
 // FEATURE: Shell
@@ -105,11 +107,7 @@ function TabContent({ activeTab }) {
     case TABS.ORG_CHART:
       return <OrgChart />
     case TABS.WORKSPACES:
-      return (
-        <div style={tabStyles}>
-          <p>Workspaces - Coming in Part 4</p>
-        </div>
-      )
+      return <Workspaces />
     default:
       return null
   }
