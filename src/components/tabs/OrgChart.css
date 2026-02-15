@@ -56,15 +56,123 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #4ade80;
-  box-shadow: 0 0 6px #4ade80;
-  animation: pulse-dot 2s ease-in-out infinite;
   flex-shrink: 0;
 }
 
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+@keyframes pulse-breathe {
+  0%, 100% { box-shadow: 0 0 4px currentColor; opacity: 1; }
+  50% { box-shadow: 0 0 12px currentColor, 0 0 20px currentColor; opacity: 0.7; }
+}
+
+.status-dot--online {
+  background: #4ade80;
+  color: #4ade80;
+  animation: pulse-breathe 2.5s ease-in-out infinite;
+}
+
+@keyframes spin-ring {
+  to { transform: rotate(360deg); }
+}
+
+.status-dot--busy {
+  background: transparent;
+  border: 2px solid #3b82f6;
+  border-top-color: transparent;
+  animation: spin-ring 1s linear infinite;
+}
+
+.status-dot--offline {
+  background: #6b7280;
+}
+
+.status-dot--defined {
+  background: transparent;
+  border: 1.5px dashed #6b7280;
+}
+
+/* Legend */
+.org-legend {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  padding: 12px 20px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+}
+
+.org-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.org-legend__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Department Health Cards */
+.dept-health-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.dept-health-card {
+  padding: 16px 20px;
+  min-width: 220px;
+  max-width: 280px;
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.dept-health-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.dept-health-card__name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.dept-health-card__count {
+  font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.dept-health-card__bar-bg {
+  height: 4px;
+  background: var(--border-color);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.dept-health-card__bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1s ease;
+}
+
+.dept-health-card__activity {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .org-node__name {

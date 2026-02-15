@@ -72,6 +72,8 @@ export const CRON_JOBS = [
   },
 ]
 
+export const REGISTERED_AGENTS = ['clawd', 'architect', 'mason', 'sentinel']
+
 export const THEMES = ['forge', 'charcoal', 'tokyo', 'steel', 'offwhite', 'white']
 export const DEFAULT_THEME = 'forge'
 
