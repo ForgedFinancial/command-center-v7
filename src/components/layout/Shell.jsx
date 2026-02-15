@@ -81,6 +81,9 @@ export default function Shell() {
       {/* Status Bar */}
       <StatusBar />
     </div>
+
+    {/* Agent Detail Slide-in */}
+    <AgentDetailPanel />
     </>
   )
 }
