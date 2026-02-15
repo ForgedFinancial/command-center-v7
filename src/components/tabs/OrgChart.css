@@ -1,274 +1,39 @@
-.org-chart-scroll {
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  display: flex;
-  justify-content: center;
+/* ========================================
+ * Radial Org Chart — Animations & Keyframes
+ * All layout is inline style={{}} — this file is animations only
+ * ======================================== */
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
-.org-chart {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 24px;
-  min-width: 900px;
-  gap: 0;
+@keyframes slideInOverlay {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-.org-level {
-  display: flex;
-  justify-content: center;
+@keyframes breathe-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
 
-/* Vertical connector line */
-.org-connector-v {
-  width: 2px;
-  height: 24px;
-  background: var(--text-muted);
-  opacity: 0.4;
-  margin: 0 auto;
-}
-
-/* Node card */
-.org-node {
-  padding: 12px 16px;
-  min-width: 170px;
-  max-width: 210px;
-  cursor: pointer;
-  text-align: center;
-  border-radius: 10px;
-}
-
-.org-node--small {
-  padding: 8px 12px;
-  min-width: 140px;
-  max-width: 180px;
-}
-
-.org-node__header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.org-node__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-@keyframes pulse-breathe {
-  0%, 100% { box-shadow: 0 0 4px currentColor; opacity: 1; }
-  50% { box-shadow: 0 0 12px currentColor, 0 0 20px currentColor; opacity: 0.7; }
-}
-
-.status-dot--online {
-  background: #4ade80;
-  color: #4ade80;
-  animation: pulse-breathe 2.5s ease-in-out infinite;
-}
-
-@keyframes spin-ring {
-  to { transform: rotate(360deg); }
-}
-
-.status-dot--busy {
-  background: transparent;
-  border: 2px solid #3b82f6;
-  border-top-color: transparent;
-  animation: spin-ring 1s linear infinite;
-}
-
-.status-dot--offline {
-  background: #6b7280;
-}
-
-.status-dot--defined {
-  background: transparent;
-  border: 1.5px dashed #6b7280;
-}
-
-/* Legend */
-.org-legend {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  padding: 12px 20px;
-  margin-bottom: 16px;
-  border-radius: 8px;
-  background: var(--bg-glass);
-  border: 1px solid var(--border-color);
-}
-
-.org-legend__item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.org-legend__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-/* Department Health Cards */
-.dept-health-row {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-
-.dept-health-card {
-  padding: 16px 20px;
-  min-width: 220px;
-  max-width: 280px;
-  cursor: pointer;
-  border-radius: 10px;
-}
-
-.dept-health-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.dept-health-card__name {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.dept-health-card__count {
-  font-size: 13px;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.dept-health-card__bar-bg {
-  height: 4px;
-  background: var(--border-color);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-
-.dept-health-card__bar-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 1s ease;
-}
-
-.dept-health-card__activity {
-  font-size: 11px;
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.org-node__name {
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--text-primary);
-}
-
-.org-node--small .org-node__name {
-  font-size: 13px;
-}
-
-.org-node__role {
-  font-size: 11px;
-  font-weight: 600;
-  margin-top: 2px;
-}
-
-.org-node__meta {
-  font-size: 10px;
-  color: var(--text-secondary);
-  font-family: 'JetBrains Mono', monospace;
-  margin-top: 4px;
-}
-
-.org-node__model {
-  font-size: 9px;
-  color: var(--text-muted);
-  margin-top: 2px;
-  opacity: 0.7;
-}
-
-/* Department containers */
-.org-departments {
-  display: flex;
-  gap: 24px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.org-department {
-  padding: 20px;
-  position: relative;
-}
-
-.org-department__label {
-  position: absolute;
-  top: -10px;
-  left: 16px;
-  background: var(--bg-primary);
-  padding: 0 8px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.org-department__content {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
-}
-
-.org-department__content--ops {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-/* Branch: parent + connector + children */
-.org-branch {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-}
-
-.org-branch .org-connector-v {
-  height: 16px;
-}
-
-.org-children {
-  display: flex;
-  gap: 8px;
-  position: relative;
-}
-
-/* Horizontal connector line above children */
-.org-children::before {
-  content: '';
-  position: absolute;
-  top: -8px;
-  left: 25%;
-  right: 25%;
-  height: 2px;
-  background: var(--text-muted);
-  opacity: 0.3;
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

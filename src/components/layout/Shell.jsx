@@ -1,3 +1,4 @@
+import { useState, useCallback, lazy, Suspense } from 'react'
 import { useApp } from '../../context/AppContext'
 import { TABS, TAB_LABELS } from '../../config/constants'
 import { useSyncServer } from '../../hooks/useSyncServer'
@@ -9,6 +10,12 @@ import ConnectionBanner from '../shared/ConnectionBanner'
 import OrgChart from '../tabs/OrgChart'
 import AgentDetailPanel from '../shared/AgentDetailPanel'
 import Workspaces from '../tabs/Workspaces'
+import ErrorBoundary from '../shared/ErrorBoundary'
+import HealthPanel from '../shared/HealthPanel'
+// Dev-only network monitor — tree-shaken from production
+const NetworkMonitor = import.meta.env.DEV
+  ? lazy(() => import('../shared/NetworkMonitor'))
+  : () => null
 
 // ========================================
 // FEATURE: Shell
@@ -18,9 +25,40 @@ import Workspaces from '../tabs/Workspaces'
 
 export default function Shell() {
   const { state } = useApp()
+  const [healthOpen, setHealthOpen] = useState(false)
+  const toggleHealth = useCallback(() => setHealthOpen(v => !v), [])
+  const closeHealth = useCallback(() => setHealthOpen(false), [])
 
   // Start polling for state and health updates
   useSyncServer()
+
+  if (state.isInitialLoad) {
+    return (
+      <div style={{
+        height: '100vh',
+        width: '100vw',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'var(--bg-primary)',
+        gap: '16px',
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '3px solid var(--border-color, #1e293b)',
+          borderTop: '3px solid var(--accent, #00d4ff)',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+        }} />
+        <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: 0 }}>
+          Connecting to server…
+        </p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -60,7 +98,7 @@ export default function Shell() {
               margin: 0,
             }}
           >
-            FORGED-OS
+            CC v7
           </h1>
         </div>
 
@@ -79,11 +117,21 @@ export default function Shell() {
       </main>
 
       {/* Status Bar */}
-      <StatusBar />
+      <StatusBar onToggleHealth={toggleHealth} />
     </div>
+
+    {/* Health Panel */}
+    <HealthPanel isOpen={healthOpen} onClose={closeHealth} />
 
     {/* Agent Detail Slide-in */}
     <AgentDetailPanel />
+
+    {/* Dev-only Network Monitor */}
+    {import.meta.env.DEV && (
+      <Suspense fallback={null}>
+        <NetworkMonitor />
+      </Suspense>
+    )}
     </>
   )
 }
@@ -103,14 +151,16 @@ function TabContent({ activeTab }) {
   switch (activeTab) {
     case TABS.TASK_MANAGER:
       return (
-        <div style={tabStyles}>
-          <p>Task Manager - Coming in Part 3</p>
-        </div>
+        <ErrorBoundary>
+          <div style={tabStyles}>
+            <p>Task Manager - Coming in Part 3</p>
+          </div>
+        </ErrorBoundary>
       )
     case TABS.ORG_CHART:
-      return <OrgChart />
+      return <ErrorBoundary><OrgChart /></ErrorBoundary>
     case TABS.WORKSPACES:
-      return <Workspaces />
+      return <ErrorBoundary><Workspaces /></ErrorBoundary>
     default:
       return null
   }

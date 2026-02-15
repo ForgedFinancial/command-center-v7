@@ -186,3 +186,34 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.15), 0 0 12px rgba(0, 212, 255, 0.08);
 }
+
+/* Status Animations */
+@keyframes pulse-breathe-anim {
+  0%, 100% { box-shadow: 0 0 4px currentColor; opacity: 1; }
+  50% { box-shadow: 0 0 12px currentColor, 0 0 20px currentColor; opacity: 0.7; }
+}
+.pulse-animation { animation: pulse-breathe-anim 2.5s ease-in-out infinite; }
+
+@keyframes pulse-busy {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(251, 191, 36, 0); }
+}
+.pulse-busy { animation: pulse-busy 3s infinite; }
+
+@keyframes blink-error {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.blink-error { animation: blink-error 1s infinite; }
+
+@keyframes glow-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
+}
+.glow-active { animation: glow-ring 2s infinite; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up { animation: fadeInUp 0.3s ease-out; }

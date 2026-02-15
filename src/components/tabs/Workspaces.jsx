@@ -9,16 +9,12 @@ const SIDEBAR_GROUPS = [
     agents: ['ceo', 'clawd'],
   },
   {
-    label: 'Build Crew',
+    label: 'Operations',
     agents: [
       { id: 'architect', children: ['scout', 'cartographer'] },
       { id: 'mason', children: ['coder', 'wirer', 'scribe'] },
       { id: 'sentinel', children: ['probe', 'auditor'] },
     ],
-  },
-  {
-    label: 'Operations',
-    agents: ['atlas', 'ads', 'vanguard', 'postwatch', 'curator'],
   },
 ]
 

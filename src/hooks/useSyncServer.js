@@ -1,46 +1,63 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useInterval } from './useInterval'
 import { useApp } from '../context/AppContext'
 import { syncClient } from '../api/syncClient'
-import { POLL_INTERVAL_MS } from '../config/api'
+
+const BASE_INTERVAL = 15000      // 15s
+const MAX_INTERVAL = 300000      // 5 min
+const IDLE_INTERVAL = 300000     // 5 min
+const IDLE_THRESHOLD = 5         // consecutive failures before idle
 
 /**
  * Hook that polls the server for state and health updates
- * Dispatches to AppContext on success, shows errors on failure
+ * Exponential backoff on failure, idle mode after repeated failures
  */
 export function useSyncServer() {
   const { state, actions } = useApp()
   const wasDisconnected = useRef(false)
+  const failureCount = useRef(0)
+  const initialLoadDone = useRef(false)
+  const [interval, setInterval_] = useState(BASE_INTERVAL)
 
-  // Fetch state and health
-  const sync = async () => {
+  const sync = useCallback(async () => {
     try {
-      // Fetch state and health in parallel
       const [stateData, healthData] = await Promise.all([
         syncClient.getState(),
         syncClient.health(),
       ])
 
-      // Update state with synced data
+      // Success — reset backoff
+      failureCount.current = 0
+      setInterval_(BASE_INTERVAL)
+
       actions.syncState({
-        sessions: stateData.sessions || state.sessions,
-        tokens: stateData.tokens || state.tokens,
-        costs: stateData.costs || state.costs,
-        cronJobs: stateData.cronJobs || state.cronJobs,
-        activityLog: stateData.activityLog || state.activityLog,
-        overnightLog: stateData.overnightLog || state.overnightLog,
-        agents: stateData.agents || state.agents,
+        sessions: stateData?.sessions || state.sessions,
+        tokens: stateData?.tokens || state.tokens,
+        costs: stateData?.costs || state.costs,
+        cronJobs: stateData?.cronJobs || state.cronJobs,
+        activityLog: stateData?.activityLog || state.activityLog,
+        overnightLog: stateData?.overnightLog || state.overnightLog,
+        agents: stateData?.agents || state.agents,
+        systemHealth: {
+          status: healthData?.status || 'unknown',
+          uptime: healthData?.uptime || 0,
+          lastHealthCheck: new Date().toISOString(),
+          checks: healthData?.checks || {},
+        },
       })
 
-      // Update build info from health
-      if (healthData.buildHash || healthData.version) {
+      if (healthData?.buildHash || healthData?.version) {
         actions.setBuildInfo({
-          hash: healthData.buildHash || healthData.hash,
-          version: healthData.version,
+          hash: healthData?.buildHash || healthData?.hash,
+          version: healthData?.version,
         })
       }
 
-      // If we were disconnected, show reconnection toast
+      if (!initialLoadDone.current) {
+        initialLoadDone.current = true
+        actions.setInitialLoad(false)
+      }
+
       if (wasDisconnected.current) {
         wasDisconnected.current = false
         actions.addToast({
@@ -49,30 +66,50 @@ export function useSyncServer() {
         })
       }
     } catch (error) {
-      console.error('Sync failed:', error)
+      failureCount.current++
 
-      // Mark as disconnected
+      // Exponential backoff: double each failure, cap at MAX
+      if (failureCount.current >= IDLE_THRESHOLD) {
+        setInterval_(IDLE_INTERVAL)
+      } else {
+        const nextInterval = Math.min(
+          BASE_INTERVAL * Math.pow(2, failureCount.current),
+          MAX_INTERVAL
+        )
+        setInterval_(nextInterval)
+      }
+
+      // Determine error message based on type
+      const is404 = error?.status === 404
       actions.setConnected(false)
-      actions.setSyncError(error.message)
+      actions.setSyncError(is404 ? 'API Not Connected' : error?.message)
 
-      // Only show toast on first disconnect
+      if (!initialLoadDone.current) {
+        initialLoadDone.current = true
+        actions.setInitialLoad(false)
+      }
+
       if (!wasDisconnected.current) {
         wasDisconnected.current = true
         actions.addToast({
           type: 'error',
-          message: 'Connection lost. Retrying...',
+          message: is404
+            ? 'API Not Connected — endpoints not deployed'
+            : error?.isNetwork || error?.isTimeout
+              ? 'Connection lost. Retrying...'
+              : `Sync error: ${error?.message || 'Unknown'}`,
         })
       }
     }
-  }
+  }, [actions, state.sessions, state.tokens, state.costs, state.cronJobs, state.activityLog, state.overnightLog, state.agents])
 
   // Initial sync on mount
   useEffect(() => {
     sync()
   }, [])
 
-  // Poll every 60 seconds
-  useInterval(sync, POLL_INTERVAL_MS)
+  // Poll with dynamic interval
+  useInterval(sync, interval)
 }
 
 export default useSyncServer

@@ -52,8 +52,22 @@ const initialState = {
   activeFile: null,
   fileContent: '',
 
+  // Org Chart — Radial
+  centeredAgent: 'ceo',
+
+  // System Health
+  systemHealth: {
+    status: 'healthy',
+    uptime: 0,
+    lastHealthCheck: null,
+    checks: {},
+  },
+
   // Build Info
   buildInfo: null,
+
+  // Initial load
+  isInitialLoad: true,
 }
 
 const ActionTypes = {
@@ -72,12 +86,15 @@ const ActionTypes = {
   UPDATE_OVERNIGHT_LOG: 'UPDATE_OVERNIGHT_LOG',
   UPDATE_AGENTS: 'UPDATE_AGENTS',
   SET_SELECTED_AGENT: 'SET_SELECTED_AGENT',
+  SET_CENTERED_AGENT: 'SET_CENTERED_AGENT',
   SET_WORKSPACE_AGENT: 'SET_WORKSPACE_AGENT',
   SET_WORKSPACE_FILES: 'SET_WORKSPACE_FILES',
   SET_ACTIVE_FILE: 'SET_ACTIVE_FILE',
   SET_FILE_CONTENT: 'SET_FILE_CONTENT',
   SET_BUILD_INFO: 'SET_BUILD_INFO',
+  UPDATE_SYSTEM_HEALTH: 'UPDATE_SYSTEM_HEALTH',
   SYNC_STATE: 'SYNC_STATE',
+  SET_INITIAL_LOAD: 'SET_INITIAL_LOAD',
 }
 
 function appReducer(state, action) {
@@ -134,6 +151,9 @@ function appReducer(state, action) {
     case ActionTypes.SET_SELECTED_AGENT:
       return { ...state, selectedAgent: action.payload }
 
+    case ActionTypes.SET_CENTERED_AGENT:
+      return { ...state, centeredAgent: action.payload }
+
     case ActionTypes.SET_WORKSPACE_AGENT:
       return { ...state, workspaceAgent: action.payload }
 
@@ -149,11 +169,18 @@ function appReducer(state, action) {
     case ActionTypes.SET_BUILD_INFO:
       return { ...state, buildInfo: action.payload }
 
+    case ActionTypes.UPDATE_SYSTEM_HEALTH:
+      return { ...state, systemHealth: action.payload }
+
+    case ActionTypes.SET_INITIAL_LOAD:
+      return { ...state, isInitialLoad: action.payload }
+
     case ActionTypes.SYNC_STATE:
       // Merge incoming state from API
       return {
         ...state,
         ...action.payload,
+        systemHealth: action.payload.systemHealth || state.systemHealth,
         isConnected: true,
         lastSync: new Date(),
         syncError: null,
@@ -231,6 +258,10 @@ export function AppProvider({ children }) {
       dispatch({ type: ActionTypes.SET_SELECTED_AGENT, payload: agentId })
     }, []),
 
+    setCenteredAgent: useCallback((agentId) => {
+      dispatch({ type: ActionTypes.SET_CENTERED_AGENT, payload: agentId })
+    }, []),
+
     setWorkspaceAgent: useCallback((agentId) => {
       dispatch({ type: ActionTypes.SET_WORKSPACE_AGENT, payload: agentId })
     }, []),
@@ -251,8 +282,16 @@ export function AppProvider({ children }) {
       dispatch({ type: ActionTypes.SET_BUILD_INFO, payload: info })
     }, []),
 
+    updateSystemHealth: useCallback((health) => {
+      dispatch({ type: ActionTypes.UPDATE_SYSTEM_HEALTH, payload: health })
+    }, []),
+
     syncState: useCallback((newState) => {
       dispatch({ type: ActionTypes.SYNC_STATE, payload: newState })
+    }, []),
+
+    setInitialLoad: useCallback((val) => {
+      dispatch({ type: ActionTypes.SET_INITIAL_LOAD, payload: val })
     }, []),
   }
 

@@ -1,161 +1,136 @@
+// ========================================
+// OrgChart — Radial Org Chart Tab (Complete Rewrite)
+// Thin wrapper: RadialCanvas + DetailPanel + SummaryOverlay
+// ========================================
+
+import { useState, useEffect, useCallback } from 'react'
 import { useApp } from '../../context/AppContext'
-import { AGENT_HIERARCHY, REGISTERED_AGENTS } from '../../config/constants'
+import { useAgentPoll } from '../../hooks/useAgentPoll'
+import RadialCanvas from './org-chart/RadialCanvas'
+import DetailPanel from './org-chart/DetailPanel'
+import SummaryOverlay from './org-chart/SummaryOverlay'
+import { DETAIL_PANEL } from './org-chart/radialConstants'
 import './OrgChart.css'
 
-function getAgentStatus(agentId) {
-  if (agentId === 'ceo') return 'online'
-  if (REGISTERED_AGENTS.includes(agentId)) return 'online'
-  return 'defined'
-}
+export default function OrgChart() {
+  const { state, actions } = useApp()
 
-const DEPARTMENTS = [
-  { key: 'build', name: 'Build Crew', accent: '#f59e0b', total: 10, online: 3, health: 92, activity: 'Architect planning overnight build' },
-  { key: 'ops', name: 'Operations', accent: '#10b981', total: 5, online: 0, health: 78, activity: 'Atlas health check completed' },
-  { key: 'leadership', name: 'Leadership', accent: '#3b82f6', total: 2, online: 2, health: 100, activity: 'Clawd delegated build plan' },
-]
+  // Activate agent polling
+  useAgentPoll()
 
-function StatusLegend() {
-  const statuses = [
-    { label: 'Online', cls: 'status-dot--online' },
-    { label: 'Busy', cls: 'status-dot--busy' },
-    { label: 'Offline', cls: 'status-dot--offline' },
-    { label: 'Defined', cls: 'status-dot--defined' },
-  ]
-  return (
-    <div className="org-legend">
-      {statuses.map(s => (
-        <div key={s.label} className="org-legend__item">
-          <span className={`org-legend__dot ${s.cls}`} />
-          {s.label}
-        </div>
-      ))}
-    </div>
-  )
-}
+  const agentData = state.agents || {}
+  const centeredAgent = state.centeredAgent || 'ceo'
+  const selectedAgent = state.selectedAgent
 
-function DepartmentHealthCards() {
-  const scrollTo = (key) => {
-    const el = document.querySelector(`[data-dept="${key}"]`)
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }
-  return (
-    <div className="dept-health-row">
-      {DEPARTMENTS.map(d => (
-        <div
-          key={d.key}
-          className="glass-card dept-health-card"
-          style={{ borderTop: `3px solid ${d.accent}` }}
-          onClick={() => scrollTo(d.key)}
-        >
-          <div className="dept-health-card__header">
-            <span className="dept-health-card__name">{d.name}</span>
-            <span className="dept-health-card__count" style={{ color: d.accent }}>{d.online}/{d.total}</span>
-          </div>
-          <div className="dept-health-card__bar-bg">
-            <div className="dept-health-card__bar-fill" style={{ width: `${d.health}%`, background: d.accent }} />
-          </div>
-          <div className="dept-health-card__activity">{d.activity}</div>
-        </div>
-      ))}
-    </div>
-  )
-}
+  // Responsive breakpoint
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200)
+  useEffect(() => {
+    const onResize = () => setWindowWidth(window.innerWidth)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
-function NodeCard({ agent, size = 'normal' }) {
-  const { actions } = useApp()
-  const status = getAgentStatus(agent.id)
-  const borderColor = agent.isHuman
-    ? '#3b82f6'
-    : ['architect', 'mason', 'sentinel'].includes(agent.id)
-    ? '#f59e0b'
-    : ['clawd', 'ceo'].includes(agent.id)
-    ? '#3b82f6'
-    : '#10b981'
+  // Reduced motion preference
+  const [reducedMotion, setReducedMotion] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setReducedMotion(mq.matches)
+    const handler = (e) => setReducedMotion(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  const isSidePanel = windowWidth >= 1200
+  const isModal = windowWidth >= 768 && windowWidth < 1200
+  const isMobile = windowWidth < 768
+
+  const handleSelectAgent = useCallback((id) => {
+    actions.setSelectedAgent(id)
+  }, [actions])
+
+  const handleCenterAgent = useCallback((id) => {
+    actions.setCenteredAgent(id)
+  }, [actions])
+
+  const handleNavigate = useCallback((id) => {
+    actions.setCenteredAgent(id)
+    actions.setSelectedAgent(id)
+  }, [actions])
+
+  const handleCloseDetail = useCallback(() => {
+    actions.setSelectedAgent(null)
+  }, [actions])
+
+  const showDetailPanel = selectedAgent != null
 
   return (
-    <div
-      className={`glass-card org-node ${size === 'small' ? 'org-node--small' : ''}`}
-      style={{ borderLeft: `3px solid ${borderColor}` }}
-      onClick={() => actions.setSelectedAgent(agent.id)}
-    >
-      <div className="org-node__header">
-        <span className={`org-node__dot status-dot--${status}`} />
-        <span className="org-node__name">{agent.name}</span>
+    <div style={{
+      position: 'relative',
+      height: 'calc(100vh - 140px)',
+      width: '100%',
+      overflow: 'hidden',
+      display: 'flex',
+    }}>
+      {/* Canvas area */}
+      <div style={{
+        flex: 1,
+        height: '100%',
+        position: 'relative',
+        transition: 'margin-right 300ms ease',
+        marginRight: showDetailPanel && isSidePanel ? `${DETAIL_PANEL.width}px` : 0,
+      }}>
+        <RadialCanvas
+          centeredAgent={centeredAgent}
+          agentData={agentData}
+          selectedAgent={selectedAgent}
+          onSelectAgent={handleSelectAgent}
+          onCenterAgent={handleCenterAgent}
+          theme={state.theme}
+          reducedMotion={reducedMotion}
+        />
+
+        {/* Summary overlay */}
+        <SummaryOverlay
+          agentData={agentData}
+          systemHealth={state.systemHealth}
+          isLight={(state.theme === 'offwhite' || state.theme === 'white')}
+        />
       </div>
-      <div className="org-node__role" style={{ color: borderColor }}>{agent.role}</div>
-      {agent.designation && <div className="org-node__meta">{agent.designation}</div>}
-      {agent.model && <div className="org-node__model">{agent.model}</div>}
-    </div>
-  )
-}
 
-function SubAgentGroup({ parentId }) {
-  const parent = AGENT_HIERARCHY[parentId]
-  const children = Object.values(AGENT_HIERARCHY).filter(a => a.parent === parentId)
-  if (!parent) return null
-
-  return (
-    <div className="org-branch">
-      <NodeCard agent={parent} />
-      {children.length > 0 && (
+      {/* Detail Panel */}
+      {showDetailPanel && (
         <>
-          <div className="org-connector-v" />
-          <div className="org-children">
-            {children.map(c => (
-              <NodeCard key={c.id} agent={c} size="small" />
-            ))}
+          {/* Modal/mobile overlay backdrop */}
+          {!isSidePanel && (
+            <div
+              onClick={handleCloseDetail}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                zIndex: 15,
+              }}
+            />
+          )}
+          <div style={{
+            position: isSidePanel ? 'relative' : 'absolute',
+            top: isMobile ? 0 : (isModal ? '10%' : 0),
+            right: 0,
+            bottom: isMobile ? 0 : (isModal ? '10%' : 0),
+            width: isMobile ? '100%' : `${DETAIL_PANEL.width}px`,
+            zIndex: 20,
+          }}>
+            <DetailPanel
+              agentId={selectedAgent}
+              agentData={agentData}
+              onClose={handleCloseDetail}
+              onNavigate={handleNavigate}
+              isLight={(state.theme === 'offwhite' || state.theme === 'white')}
+              theme={state.theme}
+            />
           </div>
         </>
       )}
-    </div>
-  )
-}
-
-export default function OrgChart() {
-  const opsAgents = ['atlas', 'ads', 'vanguard', 'postwatch', 'curator']
-
-  return (
-    <div className="org-chart-scroll">
-      <div className="org-chart">
-        <StatusLegend />
-        <DepartmentHealthCards />
-
-        {/* Leadership */}
-        <div className="org-level" data-dept="leadership">
-          <NodeCard agent={AGENT_HIERARCHY.ceo} />
-        </div>
-
-        <div className="org-connector-v" />
-
-        <div className="org-level">
-          <NodeCard agent={AGENT_HIERARCHY.clawd} />
-        </div>
-
-        <div className="org-connector-v" />
-
-        {/* Departments */}
-        <div className="org-departments">
-          {/* Build Crew */}
-          <div className="glass-panel org-department" data-dept="build">
-            <div className="org-department__label">Build Crew</div>
-            <div className="org-department__content">
-              <SubAgentGroup parentId="architect" />
-              <SubAgentGroup parentId="mason" />
-              <SubAgentGroup parentId="sentinel" />
-            </div>
-          </div>
-
-          {/* Operations */}
-          <div className="glass-panel org-department" data-dept="ops">
-            <div className="org-department__label">Operations</div>
-            <div className="org-department__content org-department__content--ops">
-              {opsAgents.map(id => (
-                <NodeCard key={id} agent={AGENT_HIERARCHY[id]} size="small" />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

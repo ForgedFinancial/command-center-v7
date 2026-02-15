@@ -5,7 +5,13 @@ import syncClient from '../../api/syncClient'
 // FEATURE: AuthGate — Cinematic Boot Sequence
 // Added: 2026-02-14, Updated: 2026-02-15
 // 3-phase: Boot → Auth → Welcome
+// + Rate limiting, session expiry, lock button
 // ========================================
+
+const SESSION_EXPIRY_MS = 24 * 60 * 60 * 1000  // 24 hours
+const AWAY_EXPIRY_MS = 2 * 60 * 60 * 1000      // 2 hours
+const LOCKOUT_DURATION = 30000                   // 30 seconds
+const MAX_ATTEMPTS = 5
 
 async function hashPassword(password) {
   const encoder = new TextEncoder()
@@ -15,6 +21,37 @@ async function hashPassword(password) {
   return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
+function getAttemptCount() {
+  return parseInt(sessionStorage.getItem('forged-os-auth-attempts') || '0', 10)
+}
+function setAttemptCount(n) {
+  sessionStorage.setItem('forged-os-auth-attempts', String(n))
+}
+function getLockoutEnd() {
+  return parseInt(sessionStorage.getItem('forged-os-lockout-end') || '0', 10)
+}
+function setLockoutEnd(ts) {
+  sessionStorage.setItem('forged-os-lockout-end', String(ts))
+}
+
+function isSessionExpired() {
+  const authTime = localStorage.getItem('forged-os-auth-time')
+  if (!authTime) return false
+  return Date.now() - parseInt(authTime, 10) > SESSION_EXPIRY_MS
+}
+
+function clearAuth() {
+  localStorage.removeItem('forged-os-auth')
+  localStorage.removeItem('forged-os-auth-time')
+  sessionStorage.removeItem('forged-os-session')
+}
+
+// Exported so StatusBar can call it
+export function lockSession() {
+  clearAuth()
+  window.location.reload()
+}
+
 const BOOT_MESSAGES = [
   { text: 'Connecting to Gateway...', ok: true },
   { text: 'Loading Agent Network...', ok: true },
@@ -22,22 +59,20 @@ const BOOT_MESSAGES = [
   { text: 'Verifying Identity...', ok: false },
 ]
 
-const TITLE = 'INITIALIZING FORGED-OS V7...'
+const TITLE = 'INITIALIZING CC v7...'
 
 function BootSequence({ onComplete }) {
   const [lineExpanded, setLineExpanded] = useState(false)
   const [typedChars, setTypedChars] = useState(0)
-  const [messages, setMessages] = useState([]) // array of { text, showOk }
+  const [messages, setMessages] = useState([])
   const titleDone = typedChars >= TITLE.length
 
   useEffect(() => {
-    // Start line expansion immediately
     const t = setTimeout(() => setLineExpanded(true), 100)
     return () => clearTimeout(t)
   }, [])
 
   useEffect(() => {
-    // Start typing after line expands (600ms)
     if (!lineExpanded) return
     const startDelay = setTimeout(() => {
       let i = 0
@@ -71,7 +106,6 @@ function BootSequence({ onComplete }) {
           )
         }
       }
-      // Boot done
       await new Promise((r) => setTimeout(r, 600))
       if (!cancelled) onComplete()
     }
@@ -91,7 +125,6 @@ function BootSequence({ onComplete }) {
       fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
       overflow: 'hidden',
     }}>
-      {/* Glowing horizontal line */}
       <div style={{
         width: lineExpanded ? '60%' : '0%',
         height: '2px',
@@ -101,7 +134,6 @@ function BootSequence({ onComplete }) {
         marginBottom: '40px',
       }} />
 
-      {/* Typing title */}
       <div style={{
         fontSize: '18px',
         color: '#00d4ff',
@@ -114,7 +146,6 @@ function BootSequence({ onComplete }) {
         {!titleDone && <span style={{ animation: 'blink 0.6s step-end infinite' }}>▊</span>}
       </div>
 
-      {/* Boot messages */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
@@ -193,9 +224,52 @@ export default function AuthGate({ onAuth }) {
   const [isCreating, setIsCreating] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [shake, setShake] = useState(false)
-
-  // Phase: 'boot' | 'auth' | 'welcome'
+  const [lockoutRemaining, setLockoutRemaining] = useState(0)
   const [phase, setPhase] = useState('boot')
+  const hiddenSince = useRef(null)
+
+  // Check session expiry on mount
+  useEffect(() => {
+    if (isSessionExpired()) {
+      clearAuth()
+    }
+  }, [])
+
+  // Visibility change — force re-auth if away >2 hours
+  useEffect(() => {
+    function handleVisibility() {
+      if (document.hidden) {
+        hiddenSince.current = Date.now()
+      } else if (hiddenSince.current) {
+        const awayMs = Date.now() - hiddenSince.current
+        hiddenSince.current = null
+        if (awayMs > AWAY_EXPIRY_MS && sessionStorage.getItem('forged-os-session')) {
+          clearAuth()
+          window.location.reload()
+        }
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [])
+
+  // Lockout countdown timer
+  useEffect(() => {
+    const end = getLockoutEnd()
+    if (end > Date.now()) {
+      setLockoutRemaining(Math.ceil((end - Date.now()) / 1000))
+      const iv = setInterval(() => {
+        const remaining = Math.ceil((end - Date.now()) / 1000)
+        if (remaining <= 0) {
+          setLockoutRemaining(0)
+          clearInterval(iv)
+        } else {
+          setLockoutRemaining(remaining)
+        }
+      }, 1000)
+      return () => clearInterval(iv)
+    }
+  }, [lockoutRemaining])
 
   useEffect(() => {
     checkExistingAuth()
@@ -230,6 +304,13 @@ export default function AuthGate({ onAuth }) {
     e.preventDefault()
     setError('')
 
+    // Check lockout
+    const lockoutEnd = getLockoutEnd()
+    if (lockoutEnd > Date.now()) {
+      setLockoutRemaining(Math.ceil((lockoutEnd - Date.now()) / 1000))
+      return
+    }
+
     if (!password.trim()) {
       setError('Please enter a password')
       return
@@ -240,7 +321,9 @@ export default function AuthGate({ onAuth }) {
     if (isCreating) {
       try {
         localStorage.setItem('forged-os-auth', inputHash)
+        localStorage.setItem('forged-os-auth-time', String(Date.now()))
         sessionStorage.setItem('forged-os-session', 'true')
+        setAttemptCount(0)
 
         await syncClient.push({
           type: 'auth',
@@ -257,27 +340,38 @@ export default function AuthGate({ onAuth }) {
       const storedHash = localStorage.getItem('forged-os-auth')
 
       if (inputHash === storedHash) {
+        localStorage.setItem('forged-os-auth-time', String(Date.now()))
         sessionStorage.setItem('forged-os-session', 'true')
+        setAttemptCount(0)
         setPhase('welcome')
       } else {
-        setError('Incorrect password')
+        const attempts = getAttemptCount() + 1
+        setAttemptCount(attempts)
+
+        if (attempts >= MAX_ATTEMPTS) {
+          const end = Date.now() + LOCKOUT_DURATION
+          setLockoutEnd(end)
+          setLockoutRemaining(Math.ceil(LOCKOUT_DURATION / 1000))
+          setAttemptCount(0)
+          setError('')
+        } else {
+          setError(`Incorrect password (${MAX_ATTEMPTS - attempts} attempts remaining)`)
+        }
+
         setShake(true)
         setTimeout(() => setShake(false), 500)
       }
     }
   }
 
-  // Phase 1: Boot
   if (phase === 'boot') {
     return <BootSequence onComplete={() => setPhase('auth')} />
   }
 
-  // Phase 3: Welcome
   if (phase === 'welcome') {
     return <WelcomeScreen onComplete={onAuth} />
   }
 
-  // Phase 2: Auth Form
   if (isLoading) {
     return (
       <div style={{
@@ -334,7 +428,7 @@ export default function AuthGate({ onAuth }) {
             fontFamily: "'JetBrains Mono', monospace",
             letterSpacing: '2px',
           }}>
-            FORGED-OS
+            CC v7
           </h1>
           <p style={{
             fontSize: '14px',
@@ -352,6 +446,7 @@ export default function AuthGate({ onAuth }) {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               autoFocus
+              disabled={lockoutRemaining > 0}
               style={{
                 width: '100%',
                 padding: '14px 18px',
@@ -363,6 +458,7 @@ export default function AuthGate({ onAuth }) {
                 outline: 'none',
                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 animation: shake ? 'shake 0.5s' : 'none',
+                opacity: lockoutRemaining > 0 ? 0.5 : 1,
               }}
             />
             <style>{`
@@ -386,7 +482,18 @@ export default function AuthGate({ onAuth }) {
             `}</style>
           </div>
 
-          {error && (
+          {lockoutRemaining > 0 && (
+            <p style={{
+              fontSize: '14px',
+              color: '#f59e0b',
+              marginBottom: '16px',
+              textAlign: 'center',
+            }}>
+              Too many attempts. Try again in {lockoutRemaining}s
+            </p>
+          )}
+
+          {error && lockoutRemaining <= 0 && (
             <p style={{
               fontSize: '14px',
               color: '#ef4444',
@@ -398,22 +505,23 @@ export default function AuthGate({ onAuth }) {
 
           <button
             type="submit"
+            disabled={lockoutRemaining > 0}
             style={{
               width: '100%',
               padding: '14px 18px',
               fontSize: '16px',
               fontWeight: '500',
-              backgroundColor: '#00d4ff',
+              backgroundColor: lockoutRemaining > 0 ? '#555' : '#00d4ff',
               color: '#0a0a0f',
               border: 'none',
               borderRadius: '10px',
-              cursor: 'pointer',
+              cursor: lockoutRemaining > 0 ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
               fontFamily: "'JetBrains Mono', monospace",
               letterSpacing: '1px',
             }}
-            onMouseOver={(e) => (e.target.style.backgroundColor = '#33ddff')}
-            onMouseOut={(e) => (e.target.style.backgroundColor = '#00d4ff')}
+            onMouseOver={(e) => { if (lockoutRemaining <= 0) e.target.style.backgroundColor = '#33ddff' }}
+            onMouseOut={(e) => { if (lockoutRemaining <= 0) e.target.style.backgroundColor = '#00d4ff' }}
           >
             {isCreating ? 'CREATE PASSWORD' : 'ENTER'}
           </button>

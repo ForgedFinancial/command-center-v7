@@ -32,6 +32,9 @@ export const ENDPOINTS = {
   openclawComplete: '/api/openclaw/complete',
   openclawProgress: '/api/openclaw/progress',
   openclawError: '/api/openclaw/error',
+
+  // Agent Status
+  agentStatus: '/api/agents/status',
 }
 
-export const POLL_INTERVAL_MS = 60000 // 60 seconds
+export const POLL_INTERVAL_MS = 15000 // 15 seconds

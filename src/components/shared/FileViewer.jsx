@@ -1,37 +1,36 @@
-import { useState, useEffect } from 'react'
-import { syncClient } from '../../api/syncClient'
-import { ENDPOINTS } from '../../config/api'
+import { FILE_PREVIEWS } from '../../config/constants'
+
+function renderContent(text) {
+  const lines = text.split('\n')
+  return lines.map((line, i) => {
+    if (!line) return <div key={i} style={{ height: '8px' }} />
+
+    if (line.startsWith('#')) {
+      const text = line.replace(/^#+\s*/, '')
+      return (
+        <div key={i} style={{ color: '#00d4ff', fontWeight: '700', fontSize: '14px', lineHeight: '1.8', marginTop: '8px' }}>
+          {text}
+        </div>
+      )
+    }
+
+    const parts = line.split(/(\*\*[^*]+\*\*)/)
+    return (
+      <div key={i} style={{ fontSize: '13px', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+        {parts.map((part, j) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return <span key={j} style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{part.slice(2, -2)}</span>
+          }
+          return <span key={j}>{part}</span>
+        })}
+      </div>
+    )
+  })
+}
 
 export default function FileViewer({ agentId, filename, onClose }) {
-  const [content, setContent] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-
-  useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    setError(null)
-    setContent(null)
-
-    syncClient
-      .getWorkspaceFile(agentId, filename)
-      .then((data) => {
-        if (!cancelled) {
-          setContent(typeof data === 'string' ? data : JSON.stringify(data, null, 2))
-          setLoading(false)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setError(
-            'Unable to load file — API endpoint not connected. File will be available when the sync server is configured.'
-          )
-          setLoading(false)
-        }
-      })
-
-    return () => { cancelled = true }
-  }, [agentId, filename])
+  const previews = FILE_PREVIEWS[agentId]
+  const content = previews && previews[filename]
 
   return (
     <div
@@ -98,17 +97,10 @@ export default function FileViewer({ agentId, filename, onClose }) {
             fontSize: '13px',
             lineHeight: '1.6',
             color: 'var(--text-secondary)',
-            whiteSpace: 'pre-wrap',
             wordBreak: 'break-word',
           }}
         >
-          {loading && (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-              <div className="loading-spinner" style={{ margin: '0 auto 12px' }} />
-              Loading...
-            </div>
-          )}
-          {error && (
+          {content ? renderContent(content) : (
             <div
               style={{
                 padding: '20px',
@@ -117,14 +109,12 @@ export default function FileViewer({ agentId, filename, onClose }) {
                 border: '1px solid rgba(255,160,0,0.2)',
                 color: 'var(--text-muted)',
                 fontSize: '14px',
-                fontFamily: 'inherit',
                 textAlign: 'center',
               }}
             >
-              {error}
+              No preview available for this file.
             </div>
           )}
-          {content && content}
         </div>
       </div>
     </div>

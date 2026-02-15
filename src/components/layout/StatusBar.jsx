@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '../../context/AppContext'
+import { lockSession } from './AuthGate'
 
 // ========================================
 // FEATURE: StatusBar
 // Added: 2026-02-14 by Claude Code
+// Updated: 2026-02-15 — lock button, API Not Connected state
 // Bottom bar with connection status, sync time, build info
 // ========================================
 
-export default function StatusBar() {
+export default function StatusBar({ onToggleHealth }) {
   const { state } = useApp()
   const [timeAgo, setTimeAgo] = useState('')
+
+  const isApiNotConnected = state.syncError === 'API Not Connected'
 
   useEffect(() => {
     function updateTimeAgo() {
@@ -34,6 +38,18 @@ export default function StatusBar() {
     return () => clearInterval(interval)
   }, [state.lastSync])
 
+  const statusLabel = state.isConnected
+    ? 'Connected'
+    : isApiNotConnected
+      ? 'API Not Connected'
+      : 'Disconnected'
+
+  const statusColor = state.isConnected
+    ? 'var(--accent, var(--status-online))'
+    : isApiNotConnected
+      ? '#f59e0b'
+      : 'var(--status-offline)'
+
   return (
     <footer
       className="glass-panel"
@@ -50,21 +66,24 @@ export default function StatusBar() {
       }}
     >
       {/* Connection Status */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div
+        onClick={onToggleHealth}
+        style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none' }}
+        title="System Health"
+      >
         <span
           style={{
             width: '8px',
             height: '8px',
             borderRadius: '50%',
-            backgroundColor: state.isConnected
-              ? 'var(--accent, var(--status-online))'
-              : 'var(--status-offline)',
+            backgroundColor: statusColor,
             boxShadow: state.isConnected
-              ? '0 0 6px var(--accent, var(--status-online))'
+              ? `0 0 6px ${statusColor}`
               : 'none',
+            transition: 'all 0.2s',
           }}
         />
-        <span>{state.isConnected ? 'Connected' : 'Disconnected'}</span>
+        <span>{statusLabel}</span>
       </div>
 
       {/* Last Sync */}
@@ -72,15 +91,32 @@ export default function StatusBar() {
         <span>Last sync: {timeAgo}</span>
       </div>
 
-      {/* Build Info */}
-      <div style={{ fontFamily: 'monospace' }}>
+      {/* Build Info + Lock */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontFamily: 'monospace' }}>
         {state.buildInfo ? (
           <span>
-            {state.buildInfo.buildHash} · {state.buildInfo.version}
+            {state.buildInfo?.buildHash} · {state.buildInfo?.version}
           </span>
         ) : (
           <span>dev</span>
         )}
+        <button
+          onClick={lockSession}
+          title="Lock session"
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '14px',
+            padding: '2px 4px',
+            color: 'var(--text-muted)',
+            transition: 'color 0.15s',
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.color = '#ef4444')}
+          onMouseOut={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+        >
+          🔒
+        </button>
       </div>
     </footer>
   )
