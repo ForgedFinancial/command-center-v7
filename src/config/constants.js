@@ -72,13 +72,13 @@ export const CRON_JOBS = [
   },
 ]
 
-export const THEMES = ['charcoal', 'tokyo', 'steel', 'offwhite', 'white']
-export const DEFAULT_THEME = 'charcoal'
+export const THEMES = ['forge', 'charcoal', 'tokyo', 'steel', 'offwhite', 'white']
+export const DEFAULT_THEME = 'forge'
 
 export const AGENT_FILES = [
-  'agent.yaml',
-  'behavior.md',
-  'context.md',
-  'tools.json',
-  'history.jsonl',
+  'SOUL.md',
+  'USER.md',
+  'TOOLS.md',
+  'AGENTS.md',
+  'MEMORY.md',
 ]

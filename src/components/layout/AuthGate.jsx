@@ -144,13 +144,12 @@ export default function AuthGate({ onAuth }) {
       }}
     >
       <div
+        className="glass-panel"
         style={{
           width: '100%',
-          maxWidth: '400px',
-          backgroundColor: 'var(--bg-card)',
-          borderRadius: '12px',
-          padding: '32px',
-          border: '1px solid var(--border-color)',
+          maxWidth: '420px',
+          padding: '40px',
+          boxShadow: 'var(--shadow, 0 4px 24px rgba(0,0,0,0.3))',
         }}
       >
         <div
@@ -193,14 +192,14 @@ export default function AuthGate({ onAuth }) {
               autoFocus
               style={{
                 width: '100%',
-                padding: '12px 16px',
+                padding: '14px 18px',
                 fontSize: '16px',
-                backgroundColor: 'var(--bg-secondary)',
+                backgroundColor: 'var(--bg-glass, var(--bg-secondary))',
                 border: `1px solid ${error ? 'var(--status-error)' : 'var(--border-color)'}`,
-                borderRadius: '8px',
+                borderRadius: '10px',
                 color: 'var(--text-primary)',
                 outline: 'none',
-                transition: 'border-color 0.2s',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 animation: shake ? 'shake 0.5s' : 'none',
               }}
             />
@@ -216,6 +215,7 @@ export default function AuthGate({ onAuth }) {
               }
               input:focus {
                 border-color: var(--accent);
+                box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1), 0 0 12px rgba(0, 212, 255, 0.06);
               }
             `}</style>
           </div>
@@ -236,15 +236,15 @@ export default function AuthGate({ onAuth }) {
             type="submit"
             style={{
               width: '100%',
-              padding: '12px 16px',
+              padding: '14px 18px',
               fontSize: '16px',
               fontWeight: '500',
               backgroundColor: 'var(--accent)',
               color: '#ffffff',
               border: 'none',
-              borderRadius: '8px',
+              borderRadius: '10px',
               cursor: 'pointer',
-              transition: 'background-color 0.2s',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
             onMouseOver={(e) => (e.target.style.backgroundColor = 'var(--accent-hover)')}
             onMouseOut={(e) => (e.target.style.backgroundColor = 'var(--accent)')}

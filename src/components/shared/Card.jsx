@@ -1,15 +1,12 @@
 /**
  * Reusable card wrapper with optional title
- * Uses dark theme CSS variables
+ * Uses glass-card styling from Forge theme
  */
 export function Card({ title, children, className = '' }) {
   return (
     <div
-      className={className}
+      className={`glass-card ${className}`}
       style={{
-        backgroundColor: 'var(--bg-secondary)',
-        border: '1px solid var(--border)',
-        borderRadius: '8px',
         overflow: 'hidden',
       }}
     >
@@ -17,7 +14,7 @@ export function Card({ title, children, className = '' }) {
         <div
           style={{
             padding: '12px 16px',
-            borderBottom: '1px solid var(--border)',
+            borderBottom: '1px solid var(--border-color)',
             fontSize: '14px',
             fontWeight: 600,
             color: 'var(--text-primary)',

@@ -2,8 +2,26 @@
 
 /* ========================================
  * FORGED-OS Theme System
- * 5 themes: charcoal (default), tokyo, steel, offwhite, white
+ * 6 themes: forge (default), charcoal, tokyo, steel, offwhite, white
  * ======================================== */
+
+/* Theme: Forge (macOS-inspired Dark — Default) */
+.theme-forge {
+  --bg-primary: #0f0f1a;
+  --bg-secondary: rgba(20, 20, 35, 0.85);
+  --bg-tertiary: #1a1a2e;
+  --bg-card: #16162a;
+  --bg-glass: rgba(255, 255, 255, 0.03);
+  --text-primary: #e4e4e7;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --accent: #00d4ff;
+  --accent-hover: #00b8e6;
+  --accent-warm: #f59e0b;
+  --border-color: rgba(255, 255, 255, 0.06);
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.1);
+}
 
 /* Theme: Charcoal (Default Dark) */
 .theme-charcoal {
@@ -131,4 +149,40 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
+}
+
+/* Glass Utilities */
+.glass-panel {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.glass-card {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+/* Interactive element transitions */
+button, a, input, select, textarea {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Subtle accent glow on focus */
+input:focus, select:focus, textarea:focus, button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.15), 0 0 12px rgba(0, 212, 255, 0.08);
 }

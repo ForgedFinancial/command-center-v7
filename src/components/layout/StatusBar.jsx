@@ -36,15 +36,17 @@ export default function StatusBar() {
 
   return (
     <footer
+      className="glass-panel"
       style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '8px 24px',
-        backgroundColor: 'var(--bg-secondary)',
+        borderRadius: 0,
         borderTop: '1px solid var(--border-color)',
         fontSize: '12px',
         color: 'var(--text-muted)',
+        letterSpacing: '0.01em',
       }}
     >
       {/* Connection Status */}
@@ -55,8 +57,11 @@ export default function StatusBar() {
             height: '8px',
             borderRadius: '50%',
             backgroundColor: state.isConnected
-              ? 'var(--status-online)'
+              ? 'var(--accent, var(--status-online))'
               : 'var(--status-offline)',
+            boxShadow: state.isConnected
+              ? '0 0 6px var(--accent, var(--status-online))'
+              : 'none',
           }}
         />
         <span>{state.isConnected ? 'Connected' : 'Disconnected'}</span>

@@ -38,13 +38,14 @@ export default function Shell() {
       >
       {/* Header */}
       <header
+        className="glass-panel"
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '12px 24px',
-          backgroundColor: 'var(--bg-secondary)',
-          borderBottom: '1px solid var(--border-color)',
+          borderRadius: 0,
+          boxShadow: '0 1px 0 var(--border-color), 0 4px 12px rgba(0,0,0,0.2)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
