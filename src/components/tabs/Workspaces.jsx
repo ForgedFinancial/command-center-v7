@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useApp } from '../../context/AppContext'
-import { AGENT_HIERARCHY, AGENT_FILES, FILE_PREVIEWS, ACTIVITY_TIMELINE } from '../../config/constants'
+import { AGENT_HIERARCHY } from '../../config/constants'
+import { syncClient } from '../../api/syncClient'
 import FileViewer from '../shared/FileViewer'
 
 const SIDEBAR_GROUPS = [
@@ -21,7 +22,6 @@ const SIDEBAR_GROUPS = [
 function renderPreviewLine(line, i) {
   if (!line) return <div key={i} style={{ height: '4px' }} />
 
-  // Header lines
   if (line.startsWith('#')) {
     const text = line.replace(/^#+\s*/, '')
     return (
@@ -31,7 +31,6 @@ function renderPreviewLine(line, i) {
     )
   }
 
-  // Lines with bold markers
   const parts = line.split(/(\*\*[^*]+\*\*)/)
   return (
     <div key={i} style={{ fontSize: '10px', lineHeight: '1.5', color: 'var(--text-muted)' }}>
@@ -45,10 +44,7 @@ function renderPreviewLine(line, i) {
   )
 }
 
-function FilePreviewCard({ filename, agentId, onClick }) {
-  const previews = FILE_PREVIEWS[agentId]
-  const content = previews && previews[filename]
-
+function FilePreviewCard({ filename, content, loading, onClick }) {
   return (
     <div
       className="glass-card"
@@ -70,7 +66,11 @@ function FilePreviewCard({ filename, agentId, onClick }) {
         <span style={{ fontSize: '16px' }}>📄</span>
         <span style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: '600' }}>{filename}</span>
       </div>
-      {content && (
+      {loading ? (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '11px' }}>
+          Loading…
+        </div>
+      ) : content ? (
         <div style={{
           flex: 1,
           fontFamily: "'JetBrains Mono', monospace",
@@ -89,6 +89,10 @@ function FilePreviewCard({ filename, agentId, onClick }) {
             pointerEvents: 'none',
           }} />
         </div>
+      ) : (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '11px' }}>
+          No preview available
+        </div>
       )}
     </div>
   )
@@ -97,12 +101,42 @@ function FilePreviewCard({ filename, agentId, onClick }) {
 const STATUS_COLORS = {
   completed: '#4ade80',
   'in-progress': '#3b82f6',
+  success: '#4ade80',
+  error: '#ef4444',
+  info: '#3b82f6',
   failed: '#ef4444',
 }
 
 function ActivityTimeline({ agentId }) {
-  const events = ACTIVITY_TIMELINE[agentId]
-  if (!events || events.length === 0) return null
+  const [events, setEvents] = useState([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!agentId) return
+    setLoading(true)
+    syncClient.request(`/api/agents/${agentId}/activity`)
+      .then(data => setEvents(data?.activity || []))
+      .catch(() => setEvents([]))
+      .finally(() => setLoading(false))
+  }, [agentId])
+
+  if (loading) {
+    return (
+      <div className="glass-panel" style={{ padding: '20px 24px', marginTop: '16px' }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: '16px', color: 'var(--text-primary)' }}>Activity Timeline</h3>
+        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)' }}>Loading…</p>
+      </div>
+    )
+  }
+
+  if (!events || events.length === 0) {
+    return (
+      <div className="glass-panel" style={{ padding: '20px 24px', marginTop: '16px' }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: '16px', color: 'var(--text-primary)' }}>Activity Timeline</h3>
+        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)' }}>No activity recorded yet</p>
+      </div>
+    )
+  }
 
   return (
     <div className="glass-panel" style={{ padding: '20px 24px', marginTop: '16px' }}>
@@ -110,7 +144,6 @@ function ActivityTimeline({ agentId }) {
         Activity Timeline
       </h3>
       <div style={{ position: 'relative', paddingLeft: '24px' }}>
-        {/* Vertical line */}
         <div style={{
           position: 'absolute',
           left: '7px',
@@ -120,10 +153,11 @@ function ActivityTimeline({ agentId }) {
           background: 'var(--border-color, rgba(255,255,255,0.1))',
         }} />
         {events.map((event, i) => {
-          const color = STATUS_COLORS[event.status] || '#666'
+          const color = STATUS_COLORS[event?.data?.type || event?.type] || '#666'
+          const action = event?.data?.txt || event?.data?.action || event?.action || '—'
+          const time = event?.data?.ts || event?.ts
           return (
-            <div key={i} style={{ position: 'relative', marginBottom: i < events.length - 1 ? '12px' : 0 }}>
-              {/* Dot */}
+            <div key={event?.id || i} style={{ position: 'relative', marginBottom: i < events.length - 1 ? '12px' : 0 }}>
               <div style={{
                 position: 'absolute',
                 left: '-20px',
@@ -135,7 +169,6 @@ function ActivityTimeline({ agentId }) {
                 boxShadow: `0 0 8px ${color}66`,
                 border: '2px solid var(--bg-primary, #1a1a1a)',
               }} />
-              {/* Event card */}
               <div className="glass-card" style={{ padding: '10px 14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
                   <span style={{
@@ -143,23 +176,11 @@ function ActivityTimeline({ agentId }) {
                     fontSize: '11px',
                     color: 'var(--text-muted)',
                   }}>
-                    {event.time}
-                  </span>
-                  <span style={{
-                    fontSize: '9px',
-                    fontWeight: '700',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    padding: '2px 6px',
-                    borderRadius: '3px',
-                    background: `${color}22`,
-                    color: color,
-                  }}>
-                    {event.status}
+                    {time ? new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
                   </span>
                 </div>
                 <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                  {event.action}
+                  {action}
                 </div>
               </div>
             </div>
@@ -170,16 +191,103 @@ function ActivityTimeline({ agentId }) {
   )
 }
 
+function DailyLogs({ agentId, onViewLog }) {
+  const [logs, setLogs] = useState([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!agentId) return
+    setLoading(true)
+    syncClient.request(`/api/agents/${agentId}/logs`)
+      .then(data => setLogs(data?.logs || []))
+      .catch(() => setLogs([]))
+      .finally(() => setLoading(false))
+  }, [agentId])
+
+  return (
+    <div className="glass-panel" style={{ padding: '20px 24px' }}>
+      <h3 style={{ margin: '0 0 12px', fontSize: '16px', color: 'var(--text-primary)' }}>
+        Daily Logs
+      </h3>
+      {loading ? (
+        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)' }}>Loading…</p>
+      ) : logs.length === 0 ? (
+        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)' }}>No logs available yet</p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {logs.map((log) => (
+            <div
+              key={log.filename}
+              onClick={() => onViewLog(log.filename)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid var(--border-color, rgba(255,255,255,0.06))',
+                transition: 'border-color 0.15s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent-color)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = '' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '14px' }}>📋</span>
+                <span style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: '500' }}>{log.filename}</span>
+              </div>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace" }}>
+                {log.size ? `${(log.size / 1024).toFixed(1)}KB` : ''}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Workspaces() {
   const { state, actions } = useApp()
   const selectedId = state.workspaceAgent || 'clawd'
   const [viewingFile, setViewingFile] = useState(null)
+  const [viewingLog, setViewingLog] = useState(null)
+  const [fileList, setFileList] = useState([])
+  const [previews, setPreviews] = useState({})
+  const [loadingFiles, setLoadingFiles] = useState(false)
 
   const agent = AGENT_HIERARCHY[selectedId]
 
   const selectAgent = (id) => {
     actions.setWorkspaceAgent(id)
+    setViewingFile(null)
+    setViewingLog(null)
   }
+
+  // Fetch file list when agent changes
+  useEffect(() => {
+    if (!selectedId) return
+    setLoadingFiles(true)
+    setPreviews({})
+    syncClient.getWorkspace(selectedId)
+      .then(data => {
+        const files = data?.files || []
+        setFileList(files)
+        // Fetch preview content for each file (first 8 lines)
+        files.forEach(f => {
+          syncClient.getWorkspaceFile(selectedId, f.filename)
+            .then(fileData => {
+              setPreviews(prev => ({ ...prev, [f.filename]: fileData?.content || null }))
+            })
+            .catch(() => {
+              setPreviews(prev => ({ ...prev, [f.filename]: null }))
+            })
+        })
+      })
+      .catch(() => setFileList([]))
+      .finally(() => setLoadingFiles(false))
+  }, [selectedId])
 
   return (
     <div style={{ display: 'flex', gap: '16px', height: '100%' }}>
@@ -286,25 +394,32 @@ export default function Workspaces() {
                 marginBottom: '24px',
               }}
             >
-              {AGENT_FILES.map((filename) => (
-                <FilePreviewCard
-                  key={filename}
-                  filename={filename}
-                  agentId={selectedId}
-                  onClick={() => setViewingFile(filename)}
-                />
-              ))}
+              {loadingFiles ? (
+                <div style={{ gridColumn: '1 / -1', padding: '20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+                  Loading workspace files…
+                </div>
+              ) : fileList.length === 0 ? (
+                <div style={{ gridColumn: '1 / -1', padding: '20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+                  No workspace files found
+                </div>
+              ) : (
+                fileList.map((file) => (
+                  <FilePreviewCard
+                    key={file.filename}
+                    filename={file.filename}
+                    content={previews[file.filename]}
+                    loading={previews[file.filename] === undefined}
+                    onClick={() => setViewingFile(file.filename)}
+                  />
+                ))
+              )}
             </div>
 
             {/* Daily Logs */}
-            <div className="glass-panel" style={{ padding: '20px 24px' }}>
-              <h3 style={{ margin: '0 0 12px', fontSize: '16px', color: 'var(--text-primary)' }}>
-                Daily Logs
-              </h3>
-              <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)' }}>
-                No logs available yet
-              </p>
-            </div>
+            <DailyLogs
+              agentId={selectedId}
+              onViewLog={(filename) => setViewingLog(filename)}
+            />
 
             {/* Activity Timeline */}
             <ActivityTimeline agentId={selectedId} />
@@ -318,6 +433,14 @@ export default function Workspaces() {
           agentId={selectedId}
           filename={viewingFile}
           onClose={() => setViewingFile(null)}
+        />
+      )}
+      {viewingLog && (
+        <FileViewer
+          agentId={selectedId}
+          filename={viewingLog}
+          isLog
+          onClose={() => setViewingLog(null)}
         />
       )}
     </div>

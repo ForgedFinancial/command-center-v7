@@ -36,6 +36,9 @@ export const ENDPOINTS = {
   // Agent Status
   agentStatus: '/api/agents/status',
   agentOutput: (agentId) => `/api/agents/${agentId}/output`,
+  agentActivity: (agentId) => `/api/agents/${agentId}/activity`,
+  agentLogs: (agentId) => `/api/agents/${agentId}/logs`,
+  agentLogFile: (agentId, filename) => `/api/agents/${agentId}/logs/${filename}`,
   pipelineState: '/api/pipeline/state',
 
   // Auth

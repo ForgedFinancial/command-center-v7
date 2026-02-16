@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useApp } from '../../context/AppContext'
 import { syncClient } from '../../api/syncClient'
-import { FILE_PREVIEWS } from '../../config/constants'
+import { syncClient as healthSyncClient } from '../../api/syncClient'
 
 // ========================================
 // FEATURE: HealthPanel
@@ -102,19 +102,22 @@ function useHealthChecks(isOpen) {
       results.push({ name: 'Agent Sync', status: STATUS.red, message: 'No agent data loaded' })
     }
 
-    // 4. Workspace Files
+    // 4. Workspace Files (live API check)
     const selectedAgent = state?.workspaceAgent || state?.selectedAgent
-    if (selectedAgent && FILE_PREVIEWS?.[selectedAgent]) {
-      const files = Object.keys(FILE_PREVIEWS[selectedAgent])
-      if (files.length >= 4) {
-        results.push({ name: 'Workspace Files', status: STATUS.green, message: `Files loaded for ${selectedAgent}` })
-      } else if (files.length > 0) {
-        results.push({ name: 'Workspace Files', status: STATUS.yellow, message: `Partial files for ${selectedAgent}` })
-      } else {
-        results.push({ name: 'Workspace Files', status: STATUS.red, message: 'No workspace files found' })
+    if (selectedAgent) {
+      try {
+        const wsData = await healthSyncClient.getWorkspace(selectedAgent)
+        const files = wsData?.files || []
+        if (files.length >= 4) {
+          results.push({ name: 'Workspace Files', status: STATUS.green, message: `${files.length} files found for ${selectedAgent}` })
+        } else if (files.length > 0) {
+          results.push({ name: 'Workspace Files', status: STATUS.yellow, message: `${files.length} files for ${selectedAgent}` })
+        } else {
+          results.push({ name: 'Workspace Files', status: STATUS.red, message: 'No workspace files found' })
+        }
+      } catch {
+        results.push({ name: 'Workspace Files', status: STATUS.red, message: 'Could not check workspace files' })
       }
-    } else if (selectedAgent) {
-      results.push({ name: 'Workspace Files', status: STATUS.red, message: 'No files for selected agent' })
     } else {
       results.push({ name: 'Workspace Files', status: STATUS.yellow, message: 'No agent selected — select one to check files' })
     }

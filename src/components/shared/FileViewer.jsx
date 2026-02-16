@@ -1,4 +1,5 @@
-import { FILE_PREVIEWS } from '../../config/constants'
+import { useState, useEffect } from 'react'
+import { syncClient } from '../../api/syncClient'
 
 function renderContent(text) {
   const lines = text.split('\n')
@@ -28,9 +29,25 @@ function renderContent(text) {
   })
 }
 
-export default function FileViewer({ agentId, filename, onClose }) {
-  const previews = FILE_PREVIEWS[agentId]
-  const content = previews && previews[filename]
+export default function FileViewer({ agentId, filename, isLog, onClose }) {
+  const [content, setContent] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    if (!agentId || !filename) return
+    setLoading(true)
+    setError(null)
+
+    const endpoint = isLog
+      ? `/api/agents/${agentId}/logs/${filename}`
+      : `/api/workspace/${agentId}/${filename}`
+
+    syncClient.request(endpoint)
+      .then(data => setContent(data?.content || null))
+      .catch(err => setError(err?.message || 'Failed to load file'))
+      .finally(() => setLoading(false))
+  }, [agentId, filename, isLog])
 
   return (
     <div
@@ -100,7 +117,25 @@ export default function FileViewer({ agentId, filename, onClose }) {
             wordBreak: 'break-word',
           }}
         >
-          {content ? renderContent(content) : (
+          {loading ? (
+            <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
+              Loading…
+            </div>
+          ) : error ? (
+            <div
+              style={{
+                padding: '20px',
+                borderRadius: '8px',
+                background: 'rgba(239,68,68,0.08)',
+                border: '1px solid rgba(239,68,68,0.2)',
+                color: '#ef4444',
+                fontSize: '14px',
+                textAlign: 'center',
+              }}
+            >
+              {error}
+            </div>
+          ) : content ? renderContent(content) : (
             <div
               style={{
                 padding: '20px',

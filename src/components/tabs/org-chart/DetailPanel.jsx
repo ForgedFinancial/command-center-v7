@@ -2,7 +2,7 @@
 // DetailPanel — Slide-in right panel, frosted glass, agent details
 // ========================================
 
-import { AGENT_HIERARCHY, REGISTERED_AGENTS, FILE_PREVIEWS, ACTIVITY_TIMELINE } from '../../../config/constants'
+import { AGENT_HIERARCHY, REGISTERED_AGENTS } from '../../../config/constants'
 import { DETAIL_PANEL, STATUS_COLORS, NODE_COLORS, getNodeColorTier } from './radialConstants'
 
 function formatTokens(n) {
@@ -21,7 +21,7 @@ export default function DetailPanel({ agentId, agentData, onClose, onNavigate, i
   const statusColor = STATUS_COLORS[status] || STATUS_COLORS.defined
   const colorTier = getNodeColorTier(agentId)
   const colors = NODE_COLORS[colorTier]
-  const activity = ACTIVITY_TIMELINE[agentId] || []
+  const activity = live?.recentActivity || []
 
   // Find connections
   const children = Object.values(AGENT_HIERARCHY).filter(a => a.parent === agentId)
@@ -164,7 +164,7 @@ export default function DetailPanel({ agentId, agentData, onClose, onNavigate, i
         <div style={{ padding: '16px 20px' }}>
           <SectionLabel text="ACTIVITY" color={textSecondary} />
           {activity.slice(0, 5).map((item, i) => (
-            <div key={i} style={{
+            <div key={item?.id || i} style={{
               display: 'flex',
               gap: 8,
               marginBottom: 8,
@@ -176,10 +176,10 @@ export default function DetailPanel({ agentId, agentData, onClose, onNavigate, i
                 flexShrink: 0,
                 fontSize: 10,
               }}>
-                {item.time}
+                {item?.timestamp ? new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
               </span>
               <span style={{ color: isLight ? '#374151' : '#d4d4d8', lineHeight: 1.3 }}>
-                {item.action}
+                {item?.action || '—'}
               </span>
             </div>
           ))}
