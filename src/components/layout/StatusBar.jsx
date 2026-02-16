@@ -102,20 +102,26 @@ export default function StatusBar({ onToggleHealth }) {
         )}
         <button
           onClick={lockSession}
-          title="Lock session"
+          title="Logout"
           style={{
-            background: 'none',
-            border: 'none',
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.25)',
+            borderRadius: '6px',
             cursor: 'pointer',
-            fontSize: '14px',
-            padding: '2px 4px',
-            color: 'var(--text-muted)',
-            transition: 'color 0.15s',
+            fontSize: '12px',
+            padding: '4px 10px',
+            color: '#ef4444',
+            transition: 'all 0.15s',
+            fontFamily: "'JetBrains Mono', monospace",
+            letterSpacing: '0.5px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
           }}
-          onMouseOver={(e) => (e.currentTarget.style.color = '#ef4444')}
-          onMouseOut={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+          onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.5)' }}
+          onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.25)' }}
         >
-          🔒
+          🔒 LOGOUT
         </button>
       </div>
     </footer>

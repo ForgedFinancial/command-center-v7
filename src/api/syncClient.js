@@ -11,6 +11,7 @@ class SyncClient {
   constructor() {
     this.baseUrl = WORKER_PROXY_URL
     this._inflight = new Map()
+    this._authToken = sessionStorage.getItem('cc_auth_token') || null
   }
 
   async request(endpoint, options = {}) {
@@ -36,11 +37,16 @@ class SyncClient {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
+    const headers = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    }
+    if (this._authToken) {
+      headers['Authorization'] = `Bearer ${this._authToken}`
+    }
+
     const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers,
       ...options,
       signal: controller.signal,
     }
@@ -53,9 +59,12 @@ class SyncClient {
       clearTimeout(timeoutId)
 
       if (!response.ok) {
+        let body = null
+        try { body = await response.json() } catch {}
         const error = new Error(`HTTP ${response.status}: ${response.statusText}`)
         error.status = response.status
         error.isHttp = true
+        error.body = body
         throw error
       }
 
@@ -159,6 +168,53 @@ class SyncClient {
   // Agent Status
   async getAgentStatus() {
     return this.request(ENDPOINTS.agentStatus)
+  }
+
+  // Agent Output
+  async getAgentOutput(agentId) {
+    return this.request(ENDPOINTS.agentOutput(agentId))
+  }
+
+  // Pipeline State
+  async getPipelineState() {
+    return this.request(ENDPOINTS.pipelineState)
+  }
+
+  // Auth — stores token from server response for Bearer auth (works through proxies)
+  _setToken(token) {
+    this._authToken = token || null
+    if (token) {
+      sessionStorage.setItem('cc_auth_token', token)
+    } else {
+      sessionStorage.removeItem('cc_auth_token')
+    }
+  }
+
+  auth = {
+    check: () => this.request(ENDPOINTS.authCheck),
+    login: async (accessCode, username, password) => {
+      const result = await this.request(ENDPOINTS.authLogin, {
+        method: 'POST',
+        body: JSON.stringify({ accessCode, username, password }),
+      })
+      if (result?.token) this._setToken(result.token)
+      return result
+    },
+    setup: async (password) => {
+      const result = await this.request(ENDPOINTS.authSetup, {
+        method: 'POST',
+        body: JSON.stringify({ password }),
+      })
+      if (result?.token) this._setToken(result.token)
+      return result
+    },
+    logout: async () => {
+      const result = await this.request(ENDPOINTS.authLogout, {
+        method: 'POST',
+      })
+      this._setToken(null)
+      return result
+    },
   }
 }
 

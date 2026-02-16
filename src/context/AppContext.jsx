@@ -55,6 +55,15 @@ const initialState = {
   // Org Chart — Radial
   centeredAgent: 'ceo',
 
+  // Pipeline State
+  pipelineState: {
+    stages: [],
+    context: '',
+    startTime: null,
+    initiator: '',
+    activeConnections: [],
+  },
+
   // System Health
   systemHealth: {
     status: 'healthy',
@@ -87,6 +96,7 @@ const ActionTypes = {
   UPDATE_AGENTS: 'UPDATE_AGENTS',
   SET_SELECTED_AGENT: 'SET_SELECTED_AGENT',
   SET_CENTERED_AGENT: 'SET_CENTERED_AGENT',
+  SET_PIPELINE_STATE: 'SET_PIPELINE_STATE',
   SET_WORKSPACE_AGENT: 'SET_WORKSPACE_AGENT',
   SET_WORKSPACE_FILES: 'SET_WORKSPACE_FILES',
   SET_ACTIVE_FILE: 'SET_ACTIVE_FILE',
@@ -153,6 +163,9 @@ function appReducer(state, action) {
 
     case ActionTypes.SET_CENTERED_AGENT:
       return { ...state, centeredAgent: action.payload }
+
+    case ActionTypes.SET_PIPELINE_STATE:
+      return { ...state, pipelineState: action.payload }
 
     case ActionTypes.SET_WORKSPACE_AGENT:
       return { ...state, workspaceAgent: action.payload }
@@ -260,6 +273,10 @@ export function AppProvider({ children }) {
 
     setCenteredAgent: useCallback((agentId) => {
       dispatch({ type: ActionTypes.SET_CENTERED_AGENT, payload: agentId })
+    }, []),
+
+    updatePipelineState: useCallback((data) => {
+      dispatch({ type: ActionTypes.SET_PIPELINE_STATE, payload: data })
     }, []),
 
     setWorkspaceAgent: useCallback((agentId) => {

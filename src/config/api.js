@@ -35,6 +35,14 @@ export const ENDPOINTS = {
 
   // Agent Status
   agentStatus: '/api/agents/status',
+  agentOutput: (agentId) => `/api/agents/${agentId}/output`,
+  pipelineState: '/api/pipeline/state',
+
+  // Auth
+  authSetup: '/api/auth/setup',
+  authLogin: '/api/auth/login',
+  authLogout: '/api/auth/logout',
+  authCheck: '/api/auth/check',
 }
 
 export const POLL_INTERVAL_MS = 15000 // 15 seconds

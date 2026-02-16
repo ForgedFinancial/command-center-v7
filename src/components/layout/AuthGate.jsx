@@ -4,51 +4,14 @@ import syncClient from '../../api/syncClient'
 // ========================================
 // FEATURE: AuthGate — Cinematic Boot Sequence
 // Added: 2026-02-14, Updated: 2026-02-15
+// Session 4: Auth Overhaul — Server-side auth
 // 3-phase: Boot → Auth → Welcome
-// + Rate limiting, session expiry, lock button
+// + Server-side rate limiting, session cookies
 // ========================================
-
-const SESSION_EXPIRY_MS = 24 * 60 * 60 * 1000  // 24 hours
-const AWAY_EXPIRY_MS = 2 * 60 * 60 * 1000      // 2 hours
-const LOCKOUT_DURATION = 30000                   // 30 seconds
-const MAX_ATTEMPTS = 5
-
-async function hashPassword(password) {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(password)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
-}
-
-function getAttemptCount() {
-  return parseInt(sessionStorage.getItem('forged-os-auth-attempts') || '0', 10)
-}
-function setAttemptCount(n) {
-  sessionStorage.setItem('forged-os-auth-attempts', String(n))
-}
-function getLockoutEnd() {
-  return parseInt(sessionStorage.getItem('forged-os-lockout-end') || '0', 10)
-}
-function setLockoutEnd(ts) {
-  sessionStorage.setItem('forged-os-lockout-end', String(ts))
-}
-
-function isSessionExpired() {
-  const authTime = localStorage.getItem('forged-os-auth-time')
-  if (!authTime) return false
-  return Date.now() - parseInt(authTime, 10) > SESSION_EXPIRY_MS
-}
-
-function clearAuth() {
-  localStorage.removeItem('forged-os-auth')
-  localStorage.removeItem('forged-os-auth-time')
-  sessionStorage.removeItem('forged-os-session')
-}
 
 // Exported so StatusBar can call it
 export function lockSession() {
-  clearAuth()
+  syncClient.auth.logout().catch(() => {})
   window.location.reload()
 }
 
@@ -219,84 +182,47 @@ function WelcomeScreen({ onComplete }) {
 }
 
 export default function AuthGate({ onAuth }) {
+  const [accessCode, setAccessCode] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [isCreating, setIsCreating] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [shake, setShake] = useState(false)
   const [lockoutRemaining, setLockoutRemaining] = useState(0)
   const [phase, setPhase] = useState('boot')
-  const hiddenSince = useRef(null)
-
-  // Check session expiry on mount
-  useEffect(() => {
-    if (isSessionExpired()) {
-      clearAuth()
-    }
-  }, [])
-
-  // Visibility change — force re-auth if away >2 hours
-  useEffect(() => {
-    function handleVisibility() {
-      if (document.hidden) {
-        hiddenSince.current = Date.now()
-      } else if (hiddenSince.current) {
-        const awayMs = Date.now() - hiddenSince.current
-        hiddenSince.current = null
-        if (awayMs > AWAY_EXPIRY_MS && sessionStorage.getItem('forged-os-session')) {
-          clearAuth()
-          window.location.reload()
-        }
-      }
-    }
-    document.addEventListener('visibilitychange', handleVisibility)
-    return () => document.removeEventListener('visibilitychange', handleVisibility)
-  }, [])
-
-  // Lockout countdown timer
-  useEffect(() => {
-    const end = getLockoutEnd()
-    if (end > Date.now()) {
-      setLockoutRemaining(Math.ceil((end - Date.now()) / 1000))
-      const iv = setInterval(() => {
-        const remaining = Math.ceil((end - Date.now()) / 1000)
-        if (remaining <= 0) {
-          setLockoutRemaining(0)
-          clearInterval(iv)
-        } else {
-          setLockoutRemaining(remaining)
-        }
-      }, 1000)
-      return () => clearInterval(iv)
-    }
-  }, [lockoutRemaining])
+  const lockoutTimer = useRef(null)
 
   useEffect(() => {
     checkExistingAuth()
   }, [])
 
+  // Lockout countdown
+  useEffect(() => {
+    if (lockoutRemaining <= 0) return
+    lockoutTimer.current = setInterval(() => {
+      setLockoutRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(lockoutTimer.current)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(lockoutTimer.current)
+  }, [lockoutRemaining > 0])
+
   async function checkExistingAuth() {
-    const storedHash = localStorage.getItem('forged-os-auth')
-
-    if (storedHash) {
-      setIsCreating(false)
-      setIsLoading(false)
-      return
-    }
-
     try {
-      const state = await syncClient.getState()
-      if (state?.auth?.hash) {
-        localStorage.setItem('forged-os-auth', state.auth.hash)
-        setIsCreating(false)
-      } else {
-        setIsCreating(true)
+      const result = await syncClient.auth.check()
+      if (result?.authenticated) {
+        sessionStorage.setItem('forged-os-session', 'true')
+        setPhase('welcome')
+        setIsLoading(false)
+        return
       }
     } catch (err) {
-      console.warn('Could not fetch auth state:', err)
-      setIsCreating(true)
+      console.warn('Could not check auth state:', err)
     }
-
     setIsLoading(false)
   }
 
@@ -304,63 +230,29 @@ export default function AuthGate({ onAuth }) {
     e.preventDefault()
     setError('')
 
-    // Check lockout
-    const lockoutEnd = getLockoutEnd()
-    if (lockoutEnd > Date.now()) {
-      setLockoutRemaining(Math.ceil((lockoutEnd - Date.now()) / 1000))
+    if (lockoutRemaining > 0) return
+    if (!accessCode.trim() || !username.trim() || !password.trim()) {
+      setError('All fields are required')
       return
     }
 
-    if (!password.trim()) {
-      setError('Please enter a password')
-      return
-    }
-
-    const inputHash = await hashPassword(password)
-
-    if (isCreating) {
-      try {
-        localStorage.setItem('forged-os-auth', inputHash)
-        localStorage.setItem('forged-os-auth-time', String(Date.now()))
-        sessionStorage.setItem('forged-os-session', 'true')
-        setAttemptCount(0)
-
-        await syncClient.push({
-          type: 'auth',
-          action: 'set',
-          data: { hash: inputHash },
-        })
-
-        setPhase('welcome')
-      } catch (err) {
-        console.error('Failed to save auth:', err)
-        setPhase('welcome')
-      }
-    } else {
-      const storedHash = localStorage.getItem('forged-os-auth')
-
-      if (inputHash === storedHash) {
-        localStorage.setItem('forged-os-auth-time', String(Date.now()))
-        sessionStorage.setItem('forged-os-session', 'true')
-        setAttemptCount(0)
-        setPhase('welcome')
+    try {
+      await syncClient.auth.login(accessCode, username, password)
+      sessionStorage.setItem('forged-os-session', 'true')
+      setPhase('welcome')
+    } catch (err) {
+      const status = err?.status
+      if (status === 429) {
+        const retryAfter = err?.body?.retryAfter || 60
+        setLockoutRemaining(retryAfter)
+        setError('')
+      } else if (status === 401) {
+        setError('Invalid credentials')
       } else {
-        const attempts = getAttemptCount() + 1
-        setAttemptCount(attempts)
-
-        if (attempts >= MAX_ATTEMPTS) {
-          const end = Date.now() + LOCKOUT_DURATION
-          setLockoutEnd(end)
-          setLockoutRemaining(Math.ceil(LOCKOUT_DURATION / 1000))
-          setAttemptCount(0)
-          setError('')
-        } else {
-          setError(`Incorrect password (${MAX_ATTEMPTS - attempts} attempts remaining)`)
-        }
-
-        setShake(true)
-        setTimeout(() => setShake(false), 500)
+        setError('Connection error - server unreachable')
       }
+      setShake(true)
+      setTimeout(() => setShake(false), 500)
     }
   }
 
@@ -434,19 +326,65 @@ export default function AuthGate({ onAuth }) {
             fontSize: '14px',
             color: 'rgba(255,255,255,0.5)',
           }}>
-            {isCreating ? 'Create your password' : 'Enter your password'}
+            Authorized personnel only
           </p>
         </div>
 
         <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '12px' }}>
+            <input
+              type="password"
+              value={accessCode}
+              onChange={(e) => setAccessCode(e.target.value)}
+              placeholder="Access Code"
+              autoFocus
+              disabled={lockoutRemaining > 0}
+              style={{
+                width: '100%',
+                padding: '14px 18px',
+                fontSize: '16px',
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                border: `1px solid ${error ? '#ef4444' : 'rgba(255,255,255,0.1)'}`,
+                borderRadius: '10px',
+                color: '#ffffff',
+                outline: 'none',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                animation: shake ? 'shake 0.5s' : 'none',
+                opacity: lockoutRemaining > 0 ? 0.5 : 1,
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: '12px' }}>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Username"
+              disabled={lockoutRemaining > 0}
+              autoComplete="username"
+              style={{
+                width: '100%',
+                padding: '14px 18px',
+                fontSize: '16px',
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                border: `1px solid ${error ? '#ef4444' : 'rgba(255,255,255,0.1)'}`,
+                borderRadius: '10px',
+                color: '#ffffff',
+                outline: 'none',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                animation: shake ? 'shake 0.5s' : 'none',
+                opacity: lockoutRemaining > 0 ? 0.5 : 1,
+              }}
+            />
+          </div>
           <div style={{ marginBottom: '16px' }}>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              autoFocus
               disabled={lockoutRemaining > 0}
+              autoComplete="current-password"
               style={{
                 width: '100%',
                 padding: '14px 18px',
@@ -523,7 +461,7 @@ export default function AuthGate({ onAuth }) {
             onMouseOver={(e) => { if (lockoutRemaining <= 0) e.target.style.backgroundColor = '#33ddff' }}
             onMouseOut={(e) => { if (lockoutRemaining <= 0) e.target.style.backgroundColor = '#00d4ff' }}
           >
-            {isCreating ? 'CREATE PASSWORD' : 'ENTER'}
+            AUTHENTICATE
           </button>
         </form>
       </div>
