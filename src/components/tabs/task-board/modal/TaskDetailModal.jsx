@@ -154,6 +154,33 @@ export default function TaskDetailModal() {
         />
       </div>
 
+      {/* Attached Documents */}
+      {(() => {
+        const taskDocs = state.documents.filter(d => d.taskId === task.id)
+        if (taskDocs.length === 0) return null
+        return (
+          <div style={{ marginBottom: '20px' }}>
+            <h4 style={{ margin: '0 0 8px', fontSize: '12px', color: '#71717a', textTransform: 'uppercase', letterSpacing: '1px' }}>Documents</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {taskDocs.map(doc => (
+                <div key={doc.id} style={{
+                  display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px',
+                  borderRadius: '6px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)',
+                }}>
+                  <span style={{ fontSize: '14px' }}>📄</span>
+                  <span style={{ fontSize: '12px', color: '#a1a1aa', flex: 1 }}>{doc.name}</span>
+                  {doc.category && (
+                    <span style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '4px', background: 'rgba(255,255,255,0.06)', color: '#71717a', textTransform: 'uppercase' }}>
+                      {doc.category}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      })()}
+
       {/* Agent Output */}
       {task.agentOutput && (
         <div style={{ marginBottom: '20px' }}>

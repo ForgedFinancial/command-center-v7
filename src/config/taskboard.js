@@ -42,6 +42,6 @@ export const DOC_CATEGORY_CONFIG = {
   attachment: { label: 'Attachment', color: '#9ca3af', bg: 'rgba(107,114,128,0.12)' },
 }
 
-export const TASK_BOARD_VIEWS = { BOARD: 'board', PROJECTS: 'projects', TASKS: 'tasks', DOCUMENTS: 'documents' }
+export const TASK_BOARD_VIEWS = { BOARD: 'board', CALENDAR: 'calendar', PHONE: 'phone', MESSAGES: 'messages', PROJECTS: 'projects', TASKS: 'tasks', DOCUMENTS: 'documents' }
 
 export const AGENT_COLORS = { mason: '#a855f7', sentinel: '#3b82f6', architect: '#f59e0b', clawd: '#4ade80' }

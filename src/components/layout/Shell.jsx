@@ -45,13 +45,16 @@ const CRM_SIDEBAR = [
 
 // Map sidebar item clicks to view changes
 const TB_SIDEBAR_VIEW_MAP = {
+  calendar: TASK_BOARD_VIEWS.CALENDAR,
+  phone: TASK_BOARD_VIEWS.PHONE,
+  messages: TASK_BOARD_VIEWS.MESSAGES,
   projects: TASK_BOARD_VIEWS.PROJECTS,
   tasks: TASK_BOARD_VIEWS.TASKS,
   documents: TASK_BOARD_VIEWS.DOCUMENTS,
 }
 
 export default function Shell() {
-  const { state } = useApp()
+  const { state, actions: appActions } = useApp()
   const tbContext = useTaskBoard()
   const crmContext = useCRM()
   const [healthOpen, setHealthOpen] = useState(false)
@@ -83,6 +86,9 @@ export default function Shell() {
   const activeSidebarItem = useMemo(() => {
     if (state.activeTab === TABS.TASK_BOARD) {
       const view = tbContext.state.activeView
+      if (view === 'calendar') return 'calendar'
+      if (view === 'phone') return 'phone'
+      if (view === 'messages') return 'messages'
       if (view === 'projects') return 'projects'
       if (view === 'tasks') return 'tasks'
       if (view === 'documents') return 'documents'
@@ -100,10 +106,15 @@ export default function Shell() {
       if (view) {
         tbContext.actions.setView(view)
       }
-      // calendar/phone/messages are future features — no-op for now
+    } else if (state.activeTab === TABS.CRM) {
+      // CRM sidebar items share the same nav — switch to Task Board with appropriate view
+      const view = TB_SIDEBAR_VIEW_MAP[id]
+      if (view) {
+        appActions.setTab(TABS.TASK_BOARD)
+        tbContext.actions.setView(view)
+      }
     }
-    // CRM sidebar items are also future features
-  }, [state.activeTab, tbContext.actions])
+  }, [state.activeTab, tbContext.actions, appActions])
 
   if (state.isInitialLoad) {
     return (

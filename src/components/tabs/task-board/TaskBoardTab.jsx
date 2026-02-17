@@ -9,6 +9,9 @@ import ProjectsView from './projects/ProjectsView'
 import ProjectCreateModal from './projects/ProjectCreateModal'
 import TasksListView from './tasks/TasksListView'
 import DocumentsView from './documents/DocumentsView'
+import CalendarView from './calendar/CalendarView'
+import PhoneView from './phone/PhoneView'
+import MessagesView from './messages/MessagesView'
 import LoadingSpinner from '../../shared/LoadingSpinner'
 
 export default function TaskBoardTab() {
@@ -43,6 +46,15 @@ function ViewContent({ view, loading }) {
           <KanbanBoard />
         </div>
       )
+    case TASK_BOARD_VIEWS.CALENDAR:
+    case 'calendar':
+      return <CalendarView />
+    case TASK_BOARD_VIEWS.PHONE:
+    case 'phone':
+      return <PhoneView />
+    case TASK_BOARD_VIEWS.MESSAGES:
+    case 'messages':
+      return <MessagesView />
     case TASK_BOARD_VIEWS.PROJECTS:
     case 'projects':
       return <ProjectsView />
