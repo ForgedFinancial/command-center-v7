@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useCRM } from '../../../../context/CRMContext'
 import { CRM_STAGES } from '../../../../config/crm'
 import EmptyState from '../../../shared/EmptyState'
@@ -23,6 +23,7 @@ const STAGE_LABELS = {
 
 export default function CRMDashboard() {
   const { state } = useCRM()
+  const [timeRange, setTimeRange] = useState('all')
   const leads = state.leads
 
   const stats = useMemo(() => {
@@ -64,8 +65,30 @@ export default function CRMDashboard() {
 
   return (
     <div>
-      <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>CRM Dashboard</h2>
-      <p style={{ margin: '0 0 24px', fontSize: '13px', color: '#71717a' }}>Overview of your sales pipeline and key metrics</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+        <div>
+          <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>CRM Dashboard</h2>
+          <p style={{ margin: 0, fontSize: '13px', color: '#71717a' }}>Overview of your sales pipeline and key metrics</p>
+        </div>
+        <div style={{ display: 'flex', gap: '2px' }}>
+          {[['7d', '7 Days'], ['30d', '30 Days'], ['90d', '90 Days'], ['all', 'All Time']].map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setTimeRange(key)}
+              style={{
+                padding: '6px 12px', fontSize: '11px', fontWeight: timeRange === key ? 600 : 400,
+                borderRadius: '6px',
+                border: '1px solid ' + (timeRange === key ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.08)'),
+                background: timeRange === key ? 'rgba(0,212,255,0.1)' : 'transparent',
+                color: timeRange === key ? '#00d4ff' : '#71717a',
+                cursor: 'pointer',
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* KPI Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>

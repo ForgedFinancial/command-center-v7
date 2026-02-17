@@ -1,5 +1,5 @@
+import { useState } from 'react'
 import { useCRM } from '../../../../context/CRMContext'
-import EmptyState from '../../../shared/EmptyState'
 
 const STAGE_CONFIG = [
   { stage: 'new_lead', label: 'New Leads', color: '#3b82f6', note: 'Auto-assign enabled' },
@@ -137,10 +137,13 @@ export default function CRMSettings() {
             ))}
           </div>
 
-          {/* Notifications placeholder */}
+          {/* Notifications */}
           <div style={cardStyle}>
             <h3 style={sectionTitle}>Notifications</h3>
-            <p style={{ fontSize: '12px', color: '#52525b', margin: 0 }}>Notification settings coming soon.</p>
+            <NotificationToggle label="New lead alerts" defaultOn />
+            <NotificationToggle label="Deal stage changes" defaultOn />
+            <NotificationToggle label="Stale deal warnings" defaultOn />
+            <NotificationToggle label="Weekly pipeline digest" defaultOn={false} />
           </div>
         </div>
 
@@ -216,6 +219,34 @@ export default function CRMSettings() {
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function NotificationToggle({ label, defaultOn = true }) {
+  const [on, setOn] = useState(defaultOn)
+  return (
+    <div style={{
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      marginBottom: '12px',
+    }}>
+      <span style={{ fontSize: '13px', color: '#e4e4e7' }}>{label}</span>
+      <div
+        onClick={() => setOn(!on)}
+        style={{
+          width: '36px', height: '20px', borderRadius: '10px',
+          background: on ? '#00d4ff' : 'rgba(255,255,255,0.1)',
+          cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
+        }}
+      >
+        <div style={{
+          width: '16px', height: '16px', borderRadius: '50%',
+          background: on ? '#fff' : '#71717a',
+          position: 'absolute', top: '2px',
+          left: on ? '18px' : '2px',
+          transition: 'left 0.2s',
+        }} />
       </div>
     </div>
   )
