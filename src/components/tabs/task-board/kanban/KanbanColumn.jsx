@@ -29,6 +29,11 @@ export default function KanbanColumn({ stage, tasks }) {
         transition: 'background 0.15s',
       }}>
         <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+          {tasks.length === 0 && (
+            <div style={{ padding: '16px 8px', textAlign: 'center', fontSize: '11px', color: '#71717a' }}>
+              No tasks yet
+            </div>
+          )}
           {tasks.map((task) =>
             stage === 'suggestions'
               ? <SuggestionCard key={task.id} task={task} />
