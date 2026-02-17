@@ -1,6 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import { useCRM } from '../../../../context/CRMContext'
+import { useApp } from '../../../../context/AppContext'
+import { WORKER_PROXY_URL } from '../../../../config/api'
 import EmptyState from '../../../shared/EmptyState'
+import ContactActivityTimeline from './ContactActivityTimeline'
 
 const TAG_COLORS = {
   'VIP Client': { color: '#4ade80', bg: 'rgba(74,222,128,0.15)' },
@@ -23,8 +26,21 @@ function getInitials(name) {
 
 export default function ContactsView() {
   const { state, actions } = useCRM()
+  const { actions: appActions } = useApp()
   const [search, setSearch] = useState('')
   const [tagFilter, setTagFilter] = useState('')
+  const [expandedContact, setExpandedContact] = useState(null)
+  const [detailTab, setDetailTab] = useState('info')
+
+  const handleDial = useCallback((lead) => {
+    if (!lead.phone) return
+    appActions.addToast({ id: Date.now(), type: 'info', message: `Dialing ${lead.name}...` })
+    fetch(`${WORKER_PROXY_URL}/api/dial`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ number: lead.phone, name: lead.name }),
+    }).catch(() => {})
+  }, [appActions])
 
   const filteredLeads = useMemo(() => {
     let leads = [...state.leads]
@@ -144,8 +160,8 @@ export default function ContactsView() {
             {paginatedLeads.map(lead => {
               const tagStyle = lead.tags?.[0] ? TAG_COLORS[lead.tags[0]] || { color: '#71717a', bg: 'rgba(113,113,122,0.15)' } : null
               return (
+                <div key={lead.id}>
                 <div
-                  key={lead.id}
                   style={{
                     display: 'grid',
                     gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 1fr 80px',
@@ -155,6 +171,7 @@ export default function ContactsView() {
                     transition: 'background 0.15s',
                     alignItems: 'center',
                   }}
+                  onClick={() => { setExpandedContact(expandedContact === lead.id ? null : lead.id); setDetailTab('info') }}
                   onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
                   onMouseOut={(e) => { e.currentTarget.style.background = 'transparent' }}
                 >
@@ -181,7 +198,20 @@ export default function ContactsView() {
                   </div>
                   <span style={{ fontSize: '12px', color: '#a1a1aa' }}>{lead.carrier || '—'}</span>
                   <span style={{ fontSize: '12px', color: '#a1a1aa' }}>{lead.email || '—'}</span>
-                  <span style={{ fontSize: '12px', color: '#a1a1aa' }}>{lead.phone || '—'}</span>
+                  <span style={{ fontSize: '12px', color: '#a1a1aa', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {lead.phone || '—'}
+                    {lead.phone && (
+                      <span
+                        onClick={(e) => { e.stopPropagation(); handleDial(lead) }}
+                        title={`Call ${lead.name}`}
+                        style={{ cursor: 'pointer', fontSize: '14px', opacity: 0.7, transition: 'opacity 0.15s' }}
+                        onMouseOver={(e) => { e.currentTarget.style.opacity = '1' }}
+                        onMouseOut={(e) => { e.currentTarget.style.opacity = '0.7' }}
+                      >
+                        📞
+                      </span>
+                    )}
+                  </span>
                   <span>
                     {lead.tags?.[0] && tagStyle ? (
                       <span style={{
@@ -201,6 +231,49 @@ export default function ContactsView() {
                       ? formatDate(lead.lastContact)
                       : lead.createdAt ? formatDate(lead.createdAt) : '—'}
                   </span>
+                </div>
+                {expandedContact === lead.id && (
+                  <div style={{
+                    gridColumn: '1 / -1',
+                    padding: '16px 20px',
+                    background: 'rgba(0,212,255,0.02)',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  }}>
+                    {/* Detail tabs */}
+                    <div style={{ display: 'flex', gap: '4px', marginBottom: '16px' }}>
+                      {['info', 'activity'].map(tab => (
+                        <button
+                          key={tab}
+                          onClick={(e) => { e.stopPropagation(); setDetailTab(tab) }}
+                          style={{
+                            padding: '5px 14px', borderRadius: '6px', fontSize: '11px', fontWeight: 500,
+                            border: '1px solid ' + (detailTab === tab ? 'rgba(0,212,255,0.3)' : 'transparent'),
+                            background: detailTab === tab ? 'rgba(0,212,255,0.1)' : 'transparent',
+                            color: detailTab === tab ? '#00d4ff' : '#71717a',
+                            cursor: 'pointer', textTransform: 'capitalize',
+                          }}
+                        >
+                          {tab === 'activity' ? '📋 Activity Timeline' : 'ℹ️ Info'}
+                        </button>
+                      ))}
+                    </div>
+
+                    {detailTab === 'info' ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', fontSize: '12px' }}>
+                        <div><span style={{ color: '#71717a' }}>Email:</span> <span style={{ color: '#e4e4e7' }}>{lead.email || '—'}</span></div>
+                        <div><span style={{ color: '#71717a' }}>Phone:</span> <span style={{ color: '#e4e4e7' }}>{lead.phone || '—'}</span>
+                          {lead.phone && <span onClick={(e) => { e.stopPropagation(); handleDial(lead) }} style={{ cursor: 'pointer', marginLeft: '6px' }}>📞</span>}
+                        </div>
+                        <div><span style={{ color: '#71717a' }}>Company:</span> <span style={{ color: '#e4e4e7' }}>{lead.carrier || '—'}</span></div>
+                        <div><span style={{ color: '#71717a' }}>Stage:</span> <span style={{ color: '#e4e4e7' }}>{lead.stage || '—'}</span></div>
+                        <div><span style={{ color: '#71717a' }}>Tags:</span> <span style={{ color: '#e4e4e7' }}>{lead.tags?.join(', ') || '—'}</span></div>
+                        <div><span style={{ color: '#71717a' }}>Value:</span> <span style={{ color: '#e4e4e7' }}>{lead.value || lead.premium ? `$${lead.value || lead.premium}` : '—'}</span></div>
+                      </div>
+                    ) : (
+                      <ContactActivityTimeline contactId={lead.id} />
+                    )}
+                  </div>
+                )}
                 </div>
               )
             })}

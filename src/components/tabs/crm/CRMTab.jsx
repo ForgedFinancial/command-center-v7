@@ -9,6 +9,7 @@ import CRMDashboard from './dashboard/CRMDashboard'
 import PipelineView from './pipeline/PipelineView'
 import ContactsView from './contacts/ContactsView'
 import CRMSettings from './settings/CRMSettings'
+import FollowUpQueue from './contacts/FollowUpQueue'
 import EmptyState from '../../shared/EmptyState'
 import LoadingSpinner from '../../shared/LoadingSpinner'
 
@@ -68,6 +69,9 @@ export default function CRMTab() {
     case CRM_VIEWS.CONTACTS:
     case 'contacts':
       return <ContactsView />
+    case CRM_VIEWS.FOLLOW_UP:
+    case 'follow-up':
+      return <FollowUpQueue />
     case CRM_VIEWS.SETTINGS:
     case 'settings':
       return <CRMSettings />

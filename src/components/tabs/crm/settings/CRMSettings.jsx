@@ -144,6 +144,7 @@ export default function CRMSettings() {
             <NotificationToggle label="Deal stage changes" defaultOn />
             <NotificationToggle label="Stale deal warnings" defaultOn />
             <NotificationToggle label="Weekly pipeline digest" defaultOn={false} />
+            <NotificationToggle label="Send task updates to Telegram" defaultOn storageKey="telegramNotifications" />
           </div>
         </div>
 
@@ -224,8 +225,19 @@ export default function CRMSettings() {
   )
 }
 
-function NotificationToggle({ label, defaultOn = true }) {
-  const [on, setOn] = useState(defaultOn)
+function NotificationToggle({ label, defaultOn = true, storageKey = null }) {
+  const [on, setOn] = useState(() => {
+    if (storageKey) {
+      const stored = localStorage.getItem(storageKey)
+      if (stored !== null) return stored !== 'false'
+    }
+    return defaultOn
+  })
+  const toggle = () => {
+    const next = !on
+    setOn(next)
+    if (storageKey) localStorage.setItem(storageKey, String(next))
+  }
   return (
     <div style={{
       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -233,7 +245,7 @@ function NotificationToggle({ label, defaultOn = true }) {
     }}>
       <span style={{ fontSize: '13px', color: '#e4e4e7' }}>{label}</span>
       <div
-        onClick={() => setOn(!on)}
+        onClick={toggle}
         style={{
           width: '36px', height: '20px', borderRadius: '10px',
           background: on ? '#00d4ff' : 'rgba(255,255,255,0.1)',

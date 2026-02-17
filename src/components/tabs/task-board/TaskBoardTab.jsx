@@ -28,7 +28,37 @@ export default function TaskBoardTab() {
   )
 }
 
+function BackToBoardButton() {
+  const { actions } = useTaskBoard()
+  return (
+    <button
+      onClick={() => actions.setView('board')}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
+        padding: '6px 14px',
+        marginBottom: '16px',
+        borderRadius: '8px',
+        border: '1px solid rgba(255,255,255,0.1)',
+        background: 'rgba(255,255,255,0.04)',
+        color: '#a1a1aa',
+        fontSize: '12px',
+        fontWeight: 500,
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+      }}
+      onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(0,212,255,0.08)'; e.currentTarget.style.color = '#00d4ff'; e.currentTarget.style.borderColor = 'rgba(0,212,255,0.3)' }}
+      onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#a1a1aa'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
+    >
+      ← Back to Board
+    </button>
+  )
+}
+
 function ViewContent({ view, loading }) {
+  const showBackButton = view !== 'board' && view !== TASK_BOARD_VIEWS.BOARD
+
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', padding: '48px' }}>
@@ -37,34 +67,43 @@ function ViewContent({ view, loading }) {
     )
   }
 
-  switch (view) {
-    case TASK_BOARD_VIEWS.BOARD:
-    case 'board':
-      return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <KanbanHeader />
-          <KanbanBoard />
-        </div>
-      )
-    case TASK_BOARD_VIEWS.CALENDAR:
-    case 'calendar':
-      return <CalendarView />
-    case TASK_BOARD_VIEWS.PHONE:
-    case 'phone':
-      return <PhoneView />
-    case TASK_BOARD_VIEWS.MESSAGES:
-    case 'messages':
-      return <MessagesView />
-    case TASK_BOARD_VIEWS.PROJECTS:
-    case 'projects':
-      return <ProjectsView />
-    case TASK_BOARD_VIEWS.TASKS:
-    case 'tasks':
-      return <TasksListView />
-    case TASK_BOARD_VIEWS.DOCUMENTS:
-    case 'documents':
-      return <DocumentsView />
-    default:
-      return null
-  }
+  const content = (() => {
+    switch (view) {
+      case TASK_BOARD_VIEWS.BOARD:
+      case 'board':
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <KanbanHeader />
+            <KanbanBoard />
+          </div>
+        )
+      case TASK_BOARD_VIEWS.CALENDAR:
+      case 'calendar':
+        return <CalendarView />
+      case TASK_BOARD_VIEWS.PHONE:
+      case 'phone':
+        return <PhoneView />
+      case TASK_BOARD_VIEWS.MESSAGES:
+      case 'messages':
+        return <MessagesView />
+      case TASK_BOARD_VIEWS.PROJECTS:
+      case 'projects':
+        return <ProjectsView />
+      case TASK_BOARD_VIEWS.TASKS:
+      case 'tasks':
+        return <TasksListView />
+      case TASK_BOARD_VIEWS.DOCUMENTS:
+      case 'documents':
+        return <DocumentsView />
+      default:
+        return null
+    }
+  })()
+
+  return (
+    <>
+      {showBackButton && <BackToBoardButton />}
+      {content}
+    </>
+  )
 }

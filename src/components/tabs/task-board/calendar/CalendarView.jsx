@@ -1,4 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
+import { WORKER_PROXY_URL } from '../../../../config/api'
+import EmptyState from '../../../shared/EmptyState'
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const VIEWS = ['Month', 'Week', 'Day']
@@ -6,10 +8,32 @@ const VIEWS = ['Month', 'Week', 'Day']
 export default function CalendarView() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState('Month')
-  const [events] = useState([]) // empty — no fake data
+  const [events, setEvents] = useState([])
+  const [syncing, setSyncing] = useState(false)
+  const [lastSync, setLastSync] = useState(null)
+  const [syncError, setSyncError] = useState(false)
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
+
+  const fetchEvents = useCallback(async () => {
+    setSyncing(true)
+    setSyncError(false)
+    try {
+      const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/events`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      setEvents(Array.isArray(data) ? data : data.events || [])
+      setLastSync(new Date())
+    } catch {
+      setSyncError(true)
+      setEvents([])
+    } finally {
+      setSyncing(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchEvents() }, [fetchEvents])
 
   const calendarDays = useMemo(() => {
     const firstDay = new Date(year, month, 1)
@@ -17,16 +41,13 @@ export default function CalendarView() {
     const startOffset = firstDay.getDay()
     const days = []
 
-    // Previous month padding
     const prevMonthLast = new Date(year, month, 0).getDate()
     for (let i = startOffset - 1; i >= 0; i--) {
       days.push({ day: prevMonthLast - i, current: false, date: new Date(year, month - 1, prevMonthLast - i) })
     }
-    // Current month
     for (let d = 1; d <= lastDay.getDate(); d++) {
       days.push({ day: d, current: true, date: new Date(year, month, d) })
     }
-    // Next month padding
     const remaining = 42 - days.length
     for (let d = 1; d <= remaining; d++) {
       days.push({ day: d, current: false, date: new Date(year, month + 1, d) })
@@ -41,7 +62,6 @@ export default function CalendarView() {
 
   const prev = () => setCurrentDate(new Date(year, month - 1, 1))
   const next = () => setCurrentDate(new Date(year, month + 1, 1))
-  const goToday = () => setCurrentDate(new Date())
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -49,6 +69,24 @@ export default function CalendarView() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Calendar</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* iCloud sync indicator */}
+          <button
+            onClick={fetchEvents}
+            disabled={syncing}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '6px 12px', borderRadius: '8px',
+              border: '1px solid ' + (syncError ? 'rgba(239,68,68,0.3)' : lastSync ? 'rgba(74,222,128,0.3)' : 'rgba(255,255,255,0.1)'),
+              background: syncError ? 'rgba(239,68,68,0.08)' : lastSync ? 'rgba(74,222,128,0.08)' : 'rgba(255,255,255,0.04)',
+              color: syncError ? '#ef4444' : lastSync ? '#4ade80' : '#71717a',
+              fontSize: '11px', fontWeight: 500, cursor: syncing ? 'default' : 'pointer',
+              opacity: syncing ? 0.6 : 1,
+            }}
+          >
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: syncError ? '#ef4444' : lastSync ? '#4ade80' : '#f59e0b' }} />
+            {syncing ? 'Syncing...' : syncError ? 'Sync Failed — Retry' : lastSync ? 'Synced with iCloud' : 'Sync Now'}
+          </button>
+
           {/* View toggle */}
           <div style={{ display: 'flex', gap: '2px' }}>
             {VIEWS.map(v => (
@@ -95,6 +133,13 @@ export default function CalendarView() {
           </button>
         </div>
       </div>
+
+      {/* Empty state if no events */}
+      {events.length === 0 && !syncing && (
+        <div style={{ marginBottom: '16px', padding: '12px 16px', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', fontSize: '12px', color: '#71717a', textAlign: 'center' }}>
+          No events — connect iCloud calendar to sync
+        </div>
+      )}
 
       {/* Day headers */}
       <div style={{

@@ -206,6 +206,7 @@ function CRMSubTabs() {
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'pipeline', label: 'Pipeline' },
     { id: 'contacts', label: 'Contacts' },
+    { id: 'follow-up', label: 'Follow-Ups' },
     { id: 'settings', label: 'Settings' },
   ]
 

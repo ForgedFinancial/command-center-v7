@@ -1,4 +1,18 @@
 import { createContext, useContext, useReducer, useCallback } from 'react'
+import { WORKER_PROXY_URL } from '../config/api'
+
+// Fire-and-forget telegram notification
+function notifyTelegram(event, taskTitle, details = {}) {
+  try {
+    const enabled = localStorage.getItem('telegramNotifications')
+    if (enabled === 'false') return
+    fetch(`${WORKER_PROXY_URL}/api/notifications/telegram`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event, taskTitle, details }),
+    }).catch(() => {}) // fail gracefully
+  } catch { /* ignore */ }
+}
 
 const initialState = {
   activeView: 'board',
@@ -124,9 +138,18 @@ export function TaskBoardProvider({ children }) {
     setDocCategory: useCallback((cat) => dispatch({ type: ActionTypes.SET_DOC_CATEGORY, payload: cat }), []),
     setLoading: useCallback((loading) => dispatch({ type: ActionTypes.SET_LOADING, payload: loading }), []),
     setError: useCallback((error) => dispatch({ type: ActionTypes.SET_ERROR, payload: error }), []),
-    updateTask: useCallback((task) => dispatch({ type: ActionTypes.UPDATE_TASK, payload: task }), []),
-    addTask: useCallback((task) => dispatch({ type: ActionTypes.ADD_TASK, payload: task }), []),
-    removeTask: useCallback((id) => dispatch({ type: ActionTypes.REMOVE_TASK, payload: id }), []),
+    updateTask: useCallback((task) => {
+      dispatch({ type: ActionTypes.UPDATE_TASK, payload: task })
+      notifyTelegram('task_updated', task.title || task.id, { stage: task.stage, priority: task.priority })
+    }, []),
+    addTask: useCallback((task) => {
+      dispatch({ type: ActionTypes.ADD_TASK, payload: task })
+      notifyTelegram('task_created', task.title || 'New Task', { stage: task.stage, priority: task.priority })
+    }, []),
+    removeTask: useCallback((id) => {
+      dispatch({ type: ActionTypes.REMOVE_TASK, payload: id })
+      notifyTelegram('task_removed', id, {})
+    }, []),
     updateProject: useCallback((project) => dispatch({ type: ActionTypes.UPDATE_PROJECT, payload: project }), []),
     addProject: useCallback((project) => dispatch({ type: ActionTypes.ADD_PROJECT, payload: project }), []),
     addDocument: useCallback((doc) => dispatch({ type: ActionTypes.ADD_DOCUMENT, payload: doc }), []),

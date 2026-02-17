@@ -50,6 +50,7 @@ export const CRM_VIEWS = {
   DASHBOARD: 'dashboard',
   PIPELINE: 'pipeline',
   CONTACTS: 'contacts',
+  FOLLOW_UP: 'follow-up',
   CALENDAR: 'calendar',
   SETTINGS: 'settings',
 }

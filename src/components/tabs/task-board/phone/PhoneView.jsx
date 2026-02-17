@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { WORKER_PROXY_URL } from '../../../../config/api'
 import EmptyState from '../../../shared/EmptyState'
 
 const FILTERS = ['All', 'Missed', 'Incoming', 'Outgoing']
@@ -6,7 +7,38 @@ const FILTERS = ['All', 'Missed', 'Incoming', 'Outgoing']
 export default function PhoneView() {
   const [filter, setFilter] = useState('All')
   const [search, setSearch] = useState('')
-  const [calls] = useState([]) // empty — no fake data
+  const [calls, setCalls] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [lastRefresh, setLastRefresh] = useState(null)
+
+  const fetchCalls = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(`${WORKER_PROXY_URL}/api/calls`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      setCalls(Array.isArray(data) ? data : data.calls || [])
+      setLastRefresh(new Date())
+    } catch {
+      setError('Could not fetch call logs')
+      setCalls([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchCalls() }, [fetchCalls])
+
+  const filteredCalls = calls.filter(c => {
+    if (filter !== 'All' && c.type?.toLowerCase() !== filter.toLowerCase()) return false
+    if (search) {
+      const q = search.toLowerCase()
+      return c.name?.toLowerCase().includes(q) || c.number?.includes(q)
+    }
+    return true
+  })
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -14,9 +46,31 @@ export default function PhoneView() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Phone</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {lastRefresh && (
+            <span style={{ fontSize: '10px', color: '#52525b' }}>
+              Updated {lastRefresh.toLocaleTimeString()}
+            </span>
+          )}
+          <button
+            onClick={fetchCalls}
+            disabled={loading}
+            style={{
+              padding: '6px 14px',
+              borderRadius: '8px',
+              border: '1px solid rgba(0,212,255,0.3)',
+              background: 'rgba(0,212,255,0.1)',
+              color: '#00d4ff',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: loading ? 'default' : 'pointer',
+              opacity: loading ? 0.6 : 1,
+            }}
+          >
+            {loading ? '⟳ Refreshing...' : '⟳ Refresh'}
+          </button>
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#71717a' }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4ade80' }} />
-            iPhone Connected
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: calls.length > 0 ? '#4ade80' : '#f59e0b' }} />
+            {calls.length > 0 ? 'iPhone Connected' : 'Waiting for connection'}
           </span>
           <input
             type="text"
@@ -59,12 +113,18 @@ export default function PhoneView() {
         ))}
       </div>
 
-      {/* Table or empty state */}
-      {calls.length === 0 ? (
+      {/* Content */}
+      {error && (
+        <div style={{ padding: '10px 16px', borderRadius: '8px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', fontSize: '12px', marginBottom: '16px' }}>
+          {error}
+        </div>
+      )}
+
+      {filteredCalls.length === 0 ? (
         <EmptyState
           icon="📞"
           title="No Call History"
-          message="Your call log will appear here when connected to your phone."
+          message="Connect Mac node to see call history"
         />
       ) : (
         <div style={{
@@ -90,6 +150,51 @@ export default function PhoneView() {
             <span>Time</span>
             <span>Actions</span>
           </div>
+          {filteredCalls.map((call, i) => (
+            <div
+              key={call.id || i}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '2fr 1.5fr 1fr 1fr 1.5fr 1fr',
+                padding: '12px 16px',
+                borderBottom: '1px solid rgba(255,255,255,0.03)',
+                alignItems: 'center',
+              }}
+            >
+              <span style={{ fontSize: '13px', fontWeight: 500, color: '#e4e4e7' }}>{call.name || 'Unknown'}</span>
+              <span style={{ fontSize: '12px', color: '#a1a1aa' }}>{call.number || '—'}</span>
+              <span style={{
+                fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px',
+                color: call.type === 'missed' ? '#ef4444' : call.type === 'incoming' ? '#4ade80' : '#3b82f6',
+                background: call.type === 'missed' ? 'rgba(239,68,68,0.12)' : call.type === 'incoming' ? 'rgba(74,222,128,0.12)' : 'rgba(59,130,246,0.12)',
+                display: 'inline-block', width: 'fit-content',
+              }}>
+                {call.type || '—'}
+              </span>
+              <span style={{ fontSize: '12px', color: '#a1a1aa' }}>{call.duration || '—'}</span>
+              <span style={{ fontSize: '11px', color: '#71717a' }}>{call.time ? new Date(call.time).toLocaleString() : '—'}</span>
+              <span>
+                {call.number && (
+                  <button
+                    onClick={() => {
+                      fetch(`${WORKER_PROXY_URL}/api/dial`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ number: call.number }),
+                      }).catch(() => {})
+                    }}
+                    style={{
+                      padding: '4px 10px', borderRadius: '6px',
+                      border: '1px solid rgba(74,222,128,0.3)', background: 'rgba(74,222,128,0.1)',
+                      color: '#4ade80', fontSize: '11px', cursor: 'pointer',
+                    }}
+                  >
+                    📞 Call
+                  </button>
+                )}
+              </span>
+            </div>
+          ))}
         </div>
       )}
     </div>

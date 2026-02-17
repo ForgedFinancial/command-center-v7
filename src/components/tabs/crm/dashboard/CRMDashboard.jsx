@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useCRM } from '../../../../context/CRMContext'
-import { CRM_STAGES } from '../../../../config/crm'
+import { CRM_STAGES, CRM_VIEWS } from '../../../../config/crm'
 import EmptyState from '../../../shared/EmptyState'
 
 const STAGE_COLORS = {
@@ -112,6 +112,32 @@ export default function CRMDashboard() {
             <div style={{ fontSize: '28px', fontWeight: 700, color: '#e4e4e7' }}>{kpi.value}</div>
           </div>
         ))}
+      </div>
+
+      {/* Follow-Up Queue Card */}
+      <div
+        onClick={() => actions.setView(CRM_VIEWS.FOLLOW_UP)}
+        style={{
+          padding: '16px 20px',
+          borderRadius: '12px',
+          background: 'rgba(245,158,11,0.06)',
+          border: '1px solid rgba(245,158,11,0.15)',
+          marginBottom: '24px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          transition: 'border-color 0.15s',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '20px' }}>📋</span>
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#e4e4e7' }}>Follow-Up Queue</div>
+            <div style={{ fontSize: '11px', color: '#71717a' }}>View contacts needing follow-up, sorted by priority</div>
+          </div>
+        </div>
+        <span style={{ fontSize: '12px', color: '#f59e0b', fontWeight: 500 }}>View →</span>
       </div>
 
       {/* Pipeline by Stage + Activity */}
