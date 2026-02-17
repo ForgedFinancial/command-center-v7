@@ -17,19 +17,11 @@ export default function CRMTab() {
   const { state, actions } = useCRM()
   const { state: appState } = useApp()
 
-  // Auth check on mount
+  // Fetch CRM data on mount (no separate login — user already authenticated via CC v7)
   useEffect(() => {
     if (appState.activeTab !== TABS.CRM) return
-    if (!state.token) {
-      actions.setAuthLoading(false)
-      return
-    }
-    // Verify token and fetch data
     const init = async () => {
       try {
-        const user = await crmClient.getMe()
-        actions.setUser(user)
-        // Fetch leads
         const leadsRes = await crmClient.getLeads()
         if (Array.isArray(leadsRes)) {
           actions.setLeads(leadsRes)
@@ -37,19 +29,13 @@ export default function CRMTab() {
           actions.setLeads(leadsRes.data)
         }
       } catch (err) {
-        // Token invalid
-        actions.setToken(null)
+        console.warn('CRM data fetch failed:', err.message)
       } finally {
         actions.setAuthLoading(false)
       }
     }
     init()
-  }, [appState.activeTab, state.token])
-
-  // Show login if no token
-  if (!state.token && !state.authLoading) {
-    return <CRMLoginForm />
-  }
+  }, [appState.activeTab])
 
   if (state.authLoading) {
     return (
