@@ -23,7 +23,7 @@ const STAGE_LABELS = {
 }
 
 export default function CRMDashboard() {
-  const { state } = useCRM()
+  const { state, actions } = useCRM()
   const [timeRange, setTimeRange] = useState('all')
   const leads = useMemo(() => filterByPipelineMode(state.leads, state.pipelineMode), [state.leads, state.pipelineMode])
 

@@ -45,16 +45,19 @@ export default function FollowUpQueue() {
           <h2 style={{ margin: '0 0 4px', fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Follow-Up Queue</h2>
           <p style={{ margin: 0, fontSize: '12px', color: '#71717a' }}>Contacts prioritized by days since last contact</p>
         </div>
-        <span style={{ fontSize: '12px', color: '#52525b' }}>{queue.length} contacts</span>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <PipelineModeToggle />
+          <span style={{ fontSize: '12px', color: '#52525b' }}>{filteredQueue.length} contacts</span>
+        </div>
       </div>
 
       {loading ? (
         <div style={{ padding: '24px', textAlign: 'center', color: '#71717a', fontSize: '12px' }}>Loading...</div>
-      ) : queue.length === 0 ? (
+      ) : filteredQueue.length === 0 ? (
         <EmptyState icon="📋" title="No Follow-Ups" message="All contacts are up to date, or connect your CRM to populate this queue." />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {queue.map((contact, i) => {
+          {filteredQueue.map((contact, i) => {
             const daysOverdue = getDaysOverdue(contact.lastContact)
             const urgency = typeof daysOverdue === 'number'
               ? daysOverdue > 14 ? '#ef4444' : daysOverdue > 7 ? '#f59e0b' : '#4ade80'
