@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useCRM } from '../../../../context/CRMContext'
 import { CRM_STAGES, CRM_VIEWS } from '../../../../config/crm'
+import PipelineModeToggle, { filterByPipelineMode } from '../PipelineModeToggle'
 import EmptyState from '../../../shared/EmptyState'
 
 const STAGE_COLORS = {
@@ -24,7 +25,7 @@ const STAGE_LABELS = {
 export default function CRMDashboard() {
   const { state } = useCRM()
   const [timeRange, setTimeRange] = useState('all')
-  const leads = state.leads
+  const leads = useMemo(() => filterByPipelineMode(state.leads, state.pipelineMode), [state.leads, state.pipelineMode])
 
   const stats = useMemo(() => {
     const total = leads.length
@@ -49,9 +50,14 @@ export default function CRMDashboard() {
   if (leads.length === 0) {
     return (
       <div>
-        <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>CRM Dashboard</h2>
-        <p style={{ margin: '0 0 24px', fontSize: '13px', color: '#71717a' }}>Overview of your sales pipeline and key metrics</p>
-        <EmptyState icon="📊" title="No Data Yet" message="Add leads to see your dashboard metrics." />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+          <div>
+            <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>CRM Dashboard</h2>
+            <p style={{ margin: 0, fontSize: '13px', color: '#71717a' }}>Overview of your sales pipeline and key metrics</p>
+          </div>
+          <PipelineModeToggle />
+        </div>
+        <EmptyState icon="📊" title="No Data Yet" message={state.pipelineMode === 'all' ? 'Add leads to see your dashboard metrics.' : `No ${state.pipelineMode} pipeline leads found.`} />
       </div>
     )
   }
@@ -70,7 +76,10 @@ export default function CRMDashboard() {
           <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>CRM Dashboard</h2>
           <p style={{ margin: 0, fontSize: '13px', color: '#71717a' }}>Overview of your sales pipeline and key metrics</p>
         </div>
-        <div style={{ display: 'flex', gap: '2px' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <PipelineModeToggle />
+          <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.08)' }} />
+          <div style={{ display: 'flex', gap: '2px' }}>
           {[['7d', '7 Days'], ['30d', '30 Days'], ['90d', '90 Days'], ['all', 'All Time']].map(([key, label]) => (
             <button
               key={key}
@@ -87,6 +96,7 @@ export default function CRMDashboard() {
               {label}
             </button>
           ))}
+          </div>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useCRM } from '../../../../context/CRMContext'
 import { CRM_STAGES } from '../../../../config/crm'
+import PipelineModeToggle, { filterByPipelineMode } from '../PipelineModeToggle'
 import EmptyState from '../../../shared/EmptyState'
 
 const STAGE_ORDER = ['new_lead', 'contact', 'engaged', 'qualified', 'application', 'sold']
@@ -26,19 +27,24 @@ const STAGE_COLORS = {
 export default function PipelineView() {
   const { state, actions } = useCRM()
 
+  const filteredLeads = useMemo(() => filterByPipelineMode(state.leads, state.pipelineMode), [state.leads, state.pipelineMode])
+
   const columns = useMemo(() => {
     return STAGE_ORDER.map(stage => {
-      const leads = state.leads.filter(l => l.stage === stage)
+      const leads = filteredLeads.filter(l => l.stage === stage)
       const totalValue = leads.reduce((s, l) => s + (l.value || l.premium || 0), 0)
       return { stage, label: STAGE_LABELS[stage], color: STAGE_COLORS[stage], leads, totalValue }
     })
-  }, [state.leads])
+  }, [filteredLeads])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Pipeline</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Pipeline</h2>
+          <PipelineModeToggle />
+        </div>
         <button
           style={{
             padding: '8px 16px',

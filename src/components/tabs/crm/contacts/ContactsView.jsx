@@ -4,6 +4,7 @@ import { useApp } from '../../../../context/AppContext'
 import { WORKER_PROXY_URL } from '../../../../config/api'
 import EmptyState from '../../../shared/EmptyState'
 import ContactActivityTimeline from './ContactActivityTimeline'
+import PipelineModeToggle, { filterByPipelineMode } from '../PipelineModeToggle'
 
 const TAG_COLORS = {
   'VIP Client': { color: '#4ade80', bg: 'rgba(74,222,128,0.15)' },
@@ -43,7 +44,7 @@ export default function ContactsView() {
   }, [appActions])
 
   const filteredLeads = useMemo(() => {
-    let leads = [...state.leads]
+    let leads = filterByPipelineMode([...state.leads], state.pipelineMode)
     if (search) {
       const q = search.toLowerCase()
       leads = leads.filter(l =>
@@ -56,7 +57,7 @@ export default function ContactsView() {
       leads = leads.filter(l => l.tags?.includes(tagFilter))
     }
     return leads.sort((a, b) => new Date(b.lastContact || b.createdAt) - new Date(a.lastContact || a.createdAt))
-  }, [state.leads, search, tagFilter])
+  }, [state.leads, search, tagFilter, state.pipelineMode])
 
   const allTags = useMemo(() => {
     const tags = new Set()
@@ -84,7 +85,10 @@ export default function ContactsView() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Contacts</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Contacts</h2>
+          <PipelineModeToggle />
+        </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <input
             type="text"

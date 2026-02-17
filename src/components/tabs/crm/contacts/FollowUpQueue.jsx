@@ -1,10 +1,13 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useApp } from '../../../../context/AppContext'
+import { useCRM } from '../../../../context/CRMContext'
 import { WORKER_PROXY_URL } from '../../../../config/api'
 import EmptyState from '../../../shared/EmptyState'
+import PipelineModeToggle, { filterByPipelineMode } from '../PipelineModeToggle'
 
 export default function FollowUpQueue() {
   const { actions: appActions } = useApp()
+  const { state: crmState } = useCRM()
   const [queue, setQueue] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -26,6 +29,8 @@ export default function FollowUpQueue() {
       body: JSON.stringify({ number: contact.phone, name: contact.name }),
     }).catch(() => {})
   }, [appActions])
+
+  const filteredQueue = useMemo(() => filterByPipelineMode(queue, crmState.pipelineMode), [queue, crmState.pipelineMode])
 
   const getDaysOverdue = (lastContact) => {
     if (!lastContact) return '—'
