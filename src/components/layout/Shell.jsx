@@ -108,13 +108,7 @@ export default function Shell() {
         tbContext.actions.setView(view)
       }
     } else if (state.activeTab === TABS.CRM) {
-      // Phone and Messages live on Task Board — switch tab
-      if (id === 'phone' || id === 'messages') {
-        appActions.setTab(TABS.TASK_BOARD)
-        tbContext.actions.setView(TB_SIDEBAR_VIEW_MAP[id])
-      } else {
-        crmContext.actions.setView(id)
-      }
+      crmContext.actions.setView(id)
     }
   }, [state.activeTab, tbContext.actions, appActions, crmContext.actions])
 

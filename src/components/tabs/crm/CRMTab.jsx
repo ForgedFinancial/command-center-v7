@@ -10,6 +10,8 @@ import PipelineView from './pipeline/PipelineView'
 import ContactsView from './contacts/ContactsView'
 import CRMSettings from './settings/CRMSettings'
 import FollowUpQueue from './contacts/FollowUpQueue'
+import PhoneView from '../task-board/phone/PhoneView'
+import MessagesView from '../task-board/messages/MessagesView'
 import EmptyState from '../../shared/EmptyState'
 import LoadingSpinner from '../../shared/LoadingSpinner'
 
@@ -61,6 +63,10 @@ export default function CRMTab() {
     case CRM_VIEWS.SETTINGS:
     case 'settings':
       return <CRMSettings />
+    case 'phone':
+      return <PhoneView />
+    case 'messages':
+      return <MessagesView />
     case CRM_VIEWS.CALENDAR:
     case 'calendar':
       return <EmptyState icon="📅" title="Calendar" message="Calendar view coming in Phase 5" />
