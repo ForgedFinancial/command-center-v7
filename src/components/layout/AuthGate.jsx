@@ -183,6 +183,8 @@ function WelcomeScreen({ onComplete }) {
 
 export default function AuthGate({ onAuth }) {
   const [accessCode, setAccessCode] = useState('')
+  const [showAccessCode, setShowAccessCode] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -331,17 +333,19 @@ export default function AuthGate({ onAuth }) {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '12px' }}>
+          <div style={{ marginBottom: '12px', position: 'relative' }}>
             <input
-              type="password"
+              type={showAccessCode ? 'text' : 'password'}
               value={accessCode}
               onChange={(e) => setAccessCode(e.target.value)}
               placeholder="Access Code"
               autoFocus
               disabled={lockoutRemaining > 0}
+              autoComplete="off"
               style={{
                 width: '100%',
                 padding: '14px 18px',
+                paddingRight: '48px',
                 fontSize: '16px',
                 backgroundColor: 'rgba(255,255,255,0.05)',
                 border: `1px solid ${error ? '#ef4444' : 'rgba(255,255,255,0.1)'}`,
@@ -353,6 +357,10 @@ export default function AuthGate({ onAuth }) {
                 opacity: lockoutRemaining > 0 ? 0.5 : 1,
               }}
             />
+            <button type="button" onClick={() => setShowAccessCode(!showAccessCode)} style={{
+              position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
+              background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '16px', padding: '4px',
+            }}>{showAccessCode ? '🙈' : '👁️'}</button>
           </div>
           <div style={{ marginBottom: '12px' }}>
             <input
@@ -377,9 +385,9 @@ export default function AuthGate({ onAuth }) {
               }}
             />
           </div>
-          <div style={{ marginBottom: '16px' }}>
+          <div style={{ marginBottom: '16px', position: 'relative' }}>
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
@@ -388,6 +396,7 @@ export default function AuthGate({ onAuth }) {
               style={{
                 width: '100%',
                 padding: '14px 18px',
+                paddingRight: '48px',
                 fontSize: '16px',
                 backgroundColor: 'rgba(255,255,255,0.05)',
                 border: `1px solid ${error ? '#ef4444' : 'rgba(255,255,255,0.1)'}`,
@@ -399,6 +408,10 @@ export default function AuthGate({ onAuth }) {
                 opacity: lockoutRemaining > 0 ? 0.5 : 1,
               }}
             />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} style={{
+              position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
+              background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '16px', padding: '4px',
+            }}>{showPassword ? '🙈' : '👁️'}</button>
             <style>{`
               @keyframes shake {
                 0%, 100% { transform: translateX(0); }
