@@ -9,7 +9,7 @@ import { TABS, DEFAULT_THEME } from '../config/constants'
 
 const initialState = {
   // Navigation
-  activeTab: TABS.TASK_MANAGER,
+  activeTab: TABS.TASK_BOARD,
   theme: DEFAULT_THEME,
 
   // Connection Status

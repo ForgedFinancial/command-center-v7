@@ -10,7 +10,7 @@ import { TABS, TAB_LABELS } from '../../config/constants'
 export default function TabBar() {
   const { state, actions } = useApp()
 
-  const tabs = [TABS.TASK_MANAGER, TABS.ORG_CHART, TABS.WORKSPACES]
+  const tabs = [TABS.TASK_BOARD, TABS.ORG_CHART, TABS.WORKSPACES, TABS.CRM]
 
   return (
     <nav

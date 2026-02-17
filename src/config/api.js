@@ -41,6 +41,22 @@ export const ENDPOINTS = {
   agentLogFile: (agentId, filename) => `/api/agents/${agentId}/logs/${filename}`,
   pipelineState: '/api/pipeline/state',
 
+  // Task Board
+  taskboardTasks: '/api/taskboard/tasks',
+  taskboardTask: (id) => `/api/taskboard/tasks/${id}`,
+  taskboardTaskMove: (id) => `/api/taskboard/tasks/${id}/move`,
+  taskboardTaskApprove: (id) => `/api/taskboard/tasks/${id}/approve`,
+  taskboardTaskDecline: (id) => `/api/taskboard/tasks/${id}/decline`,
+  taskboardSuggestions: '/api/taskboard/suggestions',
+  taskboardSuggestionApprove: (id) => `/api/taskboard/suggestions/${id}/approve`,
+  taskboardSuggestionDismiss: (id) => `/api/taskboard/suggestions/${id}/dismiss`,
+  taskboardProjects: '/api/taskboard/projects',
+  taskboardProject: (id) => `/api/taskboard/projects/${id}`,
+  taskboardDocuments: '/api/taskboard/documents',
+  taskboardDocument: (id) => `/api/taskboard/documents/${id}`,
+  taskboardDocumentUpload: '/api/taskboard/documents/upload',
+  taskboardLessons: '/api/taskboard/lessons',
+
   // Auth
   authSetup: '/api/auth/setup',
   authLogin: '/api/auth/login',

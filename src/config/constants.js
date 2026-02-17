@@ -4,15 +4,17 @@
 // ========================================
 
 export const TABS = {
-  TASK_MANAGER: 'task-manager',
+  TASK_BOARD: 'task-board',
   ORG_CHART: 'org-chart',
   WORKSPACES: 'workspaces',
+  CRM: 'crm',
 }
 
 export const TAB_LABELS = {
-  [TABS.TASK_MANAGER]: 'Task Manager',
+  [TABS.TASK_BOARD]: 'Task Board',
   [TABS.ORG_CHART]: 'Org Chart',
   [TABS.WORKSPACES]: 'Workspaces',
+  [TABS.CRM]: 'CRM',
 }
 
 export const AGENT_HIERARCHY = {

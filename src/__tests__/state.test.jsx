@@ -42,7 +42,7 @@ function wrapper({ children }) {
 describe('AppContext via useApp hook', () => {
   it('has correct initial activeTab', () => {
     const { result } = renderHook(() => useApp(), { wrapper })
-    expect(result.current.state.activeTab).toBe('task-manager')
+    expect(result.current.state.activeTab).toBe('task-board')
   })
 
   it('SET_TAB updates activeTab', () => {
@@ -88,7 +88,7 @@ describe('AppContext via useApp hook', () => {
     const stateBefore = result.current.state
     // Dispatching unknown action — actions object doesn't expose raw dispatch,
     // but we can verify state is stable after known ops
-    act(() => result.current.actions.setTab('task-manager'))
+    act(() => result.current.actions.setTab('task-board'))
     expect(result.current.state.activeTab).toBe(stateBefore.activeTab)
   })
 
