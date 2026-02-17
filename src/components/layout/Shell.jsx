@@ -35,12 +35,13 @@ const TASK_BOARD_SIDEBAR = [
 ]
 
 const CRM_SIDEBAR = [
-  { id: 'calendar', icon: '📅', label: 'Calendar' },
+  { id: 'dashboard', icon: '📊', label: 'Dashboard' },
+  { id: 'pipeline', icon: '🔀', label: 'Pipeline' },
+  { id: 'contacts', icon: '👥', label: 'Contacts' },
+  { id: 'follow-up', icon: '🔔', label: 'Follow-Ups' },
   { id: 'phone', icon: '📞', label: 'Phone' },
   { id: 'messages', icon: '💬', label: 'Messages' },
-  { id: 'projects', icon: '📁', label: 'Projects' },
-  { id: 'tasks', icon: '✅', label: 'Tasks' },
-  { id: 'documents', icon: '📄', label: 'Documents' },
+  { id: 'settings', icon: '⚙️', label: 'Settings' },
 ]
 
 // Map sidebar item clicks to view changes
@@ -95,10 +96,10 @@ export default function Shell() {
       return null // board view = no sidebar highlight
     }
     if (state.activeTab === TABS.CRM) {
-      return null // CRM sub-tabs are in content area, not sidebar
+      return crmContext.state.activeView || 'dashboard'
     }
     return null
-  }, [state.activeTab, tbContext.state.activeView])
+  }, [state.activeTab, tbContext.state.activeView, crmContext.state.activeView])
 
   const handleSidebarSelect = useCallback((id) => {
     if (state.activeTab === TABS.TASK_BOARD) {
@@ -107,14 +108,15 @@ export default function Shell() {
         tbContext.actions.setView(view)
       }
     } else if (state.activeTab === TABS.CRM) {
-      // CRM sidebar items share the same nav — switch to Task Board with appropriate view
-      const view = TB_SIDEBAR_VIEW_MAP[id]
-      if (view) {
+      // Phone and Messages live on Task Board — switch tab
+      if (id === 'phone' || id === 'messages') {
         appActions.setTab(TABS.TASK_BOARD)
-        tbContext.actions.setView(view)
+        tbContext.actions.setView(TB_SIDEBAR_VIEW_MAP[id])
+      } else {
+        crmContext.actions.setView(id)
       }
     }
-  }, [state.activeTab, tbContext.actions, appActions])
+  }, [state.activeTab, tbContext.actions, appActions, crmContext.actions])
 
   if (state.isInitialLoad) {
     return (
@@ -182,8 +184,7 @@ export default function Shell() {
             />
           )}
           <main style={{ flex: 1, overflow: 'auto', padding: '24px' }}>
-            {/* CRM sub-tabs */}
-            {state.activeTab === TABS.CRM && <CRMSubTabs />}
+            {/* CRM navigation moved to sidebar */}
             <TabContent activeTab={state.activeTab} />
           </main>
         </div>
