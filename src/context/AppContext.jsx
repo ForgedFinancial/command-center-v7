@@ -9,7 +9,7 @@ import { TABS, DEFAULT_THEME } from '../config/constants'
 
 const initialState = {
   // Navigation
-  activeTab: TABS.TASK_BOARD,
+  activeTab: (typeof localStorage !== 'undefined' && localStorage.getItem('cc7-active-tab')) || TABS.TASK_BOARD,
   theme: DEFAULT_THEME,
 
   // Connection Status
@@ -110,6 +110,7 @@ const ActionTypes = {
 function appReducer(state, action) {
   switch (action.type) {
     case ActionTypes.SET_TAB:
+      try { localStorage.setItem('cc7-active-tab', action.payload) } catch {}
       return { ...state, activeTab: action.payload }
 
     case ActionTypes.SET_THEME:

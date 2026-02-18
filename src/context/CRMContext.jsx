@@ -12,7 +12,7 @@ const initialState = {
   // Calendar
   calendar: { events: [], view: 'month', currentDate: new Date().toISOString(), providers: [], settings: {} },
   // UI
-  activeView: 'dashboard',
+  activeView: (typeof localStorage !== 'undefined' && localStorage.getItem('cc7-crm-view')) || 'dashboard',
   pipelineMode: 'new',
   filters: {
     search: '', stages: [], leadTypes: [], tags: [],
@@ -83,6 +83,7 @@ function reducer(state, action) {
     case ActionTypes.SET_CALENDAR:
       return { ...state, calendar: { ...state.calendar, ...action.payload } }
     case ActionTypes.SET_VIEW:
+      try { localStorage.setItem('cc7-crm-view', action.payload) } catch {}
       return { ...state, activeView: action.payload }
     case ActionTypes.SET_PIPELINE_MODE:
       return { ...state, pipelineMode: action.payload }

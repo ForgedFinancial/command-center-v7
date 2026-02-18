@@ -10,6 +10,47 @@ import LeadDetailModal from './LeadDetailModal'
 
 const LEAD_TYPES = ['FEX', 'VETERANS', 'MORTGAGE PROTECTION', 'TRUCKERS', 'IUL']
 
+// ========================================
+// Card Field Customization System
+// ========================================
+const DEFAULT_CARD_FIELDS = ['leadType', 'dob', 'phone', 'faceAmount', 'beneficiary']
+const ALWAYS_SHOWN = ['name', 'createdAt']
+const MAX_CUSTOM_FIELDS = 10
+
+const ALL_CARD_FIELDS = [
+  { key: 'leadType', label: 'Lead Type Badge', icon: '🏷️' },
+  { key: 'dob', label: 'DOB + Age', icon: '🎂' },
+  { key: 'phone', label: 'Phone Number', icon: '📞' },
+  { key: 'email', label: 'Email', icon: '✉️' },
+  { key: 'state', label: 'State', icon: '📍' },
+  { key: 'faceAmount', label: 'Coverage/Amount', icon: '💰' },
+  { key: 'beneficiary', label: 'Beneficiary Name', icon: '👤' },
+  { key: 'beneficiaryRelation', label: 'Beneficiary Relationship', icon: '🤝' },
+  { key: 'gender', label: 'Gender', icon: '⚧' },
+  { key: 'healthHistory', label: 'Health History', icon: '🏥' },
+  { key: 'hasLifeInsurance', label: 'Has Life Insurance', icon: '🛡️' },
+  { key: 'favoriteHobby', label: 'Favorite Hobby', icon: '🎯' },
+  { key: 'adSource', label: 'Ad Source', icon: '📢' },
+  { key: 'platform', label: 'Platform', icon: '📱' },
+  { key: 'age', label: 'Age (standalone)', icon: '🎂' },
+  { key: 'premium', label: 'Premium', icon: '💵' },
+  { key: 'carrier', label: 'Carrier', icon: '🏢' },
+  { key: 'policyNumber', label: 'Policy Number', icon: '📋' },
+  { key: 'notes', label: 'Notes', icon: '📝' },
+]
+
+function loadCardFields() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('cc7-card-fields'))
+    if (Array.isArray(saved) && saved.length > 0) return saved
+  } catch {}
+  return DEFAULT_CARD_FIELDS
+}
+
+function saveCardFields(fields) {
+  localStorage.setItem('cc7-card-fields', JSON.stringify(fields))
+}
+
 const STAGE_ORDER = ['new_lead', 'contact', 'engaged', 'qualified', 'application', 'sold']
 
 const STAGE_LABELS = {
@@ -38,6 +79,8 @@ export default function PipelineView() {
   const [selectedLead, setSelectedLead] = useState(null)
   const [dragOverStage, setDragOverStage] = useState(null)
   const [showNewLead, setShowNewLead] = useState(false)
+  const [showCardSettings, setShowCardSettings] = useState(false)
+  const [cardFields, setCardFields] = useState(loadCardFields)
   const dragLeadId = useRef(null)
 
   const filteredLeads = useMemo(() => {
@@ -159,6 +202,17 @@ export default function PipelineView() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Pipeline</h2>
+          <button
+            onClick={() => setShowCardSettings(true)}
+            title="Customize card fields"
+            style={{
+              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '8px', padding: '6px 10px', cursor: 'pointer',
+              fontSize: '14px', color: '#a1a1aa', transition: 'all 0.15s',
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#e4e4e7' }}
+            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#a1a1aa' }}
+          >⚙️</button>
           <PipelineModeToggle />
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -239,6 +293,7 @@ export default function PipelineView() {
                     key={lead.id}
                     lead={lead}
                     color={col.color}
+                    cardFields={cardFields}
                     onDragStart={onDragStart}
                     onClick={() => { setSelectedLead(lead); markSeen(lead.id) }}
                     onDelete={handleDeleteLead}
@@ -257,6 +312,11 @@ export default function PipelineView() {
 
       {showUpload && <UploadLeadsModal onClose={() => setShowUpload(false)} actions={actions} />}
       {showNewLead && <NewLeadModal onClose={() => setShowNewLead(false)} actions={actions} />}
+      {showCardSettings && <CardFieldSettings
+        fields={cardFields}
+        onSave={(f) => { setCardFields(f); saveCardFields(f); setShowCardSettings(false) }}
+        onClose={() => setShowCardSettings(false)}
+      />}
       {selectedLead && (
         <LeadDetailModal
           lead={selectedLead}
@@ -269,8 +329,82 @@ export default function PipelineView() {
   )
 }
 
-function LeadCard({ lead, color, onDragStart, onClick, onDelete, onPhoneCall, onVideoCall, onMessage, isNew, onMarkSeen }) {
+// Field renderer for dynamic card fields
+function renderCardField(key, lead) {
   const age = lead.dob ? Math.floor((Date.now() - new Date(lead.dob).getTime()) / 31557600000) : null
+  const fieldStyle = { fontSize: '11px', color: '#71717a', marginBottom: '2px' }
+
+  switch (key) {
+    case 'leadType':
+      if (!lead.leadType && !lead.lead_type) return null
+      return (
+        <div key={key} style={fieldStyle}>
+          <span style={{
+            padding: '1px 5px', borderRadius: '4px', background: 'rgba(168,85,247,0.15)',
+            color: '#a855f7', fontSize: '10px', fontWeight: 600,
+          }}>{lead.leadType || lead.lead_type}</span>
+        </div>
+      )
+    case 'dob':
+      if (!lead.dob) return null
+      return <div key={key} style={fieldStyle}>🎂 {lead.dob}{age != null ? ` (${age})` : ''}</div>
+    case 'phone':
+      if (!lead.phone) return null
+      return <div key={key} style={{ fontSize: '12px', color: '#f59e0b', fontWeight: 700, marginBottom: '2px' }}>📞 {formatPhone(lead.phone)}</div>
+    case 'email':
+      if (!lead.email) return null
+      return <div key={key} style={fieldStyle}>✉️ {lead.email}</div>
+    case 'state':
+      if (!lead.state) return null
+      return <div key={key} style={fieldStyle}>📍 {lead.state}</div>
+    case 'faceAmount':
+      if (!lead.faceAmount && !lead.face_amount) return null
+      return <div key={key} style={fieldStyle}>💰 {lead.faceAmount || lead.face_amount} coverage</div>
+    case 'beneficiary':
+      if (!lead.beneficiary) return null
+      return <div key={key} style={fieldStyle}>👤 {lead.beneficiary}</div>
+    case 'beneficiaryRelation':
+      if (!lead.beneficiaryRelation && !lead.beneficiary_relation) return null
+      return <div key={key} style={fieldStyle}>🤝 {lead.beneficiaryRelation || lead.beneficiary_relation}</div>
+    case 'gender':
+      if (!lead.gender) return null
+      return <div key={key} style={fieldStyle}>⚧ {lead.gender}</div>
+    case 'healthHistory':
+      if (!lead.healthHistory && !lead.health_history) return null
+      return <div key={key} style={fieldStyle}>🏥 {lead.healthHistory || lead.health_history}</div>
+    case 'hasLifeInsurance':
+      if (lead.hasLifeInsurance == null && lead.has_life_insurance == null) return null
+      return <div key={key} style={fieldStyle}>🛡️ {(lead.hasLifeInsurance || lead.has_life_insurance) ? 'Yes' : 'No'}</div>
+    case 'favoriteHobby':
+      if (!lead.favoriteHobby && !lead.favorite_hobby) return null
+      return <div key={key} style={fieldStyle}>🎯 {lead.favoriteHobby || lead.favorite_hobby}</div>
+    case 'adSource':
+      if (!lead.adSource && !lead.ad_source) return null
+      return <div key={key} style={fieldStyle}>📢 {lead.adSource || lead.ad_source}</div>
+    case 'platform':
+      if (!lead.platform) return null
+      return <div key={key} style={fieldStyle}>📱 {lead.platform}</div>
+    case 'age':
+      if (!lead.age && age == null) return null
+      return <div key={key} style={fieldStyle}>🎂 {lead.age || age}</div>
+    case 'premium':
+      if (!lead.premium) return null
+      return <div key={key} style={fieldStyle}>💵 ${Number(lead.premium).toLocaleString()}</div>
+    case 'carrier':
+      if (!lead.carrier) return null
+      return <div key={key} style={fieldStyle}>🏢 {lead.carrier}</div>
+    case 'policyNumber':
+      if (!lead.policyNumber && !lead.policy_number) return null
+      return <div key={key} style={fieldStyle}>📋 {lead.policyNumber || lead.policy_number}</div>
+    case 'notes':
+      if (!lead.notes) return null
+      return <div key={key} style={fieldStyle}>📝 {lead.notes.length > 50 ? lead.notes.slice(0, 50) + '…' : lead.notes}</div>
+    default:
+      return null
+  }
+}
+
+function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onPhoneCall, onVideoCall, onMessage, isNew, onMarkSeen }) {
   const hoverTimer = useRef(null)
   const [showNew, setShowNew] = useState(isNew)
 
@@ -322,7 +456,7 @@ function LeadCard({ lead, color, onDragStart, onClick, onDelete, onPhoneCall, on
         }}>NEW</span>
       )}
 
-      {/* Delete button — proper trash icon */}
+      {/* Delete button */}
       <button
         onClick={(e) => onDelete(lead.id, lead.name, e)}
         title="Delete lead"
@@ -337,42 +471,15 @@ function LeadCard({ lead, color, onDragStart, onClick, onDelete, onPhoneCall, on
         onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.15)' }}
       >🗑️</button>
 
-      {/* Name */}
+      {/* Name (always shown) */}
       <div style={{ fontSize: '13px', fontWeight: 600, color: '#e4e4e7', marginBottom: '4px', paddingRight: '28px' }}>
         {lead.name || 'Unknown'}
       </div>
 
-      {/* Phone */}
-      {lead.phone && (
-        <div style={{ fontSize: '12px', color: '#f59e0b', fontWeight: 700, marginBottom: '2px' }}>
-          📞 {formatPhone(lead.phone)}
-        </div>
-      )}
+      {/* Dynamic fields in configured order */}
+      {cardFields.map(key => renderCardField(key, lead))}
 
-      {/* Lead Type + DOB/Age */}
-      <div style={{ fontSize: '11px', color: '#71717a', marginBottom: '2px' }}>
-        {lead.leadType && <span style={{
-          padding: '1px 5px', borderRadius: '4px', background: 'rgba(168,85,247,0.15)',
-          color: '#a855f7', fontSize: '10px', fontWeight: 600, marginRight: '6px',
-        }}>{lead.leadType}</span>}
-        {lead.dob && <span>🎂 {lead.dob}{age != null ? ` (${age})` : ''}</span>}
-      </div>
-
-      {/* Face Amount */}
-      {lead.faceAmount && (
-        <div style={{ fontSize: '11px', color: '#71717a', marginBottom: '2px' }}>
-          💰 {lead.faceAmount} coverage
-        </div>
-      )}
-
-      {/* Beneficiary */}
-      {lead.beneficiary && (
-        <div style={{ fontSize: '11px', color: '#71717a', marginBottom: '2px' }}>
-          👤 {lead.beneficiary}
-        </div>
-      )}
-
-      {/* Received Date/Time */}
+      {/* Received Date/Time (always shown) */}
       {lead.createdAt && (
         <div style={{ fontSize: '10px', color: '#f59e0b', marginTop: '4px', fontWeight: 500 }}>
           🕐 {formatLeadDate(lead.createdAt)}
@@ -411,6 +518,113 @@ function LeadCard({ lead, color, onDragStart, onClick, onDelete, onPhoneCall, on
           >💬</button>
         </div>
       )}
+    </div>
+  )
+}
+
+function CardFieldSettings({ fields, onSave, onClose }) {
+  const [selected, setSelected] = useState([...fields])
+
+  const isSelected = (key) => selected.includes(key)
+
+  const toggle = (key) => {
+    if (isSelected(key)) {
+      setSelected(selected.filter(k => k !== key))
+    } else if (selected.length < MAX_CUSTOM_FIELDS) {
+      setSelected([...selected, key])
+    }
+  }
+
+  const moveUp = (idx) => {
+    if (idx <= 0) return
+    const next = [...selected];
+    [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]]
+    setSelected(next)
+  }
+
+  const moveDown = (idx) => {
+    if (idx >= selected.length - 1) return
+    const next = [...selected];
+    [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]]
+    setSelected(next)
+  }
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex',
+      alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+    }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{
+        width: '440px', maxHeight: '80vh', overflow: 'auto',
+        background: '#1a1a2e', borderRadius: '16px',
+        border: '1px solid rgba(255,255,255,0.08)', padding: '24px',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#e4e4e7' }}>⚙️ Card Fields</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#71717a', fontSize: '18px', cursor: 'pointer' }}>✕</button>
+        </div>
+        <div style={{ fontSize: '11px', color: '#71717a', marginBottom: '12px' }}>
+          Select up to {MAX_CUSTOM_FIELDS} fields. Name and Date/Time are always shown. Drag order = card order.
+        </div>
+
+        {/* Selected fields with reorder */}
+        {selected.length > 0 && (
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active Fields ({selected.length}/{MAX_CUSTOM_FIELDS})</div>
+            {selected.map((key, idx) => {
+              const field = ALL_CARD_FIELDS.find(f => f.key === key)
+              if (!field) return null
+              return (
+                <div key={key} style={{
+                  display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px',
+                  background: 'rgba(0,212,255,0.06)', border: '1px solid rgba(0,212,255,0.15)',
+                  borderRadius: '8px', marginBottom: '4px',
+                }}>
+                  <span style={{ fontSize: '13px' }}>{field.icon}</span>
+                  <span style={{ flex: 1, fontSize: '12px', color: '#e4e4e7', fontWeight: 500 }}>{field.label}</span>
+                  <button onClick={() => moveUp(idx)} disabled={idx === 0} style={{
+                    background: 'none', border: 'none', color: idx === 0 ? '#333' : '#71717a',
+                    cursor: idx === 0 ? 'default' : 'pointer', fontSize: '12px', padding: '2px 4px',
+                  }}>▲</button>
+                  <button onClick={() => moveDown(idx)} disabled={idx === selected.length - 1} style={{
+                    background: 'none', border: 'none', color: idx === selected.length - 1 ? '#333' : '#71717a',
+                    cursor: idx === selected.length - 1 ? 'default' : 'pointer', fontSize: '12px', padding: '2px 4px',
+                  }}>▼</button>
+                  <button onClick={() => toggle(key)} style={{
+                    background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '12px', padding: '2px 4px',
+                  }}>✕</button>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Available fields */}
+        <div style={{ fontSize: '11px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Available Fields</div>
+        {ALL_CARD_FIELDS.filter(f => !isSelected(f.key)).map(field => (
+          <div key={field.key} onClick={() => toggle(field.key)} style={{
+            display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px',
+            background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: '8px', marginBottom: '4px', cursor: selected.length >= MAX_CUSTOM_FIELDS ? 'default' : 'pointer',
+            opacity: selected.length >= MAX_CUSTOM_FIELDS ? 0.4 : 1,
+          }}>
+            <span style={{ fontSize: '13px' }}>{field.icon}</span>
+            <span style={{ flex: 1, fontSize: '12px', color: '#a1a1aa' }}>{field.label}</span>
+            <span style={{ fontSize: '11px', color: '#4ade80' }}>+ Add</span>
+          </div>
+        ))}
+
+        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }}>
+          <button onClick={onClose} style={{
+            padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
+            background: 'transparent', color: '#a1a1aa', fontSize: '12px', cursor: 'pointer',
+          }}>Cancel</button>
+          <button onClick={() => { onSave(selected.length > 0 ? selected : DEFAULT_CARD_FIELDS) }} style={{
+            padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.3)',
+            background: 'rgba(0,212,255,0.15)', color: '#00d4ff', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+          }}>Save</button>
+        </div>
+      </div>
     </div>
   )
 }
