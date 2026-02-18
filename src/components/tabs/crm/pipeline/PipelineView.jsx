@@ -345,7 +345,7 @@ function LeadCard({ lead, color, onDragStart, onClick, onDelete, onPhoneCall, on
       {/* Phone */}
       {lead.phone && (
         <div style={{ fontSize: '11px', color: '#a1a1aa', marginBottom: '2px' }}>
-          📞 {lead.phone}
+          📞 {formatPhone(lead.phone)}
         </div>
       )}
 
@@ -739,6 +739,14 @@ function NewLeadModal({ onClose, actions }) {
       </div>
     </div>
   )
+}
+
+function formatPhone(phone) {
+  if (!phone) return ''
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length === 11) return `${digits[0]}-${digits.slice(1,4)}-${digits.slice(4,7)}-${digits.slice(7)}`
+  if (digits.length === 10) return `1-${digits.slice(0,3)}-${digits.slice(3,6)}-${digits.slice(6)}`
+  return phone
 }
 
 function formatLeadDate(dateStr) {

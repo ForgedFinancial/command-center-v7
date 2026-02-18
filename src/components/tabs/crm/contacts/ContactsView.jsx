@@ -9,6 +9,14 @@ import PipelineModeToggle, { filterByPipelineMode } from '../PipelineModeToggle'
 import DataSourceToggle from '../../../shared/DataSourceToggle'
 import { useDataSource } from '../../../../hooks/useDataSource'
 
+function formatPhone(phone) {
+  if (!phone) return ''
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length === 11) return `${digits[0]}-${digits.slice(1,4)}-${digits.slice(4,7)}-${digits.slice(7)}`
+  if (digits.length === 10) return `1-${digits.slice(0,3)}-${digits.slice(3,6)}-${digits.slice(6)}`
+  return phone
+}
+
 const LEAD_TYPES = ['FEX', 'VETERANS', 'MORTGAGE PROTECTION', 'TRUCKERS', 'IUL']
 
 const TAG_COLORS = {
@@ -37,7 +45,7 @@ const ALL_COLUMNS = [
   { id: 'lastName', label: 'Last Name', width: '1fr', accessor: l => l.lastName || l.name?.split(' ').slice(1).join(' ') || '—' },
   { id: 'company', label: 'Company', width: '1.5fr', accessor: l => l.carrier || '—' },
   { id: 'email', label: 'Email', width: '1.5fr', accessor: l => l.email || '—' },
-  { id: 'phone', label: 'Phone', width: '1fr', accessor: l => l.phone || '—' },
+  { id: 'phone', label: 'Phone', width: '1fr', accessor: l => formatPhone(l.phone) || '—' },
   { id: 'state', label: 'State', width: '0.6fr', accessor: l => l.state || l.customFields?.state || '—' },
   { id: 'dob', label: 'DOB', width: '0.8fr', accessor: l => l.dob || '—' },
   { id: 'age', label: 'Age', width: '0.5fr', accessor: l => l.dob ? Math.floor((Date.now() - new Date(l.dob).getTime()) / 31557600000).toString() : '—' },
@@ -405,7 +413,7 @@ export default function ContactsView() {
                     if (col.id === 'phone') {
                       return (
                         <span key={col.id} style={{ fontSize: '12px', color: '#a1a1aa', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          {lead.phone || '—'}
+                          {formatPhone(lead.phone) || '—'}
                           {lead.phone && (
                             <span onClick={(e) => { e.stopPropagation(); handleDial(lead) }}
                               title={`Call ${lead.name}`}
@@ -478,7 +486,7 @@ export default function ContactsView() {
                     {detailTab === 'info' ? (
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', fontSize: '12px' }}>
                         <div><span style={{ color: '#71717a' }}>Email:</span> <span style={{ color: '#e4e4e7' }}>{lead.email || '—'}</span></div>
-                        <div><span style={{ color: '#71717a' }}>Phone:</span> <span style={{ color: '#e4e4e7' }}>{lead.phone || '—'}</span>
+                        <div><span style={{ color: '#71717a' }}>Phone:</span> <span style={{ color: '#e4e4e7' }}>{formatPhone(lead.phone) || '—'}</span>
                           {lead.phone && <span onClick={(e) => { e.stopPropagation(); handleDial(lead) }} style={{ cursor: 'pointer', marginLeft: '6px' }}>📞</span>}
                         </div>
                         <div><span style={{ color: '#71717a' }}>Company:</span> <span style={{ color: '#e4e4e7' }}>{lead.carrier || '—'}</span></div>
