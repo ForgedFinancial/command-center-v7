@@ -13,8 +13,8 @@ const LEAD_TYPES = ['FEX', 'VETERANS', 'MORTGAGE PROTECTION', 'TRUCKERS', 'IUL']
 // ========================================
 // Card Field Customization System
 // ========================================
-const DEFAULT_CARD_FIELDS = ['leadType', 'dob', 'phone', 'faceAmount', 'beneficiary']
-const ALWAYS_SHOWN = ['name', 'createdAt']
+const DEFAULT_CARD_FIELDS = ['leadType', 'dob', 'phone', 'faceAmount', 'beneficiary', 'createdAt']
+const ALWAYS_SHOWN = ['name']
 const MAX_CUSTOM_FIELDS = 10
 
 const ALL_CARD_FIELDS = [
@@ -37,6 +37,7 @@ const ALL_CARD_FIELDS = [
   { key: 'carrier', label: 'Carrier', icon: '🏢' },
   { key: 'policyNumber', label: 'Policy Number', icon: '📋' },
   { key: 'notes', label: 'Notes', icon: '📝' },
+  { key: 'createdAt', label: 'Date/Time Requested', icon: '🕐' },
 ]
 
 function loadCardFields() {
@@ -399,6 +400,9 @@ function renderCardField(key, lead) {
     case 'notes':
       if (!lead.notes) return null
       return <div key={key} style={fieldStyle}>📝 {lead.notes.length > 50 ? lead.notes.slice(0, 50) + '…' : lead.notes}</div>
+    case 'createdAt':
+      if (!lead.createdAt) return null
+      return <div key={key} style={{ fontSize: '10px', color: '#f59e0b', marginBottom: '2px', fontWeight: 500 }}>🕐 {formatLeadDate(lead.createdAt)}</div>
     default:
       return null
   }
@@ -484,17 +488,9 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
       {/* Dynamic fields in configured order */}
       {cardFields.map(key => renderCardField(key, lead))}
 
-      {/* Received Date/Time (always shown) */}
-      {lead.createdAt && (
-        <div style={{ fontSize: '10px', color: '#f59e0b', marginTop: '4px', fontWeight: 500 }}>
-          🕐 {formatLeadDate(lead.createdAt)}
-        </div>
-      )}
-
-      {/* Time ago + Value */}
-      <div style={{ fontSize: '10px', color: '#52525b', marginTop: '2px', display: 'flex', justifyContent: 'space-between' }}>
-        <span>{lead.createdAt ? timeAgo(lead.createdAt) : ''}</span>
-        {(lead.value || lead.premium) ? <span>${(lead.value || lead.premium).toLocaleString()}</span> : null}
+      {/* Time ago */}
+      <div style={{ fontSize: '10px', color: '#52525b', marginTop: '2px' }}>
+        {lead.createdAt ? timeAgo(lead.createdAt) : ''}
       </div>
 
       {/* Action Buttons — Phone, Video, Message */}
