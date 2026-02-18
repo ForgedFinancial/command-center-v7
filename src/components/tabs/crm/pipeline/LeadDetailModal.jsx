@@ -163,7 +163,7 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#e4e4e7' }}>{form.name || 'Lead'}</h2>
-                  {form.premium && Number(form.premium) > 0 && (
+                  {Number(form.premium) > 0 && (
                     <span style={{ fontSize: '14px', fontWeight: 700, color: '#4ade80' }}>
                       (${(Number(form.premium) * 12).toLocaleString()})
                     </span>
