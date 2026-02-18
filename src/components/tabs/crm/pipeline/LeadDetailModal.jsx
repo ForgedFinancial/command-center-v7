@@ -16,7 +16,7 @@ const STAGE_OPTIONS = [
 ]
 
 const LEAD_TYPES = ['FEX', 'IUL', 'TRUCKER', 'TERM', 'WHOLE', 'ANNUITY', 'MORTGAGE PROTECTION', 'VETERANS']
-const RELATIONSHIPS = ['', 'Spouse', 'Child', 'Parent', 'Sibling', 'Estate', 'Trust', 'Other']
+const RELATIONSHIPS = ['', 'Spouse', 'Child', 'My Children', 'Parent', 'Sibling', 'Estate', 'Trust', 'Friend', 'Other']
 const PAYMENT_METHODS = ['', 'Bank Draft', 'Credit Card', 'Check', 'Money Order']
 
 const inputStyle = {
