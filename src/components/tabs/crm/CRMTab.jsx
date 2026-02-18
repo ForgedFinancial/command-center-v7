@@ -71,7 +71,22 @@ export default function CRMTab() {
       }
     }
     init()
-    return () => { cancelled = true }
+
+    // Auto-refresh leads every 15 seconds
+    const pollInterval = setInterval(async () => {
+      if (cancelled) return
+      try {
+        const leadsRes = await crmClient.getLeads({ limit: 1000 })
+        if (cancelled) return
+        let rawLeads = []
+        if (Array.isArray(leadsRes)) rawLeads = leadsRes
+        else if (leadsRes.leads) rawLeads = leadsRes.leads
+        else if (leadsRes.data) rawLeads = leadsRes.data
+        actions.setLeads(rawLeads.map(normalizeLead))
+      } catch { /* silent refresh failure */ }
+    }, 15000)
+
+    return () => { cancelled = true; clearInterval(pollInterval) }
   }, [appState.activeTab])
 
   switch (state.activeView) {
