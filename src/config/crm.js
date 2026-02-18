@@ -19,7 +19,7 @@ export const CRM_STAGE_ORDER = ['new_lead', 'contact', 'engaged', 'qualified', '
 export const CRM_STAGE_CONFIG = {
   new_lead:     { label: 'New Lead',          color: '#00d4ff', bg: 'rgba(0,212,255,0.12)' },
   contact:      { label: 'Contacted',         color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
-  engaged:      { label: 'Engaged Interest',  color: '#3b82f6', bg: 'rgba(59,130,246,0.12)' },
+  engaged:      { label: 'Engaged',  color: '#3b82f6', bg: 'rgba(59,130,246,0.12)' },
   qualified:    { label: 'Qualified',          color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
   proposal:     { label: 'Proposal',           color: '#f97316', bg: 'rgba(249,115,22,0.12)' },
   sold:         { label: 'Won',                color: '#4ade80', bg: 'rgba(74,222,128,0.12)' },

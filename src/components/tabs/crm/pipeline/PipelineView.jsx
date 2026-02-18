@@ -56,7 +56,7 @@ const STAGE_ORDER = ['new_lead', 'contact', 'engaged', 'qualified', 'proposal', 
 const STAGE_LABELS = {
   new_lead: 'New Leads',
   contact: 'Contacted',
-  engaged: 'Engaged Interest',
+  engaged: 'Engaged',
   qualified: 'Qualified',
   proposal: 'Proposal',
   sold: 'Won',
@@ -743,7 +743,7 @@ function UploadLeadsModal({ onClose, actions }) {
             color: '#e4e4e7', fontSize: '13px', outline: 'none',
           }}>
             {['new_lead', 'contact', 'engaged', 'qualified', 'proposal', 'sold'].map(s => (
-              <option key={s} value={s}>{{new_lead:'New Leads',contact:'Contacted',engaged:'Engaged Interest',qualified:'Qualified',proposal:'Proposal',sold:'Won'}[s]}</option>
+              <option key={s} value={s}>{{new_lead:'New Leads',contact:'Contacted',engaged:'Engaged',qualified:'Qualified',proposal:'Proposal',sold:'Won'}[s]}</option>
             ))}
           </select>
         </div>

@@ -11,7 +11,7 @@ const TABS = [
 ]
 
 const STAGE_OPTIONS = [
-  ['new_lead', 'New Lead'], ['contact', 'Contacted'], ['engaged', 'Engaged Interest'],
+  ['new_lead', 'New Lead'], ['contact', 'Contacted'], ['engaged', 'Engaged'],
   ['qualified', 'Qualified'], ['proposal', 'Proposal'], ['sold', 'Won'],
 ]
 
