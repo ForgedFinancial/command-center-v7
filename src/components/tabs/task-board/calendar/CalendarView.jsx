@@ -92,7 +92,7 @@ export default function CalendarView() {
   const openCreateModal = (date) => {
     const d = date || new Date()
     const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-    setForm({ title: '', date: dateStr, startTime: '09:00', endTime: '10:00', calendar: calendars[0]?.name || 'Work', location: '', description: '' })
+    setForm({ title: '', date: dateStr, startTime: '09:00', endTime: '10:00', calendar: calendars[0]?.name || 'Work', location: '', description: '', alerts: [15] })
     setModalDate(d)
     setShowModal(true)
   }
@@ -113,6 +113,7 @@ export default function CalendarView() {
           calendar: form.calendar,
           location: form.location || undefined,
           description: form.description || undefined,
+          alerts: form.alerts?.filter(a => a !== null && a !== undefined) || [],
         }),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -280,6 +281,36 @@ export default function CalendarView() {
               <Field label="Description">
                 <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   placeholder="Optional" rows={2} style={{ ...inputStyle, resize: 'vertical' }} />
+              </Field>
+
+              <Field label="Alerts">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {(form.alerts || []).map((alert, idx) => (
+                    <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <select value={alert} onChange={e => {
+                        const newAlerts = [...form.alerts]; newAlerts[idx] = parseInt(e.target.value, 10)
+                        setForm(f => ({ ...f, alerts: newAlerts }))
+                      }} style={{ ...inputStyle, flex: 1 }}>
+                        <option value={0}>At time of event</option>
+                        <option value={5}>5 minutes before</option>
+                        <option value={10}>10 minutes before</option>
+                        <option value={15}>15 minutes before</option>
+                        <option value={30}>30 minutes before</option>
+                        <option value={60}>1 hour before</option>
+                        <option value={120}>2 hours before</option>
+                        <option value={1440}>1 day before</option>
+                        <option value={2880}>2 days before</option>
+                        <option value={10080}>1 week before</option>
+                      </select>
+                      <button onClick={() => setForm(f => ({ ...f, alerts: f.alerts.filter((_, i) => i !== idx) }))}
+                        style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '16px', cursor: 'pointer', padding: '4px' }}>✕</button>
+                    </div>
+                  ))}
+                  <button onClick={() => setForm(f => ({ ...f, alerts: [...(f.alerts || []), 15] }))}
+                    style={{ alignSelf: 'flex-start', background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#00d4ff', fontSize: '12px', padding: '4px 12px', cursor: 'pointer' }}>
+                    + Add Alert
+                  </button>
+                </div>
               </Field>
             </div>
 
