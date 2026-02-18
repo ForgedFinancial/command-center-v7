@@ -92,7 +92,7 @@ export default function PipelineView() {
   const columns = useMemo(() => {
     return STAGE_ORDER.map(stage => {
       const leads = filteredLeads.filter(l => l.stage === stage)
-      const totalValue = leads.reduce((s, l) => s + (l.value || l.premium || 0), 0)
+      const totalValue = leads.reduce((s, l) => s + (Number(l.premium) > 0 ? Number(l.premium) * 12 : 0), 0)
       return { stage, label: STAGE_LABELS[stage], color: STAGE_COLORS[stage], leads, totalValue }
     })
   }, [filteredLeads])
