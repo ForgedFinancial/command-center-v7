@@ -51,14 +51,14 @@ function saveCardFields(fields) {
   localStorage.setItem('cc7-card-fields', JSON.stringify(fields))
 }
 
-const STAGE_ORDER = ['new_lead', 'contact', 'engaged', 'qualified', 'application', 'sold']
+const STAGE_ORDER = ['new_lead', 'contact', 'engaged', 'qualified', 'proposal', 'sold']
 
 const STAGE_LABELS = {
   new_lead: 'New Leads',
   contact: 'Contacted',
-  engaged: 'Qualified',
-  qualified: 'Proposal',
-  application: 'Negotiation',
+  engaged: 'Engaged Interest',
+  qualified: 'Qualified',
+  proposal: 'Proposal',
   sold: 'Won',
 }
 
@@ -67,7 +67,7 @@ const STAGE_COLORS = {
   contact: '#a855f7',
   engaged: '#00d4ff',
   qualified: '#f59e0b',
-  application: '#f97316',
+  proposal: '#f97316',
   sold: '#4ade80',
 }
 
@@ -742,8 +742,8 @@ function UploadLeadsModal({ onClose, actions }) {
             border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
             color: '#e4e4e7', fontSize: '13px', outline: 'none',
           }}>
-            {['new_lead', 'contact', 'engaged', 'qualified', 'application', 'sold'].map(s => (
-              <option key={s} value={s}>{{new_lead:'New Leads',contact:'Contacted',engaged:'Qualified',qualified:'Proposal',application:'Negotiation',sold:'Won'}[s]}</option>
+            {['new_lead', 'contact', 'engaged', 'qualified', 'proposal', 'sold'].map(s => (
+              <option key={s} value={s}>{{new_lead:'New Leads',contact:'Contacted',engaged:'Engaged Interest',qualified:'Qualified',proposal:'Proposal',sold:'Won'}[s]}</option>
             ))}
           </select>
         </div>

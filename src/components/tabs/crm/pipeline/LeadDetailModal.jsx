@@ -11,8 +11,8 @@ const TABS = [
 ]
 
 const STAGE_OPTIONS = [
-  ['new_lead', 'New Lead'], ['contact', 'Contact'], ['engaged', 'Engaged Interest'],
-  ['qualified', 'Qualified Interest'], ['application', 'Application Process'], ['sold', 'Sold'],
+  ['new_lead', 'New Lead'], ['contact', 'Contacted'], ['engaged', 'Engaged Interest'],
+  ['qualified', 'Qualified'], ['proposal', 'Proposal'], ['sold', 'Won'],
 ]
 
 const LEAD_TYPES = ['FEX', 'IUL', 'TRUCKER', 'TERM', 'WHOLE', 'ANNUITY', 'MORTGAGE PROTECTION', 'VETERANS']
