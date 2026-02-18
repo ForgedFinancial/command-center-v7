@@ -344,7 +344,7 @@ function LeadCard({ lead, color, onDragStart, onClick, onDelete, onPhoneCall, on
 
       {/* Phone */}
       {lead.phone && (
-        <div style={{ fontSize: '11px', color: '#a1a1aa', marginBottom: '2px' }}>
+        <div style={{ fontSize: '12px', color: '#f59e0b', fontWeight: 700, marginBottom: '2px' }}>
           📞 {formatPhone(lead.phone)}
         </div>
       )}
