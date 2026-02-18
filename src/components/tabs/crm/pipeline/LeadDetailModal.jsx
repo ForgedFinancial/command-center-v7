@@ -79,7 +79,20 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
     setSaving(true)
     try {
       const { id, ...data } = form
-      await crmClient.updateLead(lead.id, data)
+      // Convert camelCase to snake_case for D1 Worker API
+      const snakeData = {}
+      const camelToSnake = {
+        leadType: 'lead_type', faceAmount: 'face_amount', policyNumber: 'policy_number',
+        draftDate: 'draft_date', paymentMethod: 'payment_method', bankName: 'bank_name',
+        beneficiaryRelation: 'beneficiary_relation', beneficiary2Relation: 'beneficiary2_relation',
+        lastContact: 'last_contact', nextFollowup: 'next_followup', customFields: 'custom_fields',
+        followUp: 'next_followup',
+      }
+      for (const [k, v] of Object.entries(data)) {
+        if (v === undefined) continue
+        snakeData[camelToSnake[k] || k] = v
+      }
+      await crmClient.updateLead(lead.id, snakeData)
       onUpdate({ ...form, id: lead.id })
     } catch (e) {
       console.error('Save failed:', e)
