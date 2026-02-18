@@ -132,7 +132,7 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
     <div style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex',
       alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-    }} onClick={onClose}>
+    }}>
       <div onClick={e => e.stopPropagation()} style={{
         width: '640px', maxHeight: '85vh', overflow: 'auto',
         background: '#1a1a2e', borderRadius: '16px',

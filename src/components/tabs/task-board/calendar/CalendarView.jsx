@@ -291,7 +291,7 @@ export default function CalendarView() {
       {showModal && (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
-        }} onClick={() => setShowModal(false)}>
+        }}>
           <div onClick={e => e.stopPropagation()} style={{
             background: '#18181b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px',
             padding: '28px', width: '420px', maxWidth: '90vw',
