@@ -381,11 +381,23 @@ function UploadLeadsModal({ onClose, actions }) {
       try {
         const text = ev.target.result
         const lines = text.trim().split('\n')
-        const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, '').replace(/\s+/g, '_'))
+        // Proper CSV parsing that handles quoted commas (e.g. "$15,000")
+        const parseCSVLine = (line) => {
+          const result = []; let current = ''; let inQuotes = false
+          for (let i = 0; i < line.length; i++) {
+            const ch = line[i]
+            if (ch === '"') { if (inQuotes && line[i+1] === '"') { current += '"'; i++ } else { inQuotes = !inQuotes } }
+            else if (ch === ',' && !inQuotes) { result.push(current.trim()); current = '' }
+            else { current += ch }
+          }
+          result.push(current.trim())
+          return result
+        }
+        const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/['"]/g, '').replace(/\s+/g, '_'))
         const rows = lines.slice(1).map(line => {
-          const vals = line.split(',').map(v => v.trim().replace(/['"]/g, ''))
+          const vals = parseCSVLine(line)
           const obj = {}
-          headers.forEach((h, i) => { obj[h] = vals[i] || '' })
+          headers.forEach((h, i) => { obj[h] = (vals[i] || '').replace(/^"|"$/g, '') })
           return obj
         }).filter(r => r.name || r.first_name || r.fullname || r.full_name)
         setPreview({ headers, rows, fileName: file.name })
