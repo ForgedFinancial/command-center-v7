@@ -240,7 +240,7 @@ export default function PipelineView() {
                     lead={lead}
                     color={col.color}
                     onDragStart={onDragStart}
-                    onClick={() => setSelectedLead(lead)}
+                    onClick={() => { setSelectedLead(lead); markSeen(lead.id) }}
                     onDelete={handleDeleteLead}
                     onPhoneCall={handlePhoneCall}
                     onVideoCall={handleVideoCall}
