@@ -70,7 +70,7 @@ export default function CRMDashboard() {
   ]
 
   return (
-    <div>
+    <div style={{ height: '100%', overflowY: 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
         <div>
           <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>CRM Dashboard</h2>

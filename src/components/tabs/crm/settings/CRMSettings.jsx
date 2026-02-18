@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { WORKER_PROXY_URL, ENDPOINTS } from '../../../../config/api'
+import { useThemeContext } from '../../../../context/ThemeContext'
 
 const LEAD_TYPES = ['FEX', 'VETERANS', 'MORTGAGE PROTECTION', 'TRUCKERS', 'IUL']
 
@@ -81,6 +82,9 @@ export default function CRMSettings() {
 
       <div style={{ display: 'flex', gap: '24px' }}>
         <div style={{ flex: 1 }}>
+          {/* Appearance / Theme */}
+          <ThemePicker />
+
           {/* Pipeline Stages */}
           <div style={cardStyle}>
             <h3 style={sectionTitle}>Pipeline Stages</h3>
@@ -335,6 +339,55 @@ function StatusToggle({ active, onChange }) {
         left: active ? '18px' : '2px',
         transition: 'left 0.2s',
       }} />
+    </div>
+  )
+}
+
+function ThemePicker() {
+  const { themeId, selectTheme, themes } = useThemeContext()
+
+  return (
+    <div style={cardStyle}>
+      <h3 style={sectionTitle}>🎨 Appearance</h3>
+      <p style={{ margin: '0 0 16px', fontSize: '12px', color: '#71717a' }}>
+        Choose a background theme for Command Center
+      </p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+        {themes.map(t => {
+          const isActive = t.id === themeId
+          const swatchBg = t.isDefault ? '#0a0a0f' : t.isGradient ? t.value : t.value
+          return (
+            <div
+              key={t.id}
+              onClick={() => selectTheme(t.id)}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{
+                width: '48px', height: '48px', borderRadius: '12px',
+                background: swatchBg,
+                border: isActive ? '3px solid #00d4ff' : '2px solid rgba(255,255,255,0.15)',
+                boxShadow: isActive ? '0 0 12px rgba(0,212,255,0.4)' : 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'all 0.15s',
+                position: 'relative',
+              }}>
+                {isActive && (
+                  <span style={{ fontSize: '18px', color: t.light ? '#000' : '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>✓</span>
+                )}
+              </div>
+              <span style={{
+                fontSize: '10px', color: isActive ? '#00d4ff' : '#71717a',
+                fontWeight: isActive ? 600 : 400, textAlign: 'center', maxWidth: '60px',
+              }}>
+                {t.name}
+              </span>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

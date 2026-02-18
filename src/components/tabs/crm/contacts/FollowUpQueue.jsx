@@ -39,7 +39,7 @@ export default function FollowUpQueue() {
   }
 
   return (
-    <div>
+    <div style={{ height: '100%', overflowY: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div>
           <h2 style={{ margin: '0 0 4px', fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Follow-Up Queue</h2>

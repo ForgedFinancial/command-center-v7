@@ -7,6 +7,7 @@ import { TASK_BOARD_VIEWS } from '../../config/taskboard'
 import { CRM_VIEWS } from '../../config/crm'
 import { useSyncServer } from '../../hooks/useSyncServer'
 import { useAgentStatus } from '../../hooks/useAgentStatus'
+import { useThemeContext } from '../../context/ThemeContext'
 import Logo from '../shared/Logo'
 import TabBar from './TabBar'
 import Sidebar from './Sidebar'
@@ -40,7 +41,7 @@ const CRM_SIDEBAR = [
   { id: 'dashboard', icon: '📊', label: 'Dashboard' },
   { id: 'pipeline', icon: '🔀', label: 'Pipeline' },
   { id: 'contacts', icon: '👥', label: 'Contacts' },
-  { id: 'follow-up', icon: '🔔', label: 'Follow-Ups' },
+  { id: 'calendar', icon: '📅', label: 'Calendar' },
   { id: 'phone', icon: '📞', label: 'Phone' },
   { id: 'messages', icon: '💬', label: 'Messages' },
   { id: 'settings', icon: '⚙️', label: 'Settings' },
@@ -63,6 +64,8 @@ export default function Shell() {
   const [healthOpen, setHealthOpen] = useState(false)
   const toggleHealth = useCallback(() => setHealthOpen(v => !v), [])
   const closeHealth = useCallback(() => setHealthOpen(false), [])
+
+  const { theme } = useThemeContext()
 
   useSyncServer()
   useAgentStatus()
@@ -139,7 +142,10 @@ export default function Shell() {
 
       <div style={{
         height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column',
-        backgroundColor: 'var(--bg-primary)', overflow: 'hidden',
+        ...(theme.isGradient
+          ? { backgroundImage: theme.value, backgroundColor: '#000' }
+          : { backgroundColor: theme.isDefault ? 'var(--bg-primary)' : theme.value }),
+        overflow: 'hidden',
       }}>
         {/* Header — left-aligned tabs next to logo */}
         <header

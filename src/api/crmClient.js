@@ -3,7 +3,7 @@
 // Connects to yncrm-api.danielruh.workers.dev (D1 backend)
 // ========================================
 
-const CRM_API_URL = 'https://yncrm-api.danielruh.workers.dev'
+const CRM_API_URL = '/api/crm'
 
 class CRMClient {
   constructor() {
@@ -28,8 +28,7 @@ class CRMClient {
       ...options.headers,
     }
 
-    const token = this.getToken()
-    if (token) headers['Authorization'] = `Bearer ${token}`
+    // Auth handled server-side by Pages Function proxy
 
     const promise = fetch(fullUrl, { ...options, headers })
       .then(async (res) => {

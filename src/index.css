@@ -93,6 +93,18 @@
   --accent-hover: #1d4ed8;
 }
 
+/* CC7 Background Theme Override (light backgrounds) */
+[data-cc7-light] {
+  --text-primary: #171717;
+  --text-secondary: #525252;
+  --text-muted: #737373;
+  --border-color: rgba(0, 0, 0, 0.12);
+  --bg-secondary: rgba(0, 0, 0, 0.04);
+  --bg-tertiary: rgba(0, 0, 0, 0.06);
+  --bg-card: rgba(255, 255, 255, 0.8);
+  --bg-glass: rgba(0, 0, 0, 0.03);
+}
+
 /* Status Colors */
 :root {
   --status-online: #4ade80;

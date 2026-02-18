@@ -1,8 +1,12 @@
-import { useMemo, useState, useRef } from 'react'
+import { useMemo, useState, useRef, useCallback } from 'react'
 import { useCRM } from '../../../../context/CRMContext'
+import { useApp } from '../../../../context/AppContext'
+import crmClient from '../../../../api/crmClient'
 import { CRM_STAGES } from '../../../../config/crm'
+import { WORKER_PROXY_URL } from '../../../../config/api'
 import PipelineModeToggle, { filterByPipelineMode } from '../PipelineModeToggle'
 import EmptyState from '../../../shared/EmptyState'
+import LeadDetailModal from './LeadDetailModal'
 
 const LEAD_TYPES = ['FEX', 'VETERANS', 'MORTGAGE PROTECTION', 'TRUCKERS', 'IUL']
 
@@ -28,8 +32,13 @@ const STAGE_COLORS = {
 
 export default function PipelineView() {
   const { state, actions } = useCRM()
+  const { actions: appActions } = useApp()
   const [showUpload, setShowUpload] = useState(false)
   const [leadTypeFilter, setLeadTypeFilter] = useState('')
+  const [selectedLead, setSelectedLead] = useState(null)
+  const [dragOverStage, setDragOverStage] = useState(null)
+  const [showNewLead, setShowNewLead] = useState(false)
+  const dragLeadId = useRef(null)
 
   const filteredLeads = useMemo(() => {
     let leads = filterByPipelineMode(state.leads, state.pipelineMode)
@@ -45,6 +54,91 @@ export default function PipelineView() {
     })
   }, [filteredLeads])
 
+  // Drag handlers
+  const onDragStart = (e, leadId) => {
+    dragLeadId.current = leadId
+    e.dataTransfer.effectAllowed = 'move'
+  }
+  const onDragOver = (e, stage) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDragOverStage(stage)
+  }
+  const onDragLeave = () => setDragOverStage(null)
+  const onDrop = async (e, targetStage) => {
+    e.preventDefault()
+    setDragOverStage(null)
+    const leadId = dragLeadId.current
+    if (!leadId) return
+    const lead = state.leads.find(l => l.id === leadId)
+    if (!lead || lead.stage === targetStage) return
+    // Optimistic update
+    actions.updateLead({ id: leadId, stage: targetStage })
+    try {
+      await crmClient.updateLead(leadId, { stage: targetStage })
+    } catch (err) {
+      console.error('Failed to update stage:', err)
+      actions.updateLead({ id: leadId, stage: lead.stage }) // rollback
+    }
+  }
+
+  // Delete handler
+  const handleDeleteLead = (leadId, e) => {
+    if (e) { e.stopPropagation(); e.preventDefault() }
+    if (!confirm('Delete this lead?')) return
+    actions.removeLead(leadId)
+    crmClient.deleteLead(leadId).catch(() => {})
+  }
+
+  // Phone action handlers
+  const handlePhoneCall = useCallback((lead, e) => {
+    if (e) { e.stopPropagation(); e.preventDefault() }
+    if (!lead.phone) return
+    appActions.addToast({ id: Date.now(), type: 'info', message: `📞 Calling ${lead.name}...` })
+    fetch(`${WORKER_PROXY_URL}/api/phone/call`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ number: lead.phone }),
+    }).catch(() => appActions.addToast({ id: Date.now(), type: 'error', message: 'Call failed' }))
+  }, [appActions])
+
+  const handleVideoCall = useCallback((lead, e) => {
+    if (e) { e.stopPropagation(); e.preventDefault() }
+    if (!lead.phone) return
+    appActions.addToast({ id: Date.now(), type: 'info', message: `📹 Starting video call with ${lead.name}...` })
+    fetch(`${WORKER_PROXY_URL}/api/phone/video`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ number: lead.phone }),
+    }).then(r => r.json()).then(data => {
+      if (data.method === 'google-meet') {
+        window.open('https://meet.google.com/new', '_blank')
+        appActions.addToast({ id: Date.now(), type: 'info', message: 'Opening Google Meet...' })
+      }
+    }).catch(() => appActions.addToast({ id: Date.now(), type: 'error', message: 'Video call failed' }))
+  }, [appActions])
+
+  const handleMessage = useCallback((lead, e) => {
+    if (e) { e.stopPropagation(); e.preventDefault() }
+    if (!lead.phone) return
+    // Navigate to CRM Messages view
+    actions.setView('messages')
+    appActions.addToast({ id: Date.now(), type: 'info', message: `💬 Opening messages for ${lead.name}...` })
+    // Also trigger Mac Messages app
+    fetch(`${WORKER_PROXY_URL}/api/phone/message`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ number: lead.phone }),
+    }).catch(() => {})
+  }, [actions, appActions])
+
+  // Modal handlers
+  const handleModalUpdate = (updatedLead) => {
+    actions.updateLead(updatedLead)
+    setSelectedLead(null)
+  }
+  const handleModalDelete = (id) => {
+    actions.removeLead(id)
+    setSelectedLead(null)
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
@@ -58,48 +152,24 @@ export default function PipelineView() {
             value={leadTypeFilter}
             onChange={(e) => setLeadTypeFilter(e.target.value)}
             style={{
-              padding: '8px 12px',
-              borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: 'rgba(255,255,255,0.04)',
-              color: '#a1a1aa',
-              fontSize: '12px',
-              outline: 'none',
-              cursor: 'pointer',
+              padding: '8px 12px', borderRadius: '8px',
+              border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
+              color: '#a1a1aa', fontSize: '12px', outline: 'none', cursor: 'pointer',
             }}
           >
             <option value="">All Lead Types</option>
             {LEAD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
-          <button
-            onClick={() => setShowUpload(true)}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: 'rgba(255,255,255,0.04)',
-              color: '#a1a1aa',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
-            📤 Upload Leads
-          </button>
-          <button
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: '1px solid rgba(0,212,255,0.3)',
-              background: 'rgba(0,212,255,0.1)',
-              color: '#00d4ff',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
-            + New Lead
-          </button>
+          <button onClick={() => setShowUpload(true)} style={{
+            padding: '8px 16px', borderRadius: '8px',
+            border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
+            color: '#a1a1aa', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+          }}>📤 Upload Leads</button>
+          <button onClick={() => setShowNewLead(true)} style={{
+            padding: '8px 16px', borderRadius: '8px',
+            border: '1px solid rgba(0,212,255,0.3)', background: 'rgba(0,212,255,0.1)',
+            color: '#00d4ff', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+          }}>+ New Lead</button>
         </div>
       </div>
 
@@ -107,42 +177,34 @@ export default function PipelineView() {
       {state.leads.length === 0 ? (
         <EmptyState icon="🔀" title="No Leads Yet" message="Add leads to see your pipeline." />
       ) : (
-        <div style={{
-          display: 'flex',
-          gap: '12px',
-          flex: 1,
-          overflowX: 'auto',
-          paddingBottom: '12px',
-        }}>
+        <div style={{ display: 'flex', gap: '12px', flex: 1, overflowX: 'auto', paddingBottom: '12px' }}>
           {columns.map(col => (
-            <div key={col.stage} style={{
-              minWidth: '240px',
-              maxWidth: '240px',
-              flexShrink: 0,
-              display: 'flex',
-              flexDirection: 'column',
-            }}>
+            <div
+              key={col.stage}
+              onDragOver={(e) => onDragOver(e, col.stage)}
+              onDragLeave={onDragLeave}
+              onDrop={(e) => onDrop(e, col.stage)}
+              style={{
+                minWidth: '260px', maxWidth: '260px', flexShrink: 0,
+                display: 'flex', flexDirection: 'column',
+                transition: 'box-shadow 0.15s',
+                boxShadow: dragOverStage === col.stage ? `inset 0 0 0 2px ${col.color}60` : 'none',
+                borderRadius: '10px',
+              }}
+            >
               {/* Column header */}
               <div style={{
-                padding: '12px 14px',
-                borderRadius: '10px 10px 0 0',
+                padding: '12px 14px', borderRadius: '10px 10px 0 0',
                 background: 'rgba(255,255,255,0.03)',
                 borderBottom: `2px solid ${col.color}30`,
-                marginBottom: '0',
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '12px', fontWeight: 600, color: '#e4e4e7' }}>{col.label}</span>
                   {col.leads.length > 0 && (
                     <span style={{
-                      fontSize: '10px',
-                      padding: '2px 8px',
-                      borderRadius: '6px',
-                      background: `${col.color}20`,
-                      color: col.color,
-                      fontWeight: 600,
-                    }}>
-                      {col.leads.length}
-                    </span>
+                      fontSize: '10px', padding: '2px 8px', borderRadius: '6px',
+                      background: `${col.color}20`, color: col.color, fontWeight: 600,
+                    }}>{col.leads.length}</span>
                   )}
                 </div>
                 {col.totalValue > 0 && (
@@ -154,40 +216,22 @@ export default function PipelineView() {
 
               {/* Cards */}
               <div style={{
-                flex: 1,
-                overflowY: 'auto',
-                padding: '8px',
-                background: 'rgba(255,255,255,0.015)',
-                borderRadius: '0 0 10px 10px',
+                flex: 1, overflowY: 'auto', padding: '8px',
+                background: dragOverStage === col.stage ? `${col.color}08` : 'rgba(255,255,255,0.015)',
+                borderRadius: '0 0 10px 10px', transition: 'background 0.15s',
               }}>
                 {col.leads.map(lead => (
-                  <div
+                  <LeadCard
                     key={lead.id}
-                    style={{
-                      padding: '12px 14px',
-                      borderRadius: '8px',
-                      background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(255,255,255,0.06)',
-                      marginBottom: '8px',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s',
-                    }}
-                    onMouseOver={(e) => { e.currentTarget.style.borderColor = `${col.color}40` }}
-                    onMouseOut={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}
-                  >
-                    <div style={{ fontSize: '13px', fontWeight: 500, color: '#e4e4e7', marginBottom: '4px' }}>
-                      {lead.name}
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#71717a' }}>
-                      {lead.leadType || lead.carrier || ''}
-                      {(lead.value || lead.premium) ? ` • $${(lead.value || lead.premium).toLocaleString()}` : ''}
-                    </div>
-                    {lead.lastContact && (
-                      <div style={{ fontSize: '10px', color: '#52525b', marginTop: '4px' }}>
-                        {timeAgo(lead.lastContact)}
-                      </div>
-                    )}
-                  </div>
+                    lead={lead}
+                    color={col.color}
+                    onDragStart={onDragStart}
+                    onClick={() => setSelectedLead(lead)}
+                    onDelete={handleDeleteLead}
+                    onPhoneCall={handlePhoneCall}
+                    onVideoCall={handleVideoCall}
+                    onMessage={handleMessage}
+                  />
                 ))}
               </div>
             </div>
@@ -195,8 +239,125 @@ export default function PipelineView() {
         </div>
       )}
 
-      {/* Upload Leads Modal */}
       {showUpload && <UploadLeadsModal onClose={() => setShowUpload(false)} actions={actions} />}
+      {showNewLead && <NewLeadModal onClose={() => setShowNewLead(false)} actions={actions} />}
+      {selectedLead && (
+        <LeadDetailModal
+          lead={selectedLead}
+          onClose={() => setSelectedLead(null)}
+          onUpdate={handleModalUpdate}
+          onDelete={handleModalDelete}
+        />
+      )}
+    </div>
+  )
+}
+
+function LeadCard({ lead, color, onDragStart, onClick, onDelete, onPhoneCall, onVideoCall, onMessage }) {
+  const age = lead.dob ? Math.floor((Date.now() - new Date(lead.dob).getTime()) / 31557600000) : null
+
+  const actionBtnStyle = {
+    background: 'none', border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: '6px', padding: '4px 8px', cursor: 'pointer',
+    fontSize: '12px', transition: 'all 0.15s', lineHeight: 1,
+  }
+
+  return (
+    <div
+      draggable="true"
+      onDragStart={(e) => onDragStart(e, lead.id)}
+      onClick={onClick}
+      style={{
+        padding: '10px 12px', borderRadius: '8px',
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        marginBottom: '8px', cursor: 'grab',
+        transition: 'all 0.15s', position: 'relative',
+      }}
+      onMouseOver={(e) => { e.currentTarget.style.borderColor = `${color}40` }}
+      onMouseOut={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}
+    >
+      {/* Delete button */}
+      <button
+        onClick={(e) => onDelete(lead.id, e)}
+        title="Delete lead"
+        style={{
+          position: 'absolute', top: '6px', right: '6px',
+          background: 'none', border: 'none', color: '#52525b',
+          fontSize: '12px', cursor: 'pointer', padding: '2px 4px',
+          borderRadius: '4px', lineHeight: 1,
+        }}
+        onMouseOver={(e) => { e.currentTarget.style.color = '#ef4444' }}
+        onMouseOut={(e) => { e.currentTarget.style.color = '#52525b' }}
+      >✕</button>
+
+      {/* Name */}
+      <div style={{ fontSize: '13px', fontWeight: 600, color: '#e4e4e7', marginBottom: '4px', paddingRight: '18px' }}>
+        {lead.name || 'Unknown'}
+      </div>
+
+      {/* Phone */}
+      {lead.phone && (
+        <div style={{ fontSize: '11px', color: '#a1a1aa', marginBottom: '2px' }}>
+          📞 {lead.phone}
+        </div>
+      )}
+
+      {/* Lead Type + DOB/Age */}
+      <div style={{ fontSize: '11px', color: '#71717a', marginBottom: '2px' }}>
+        {lead.leadType && <span style={{
+          padding: '1px 5px', borderRadius: '4px', background: 'rgba(168,85,247,0.15)',
+          color: '#a855f7', fontSize: '10px', fontWeight: 600, marginRight: '6px',
+        }}>{lead.leadType}</span>}
+        {lead.dob && <span>🎂 {lead.dob}{age != null ? ` (${age})` : ''}</span>}
+      </div>
+
+      {/* Face Amount */}
+      {lead.faceAmount && (
+        <div style={{ fontSize: '11px', color: '#71717a', marginBottom: '2px' }}>
+          💰 {lead.faceAmount} coverage
+        </div>
+      )}
+
+      {/* Beneficiary */}
+      {lead.beneficiary && (
+        <div style={{ fontSize: '11px', color: '#71717a', marginBottom: '2px' }}>
+          👤 {lead.beneficiary}
+        </div>
+      )}
+
+      {/* Time + Value */}
+      <div style={{ fontSize: '10px', color: '#52525b', marginTop: '4px', display: 'flex', justifyContent: 'space-between' }}>
+        <span>{lead.createdAt ? timeAgo(lead.createdAt) : ''}</span>
+        {(lead.value || lead.premium) ? <span>${(lead.value || lead.premium).toLocaleString()}</span> : null}
+      </div>
+
+      {/* Action Buttons — Phone, Video, Message */}
+      {lead.phone && (
+        <div style={{ display: 'flex', gap: '4px', marginTop: '8px', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '8px' }}>
+          <button
+            onClick={(e) => onPhoneCall(lead, e)}
+            title="Phone call"
+            style={{ ...actionBtnStyle, color: '#4ade80' }}
+            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(74,222,128,0.1)'; e.currentTarget.style.borderColor = 'rgba(74,222,128,0.3)' }}
+            onMouseOut={(e) => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
+          >📞</button>
+          <button
+            onClick={(e) => onVideoCall(lead, e)}
+            title="Video call"
+            style={{ ...actionBtnStyle, color: '#00d4ff' }}
+            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(0,212,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(0,212,255,0.3)' }}
+            onMouseOut={(e) => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
+          >📹</button>
+          <button
+            onClick={(e) => onMessage(lead, e)}
+            title="Send message"
+            style={{ ...actionBtnStyle, color: '#a855f7' }}
+            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(168,85,247,0.1)'; e.currentTarget.style.borderColor = 'rgba(168,85,247,0.3)' }}
+            onMouseOut={(e) => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
+          >💬</button>
+        </div>
+      )}
     </div>
   )
 }
@@ -210,6 +371,8 @@ function UploadLeadsModal({ onClose, actions }) {
   const [uploading, setUploading] = useState(false)
   const [result, setResult] = useState(null)
 
+  const LEAD_TYPES = ['FEX', 'VETERANS', 'MORTGAGE PROTECTION', 'TRUCKERS', 'IUL']
+
   const handleFile = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -218,17 +381,15 @@ function UploadLeadsModal({ onClose, actions }) {
       try {
         const text = ev.target.result
         const lines = text.trim().split('\n')
-        const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''))
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, '').replace(/\s+/g, '_'))
         const rows = lines.slice(1).map(line => {
           const vals = line.split(',').map(v => v.trim().replace(/['"]/g, ''))
           const obj = {}
           headers.forEach((h, i) => { obj[h] = vals[i] || '' })
           return obj
-        }).filter(r => r.name || r.first_name || r.fullname)
+        }).filter(r => r.name || r.first_name || r.fullname || r.full_name)
         setPreview({ headers, rows, fileName: file.name })
-      } catch {
-        setPreview(null)
-      }
+      } catch { setPreview(null) }
     }
     reader.readAsText(file)
   }
@@ -240,35 +401,16 @@ function UploadLeadsModal({ onClose, actions }) {
       const leads = preview.rows.map(r => ({
         name: r.name || r.fullname || `${r.first_name || ''} ${r.last_name || ''}`.trim(),
         phone: r.phone || r.phone_number || '',
-        email: r.email || '',
-        state: r.state || '',
-        notes: r.notes || '',
-        pipeline,
-        stage,
-        leadType,
-        createdAt: new Date().toISOString(),
+        email: r.email || '', state: r.state || '', notes: r.notes || '',
+        pipeline, stage, leadType, createdAt: new Date().toISOString(),
       }))
-      // POST to API
       try {
-        const res = await fetch('/api/leads/import', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ leads }),
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setResult({ success: true, count: data.imported || leads.length })
-        } else {
-          // API not wired yet — add locally
-          setResult({ success: true, count: leads.length, local: true })
-        }
+        const data = await crmClient.importLeads({ leads })
+        setResult({ success: true, count: data.imported || leads.length })
       } catch {
-        // API not available — show success for local preview
         setResult({ success: true, count: leads.length, local: true })
       }
-    } finally {
-      setUploading(false)
-    }
+    } finally { setUploading(false) }
   }
 
   return (
@@ -285,32 +427,21 @@ function UploadLeadsModal({ onClose, actions }) {
           <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#e4e4e7' }}>Upload Leads</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#71717a', fontSize: '20px', cursor: 'pointer' }}>✕</button>
         </div>
-
-        {/* Pipeline selector */}
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            Assign to Pipeline
-          </label>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Assign to Pipeline</label>
           <div style={{ display: 'flex', gap: '4px' }}>
             {[['new', '🆕 New Leads'], ['aged', '📜 Aged Leads']].map(([val, label]) => (
               <button key={val} onClick={() => setPipeline(val)} style={{
                 flex: 1, padding: '10px', borderRadius: '8px', fontSize: '13px', fontWeight: pipeline === val ? 600 : 400,
                 border: `1px solid ${pipeline === val ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.08)'}`,
                 background: pipeline === val ? 'rgba(0,212,255,0.1)' : 'transparent',
-                color: pipeline === val ? '#00d4ff' : '#71717a',
-                cursor: 'pointer',
-              }}>
-                {label}
-              </button>
+                color: pipeline === val ? '#00d4ff' : '#71717a', cursor: 'pointer',
+              }}>{label}</button>
             ))}
           </div>
         </div>
-
-        {/* Lead Type selector */}
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            Lead Type
-          </label>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Lead Type</label>
           <select value={leadType} onChange={e => setLeadType(e.target.value)} style={{
             width: '100%', padding: '10px 14px', borderRadius: '8px',
             border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
@@ -320,118 +451,225 @@ function UploadLeadsModal({ onClose, actions }) {
             {LEAD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
-
-        {/* Stage selector */}
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            Starting Stage
-          </label>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Starting Stage</label>
           <select value={stage} onChange={e => setStage(e.target.value)} style={{
             width: '100%', padding: '10px 14px', borderRadius: '8px',
             border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
             color: '#e4e4e7', fontSize: '13px', outline: 'none',
           }}>
-            {STAGE_ORDER.map(s => <option key={s} value={s}>{STAGE_LABELS[s]}</option>)}
+            {['new_lead', 'contact', 'engaged', 'qualified', 'application', 'sold'].map(s => (
+              <option key={s} value={s}>{{new_lead:'New Leads',contact:'Contacted',engaged:'Qualified',qualified:'Proposal',application:'Negotiation',sold:'Won'}[s]}</option>
+            ))}
           </select>
         </div>
-
-        {/* File upload */}
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            CSV File
-          </label>
-          <div
-            onClick={() => fileRef.current?.click()}
-            style={{
-              padding: '32px', borderRadius: '10px',
-              border: '2px dashed rgba(255,255,255,0.1)',
-              background: 'rgba(255,255,255,0.02)',
-              textAlign: 'center', cursor: 'pointer',
-              transition: 'border-color 0.2s',
-            }}
-            onMouseOver={e => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.3)'}
-            onMouseOut={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
-          >
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>CSV File</label>
+          <div onClick={() => fileRef.current?.click()} style={{
+            padding: '32px', borderRadius: '10px', border: '2px dashed rgba(255,255,255,0.1)',
+            background: 'rgba(255,255,255,0.02)', textAlign: 'center', cursor: 'pointer',
+          }}>
             <div style={{ fontSize: '28px', marginBottom: '8px' }}>📄</div>
-            <div style={{ fontSize: '13px', color: '#a1a1aa' }}>
-              {preview ? preview.fileName : 'Click to select CSV file'}
-            </div>
-            <div style={{ fontSize: '11px', color: '#52525b', marginTop: '4px' }}>
-              Columns: name, phone, email, state, notes
-            </div>
+            <div style={{ fontSize: '13px', color: '#a1a1aa' }}>{preview ? preview.fileName : 'Click to select CSV file'}</div>
+            <div style={{ fontSize: '11px', color: '#52525b', marginTop: '4px' }}>Columns: name, phone, email, state, notes</div>
             <input ref={fileRef} type="file" accept=".csv" onChange={handleFile} style={{ display: 'none' }} />
           </div>
         </div>
-
-        {/* Preview */}
         {preview && (
           <div style={{ marginBottom: '16px' }}>
-            <div style={{ fontSize: '12px', color: '#4ade80', marginBottom: '8px' }}>
-              ✅ {preview.rows.length} leads found
-            </div>
-            <div style={{
-              maxHeight: '150px', overflow: 'auto', borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.06)', fontSize: '11px',
-            }}>
+            <div style={{ fontSize: '12px', color: '#4ade80', marginBottom: '8px' }}>✅ {preview.rows.length} leads found</div>
+            <div style={{ maxHeight: '150px', overflow: 'auto', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)', fontSize: '11px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    {preview.headers.slice(0, 4).map(h => (
-                      <th key={h} style={{ padding: '6px 10px', textAlign: 'left', color: '#71717a', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {preview.rows.slice(0, 5).map((r, i) => (
-                    <tr key={i}>
-                      {preview.headers.slice(0, 4).map(h => (
-                        <td key={h} style={{ padding: '6px 10px', color: '#a1a1aa', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>{r[h]}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
+                <thead><tr>{preview.headers.slice(0, 4).map(h => (
+                  <th key={h} style={{ padding: '6px 10px', textAlign: 'left', color: '#71717a', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>{h}</th>
+                ))}</tr></thead>
+                <tbody>{preview.rows.slice(0, 5).map((r, i) => (
+                  <tr key={i}>{preview.headers.slice(0, 4).map(h => (
+                    <td key={h} style={{ padding: '6px 10px', color: '#a1a1aa', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>{r[h]}</td>
+                  ))}</tr>
+                ))}</tbody>
               </table>
-              {preview.rows.length > 5 && (
-                <div style={{ padding: '6px 10px', color: '#52525b', fontSize: '10px' }}>
-                  ...and {preview.rows.length - 5} more
-                </div>
-              )}
             </div>
           </div>
         )}
-
-        {/* Result */}
         {result && (
-          <div style={{
-            padding: '12px 16px', borderRadius: '8px', marginBottom: '16px',
-            background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.2)',
-            color: '#4ade80', fontSize: '13px',
-          }}>
-            ✅ {result.count} leads uploaded to {pipeline === 'new' ? 'New' : 'Aged'} pipeline
+          <div style={{ padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.2)', color: '#4ade80', fontSize: '13px' }}>
+            ✅ {result.count} leads uploaded
           </div>
         )}
-
-        {/* Actions */}
         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+          <button onClick={onClose} style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#a1a1aa', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+          <button onClick={handleUpload} disabled={!preview || uploading} style={{
+            padding: '10px 20px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.3)',
+            background: preview ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.04)',
+            color: preview ? '#00d4ff' : '#52525b', fontSize: '13px', fontWeight: 600,
+            cursor: preview ? 'pointer' : 'default', opacity: uploading ? 0.6 : 1,
+          }}>{uploading ? 'Uploading...' : 'Upload'}</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function NewLeadModal({ onClose, actions }) {
+  const [form, setForm] = useState({
+    name: '', phone: '', email: '', state: '', dob: '', age: '',
+    leadType: 'FEX', stage: 'new_lead', pipeline: 'new',
+    faceAmount: '', beneficiary: '', beneficiaryRelation: '',
+    gender: '', notes: '',
+  })
+  const [saving, setSaving] = useState(false)
+
+  const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }))
+
+  const handleSave = async () => {
+    if (!form.name && !form.phone) return
+    setSaving(true)
+    try {
+      const lead = {
+        name: form.name,
+        phone: form.phone,
+        email: form.email,
+        state: form.state,
+        dob: form.dob,
+        age: form.age,
+        lead_type: form.leadType,
+        stage: form.stage,
+        pipeline: form.pipeline,
+        face_amount: form.faceAmount,
+        beneficiary: form.beneficiary,
+        beneficiary_relation: form.beneficiaryRelation,
+        gender: form.gender,
+        notes: form.notes,
+        priority: 'medium',
+        tags: ['Lead', 'Manual'],
+      }
+      const res = await crmClient.createLead(lead)
+      if (res && (res.id || res.lead)) {
+        const newLead = res.lead || res
+        actions.addLead({
+          ...newLead,
+          leadType: form.leadType,
+          faceAmount: form.faceAmount,
+          createdAt: new Date().toISOString(),
+        })
+      }
+      onClose()
+    } catch (err) {
+      console.error('Failed to create lead:', err)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const inputStyle = {
+    width: '100%', padding: '10px 14px', borderRadius: '8px',
+    border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
+    color: '#e4e4e7', fontSize: '13px', outline: 'none',
+  }
+  const labelStyle = {
+    display: 'block', fontSize: '11px', fontWeight: 600, color: '#71717a',
+    marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px',
+  }
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex',
+      alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+    }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{
+        width: '520px', maxHeight: '85vh', overflow: 'auto',
+        background: '#1a1a2e', borderRadius: '16px',
+        border: '1px solid rgba(255,255,255,0.08)', padding: '32px',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#e4e4e7' }}>+ New Lead</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#71717a', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div>
+            <label style={labelStyle}>Full Name *</label>
+            <input style={inputStyle} placeholder="First Last" value={form.name} onChange={e => handleChange('name', e.target.value)} />
+          </div>
+          <div>
+            <label style={labelStyle}>Phone *</label>
+            <input style={inputStyle} placeholder="Phone number" value={form.phone} onChange={e => handleChange('phone', e.target.value)} />
+          </div>
+          <div>
+            <label style={labelStyle}>Email</label>
+            <input style={inputStyle} placeholder="Email" value={form.email} onChange={e => handleChange('email', e.target.value)} />
+          </div>
+          <div>
+            <label style={labelStyle}>State</label>
+            <input style={inputStyle} placeholder="State" value={form.state} onChange={e => handleChange('state', e.target.value)} />
+          </div>
+          <div>
+            <label style={labelStyle}>DOB</label>
+            <input style={inputStyle} placeholder="MM/DD/YYYY" value={form.dob} onChange={e => handleChange('dob', e.target.value)} />
+          </div>
+          <div>
+            <label style={labelStyle}>Age</label>
+            <input style={inputStyle} placeholder="Age" value={form.age} onChange={e => handleChange('age', e.target.value)} />
+          </div>
+          <div>
+            <label style={labelStyle}>Lead Type</label>
+            <select style={inputStyle} value={form.leadType} onChange={e => handleChange('leadType', e.target.value)}>
+              {LEAD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>Pipeline</label>
+            <select style={inputStyle} value={form.pipeline} onChange={e => handleChange('pipeline', e.target.value)}>
+              <option value="new">New</option>
+              <option value="aged">Aged</option>
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>Coverage Amount</label>
+            <input style={inputStyle} placeholder="$10,000" value={form.faceAmount} onChange={e => handleChange('faceAmount', e.target.value)} />
+          </div>
+          <div>
+            <label style={labelStyle}>Gender</label>
+            <select style={inputStyle} value={form.gender} onChange={e => handleChange('gender', e.target.value)}>
+              <option value="">—</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>Beneficiary</label>
+            <input style={inputStyle} placeholder="Beneficiary name" value={form.beneficiary} onChange={e => handleChange('beneficiary', e.target.value)} />
+          </div>
+          <div>
+            <label style={labelStyle}>Relationship</label>
+            <select style={inputStyle} value={form.beneficiaryRelation} onChange={e => handleChange('beneficiaryRelation', e.target.value)}>
+              <option value="">—</option>
+              <option value="Spouse">Spouse</option>
+              <option value="My Children">My Children</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <label style={labelStyle}>Notes</label>
+            <textarea style={{ ...inputStyle, minHeight: '60px', resize: 'vertical' }} placeholder="Notes..." value={form.notes} onChange={e => handleChange('notes', e.target.value)} />
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '24px' }}>
           <button onClick={onClose} style={{
             padding: '10px 20px', borderRadius: '8px',
             border: '1px solid rgba(255,255,255,0.1)', background: 'transparent',
             color: '#a1a1aa', fontSize: '13px', cursor: 'pointer',
           }}>Cancel</button>
-          <button
-            onClick={handleUpload}
-            disabled={!preview || uploading}
-            style={{
-              padding: '10px 20px', borderRadius: '8px',
-              border: '1px solid rgba(0,212,255,0.3)',
-              background: preview ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.04)',
-              color: preview ? '#00d4ff' : '#52525b',
-              fontSize: '13px', fontWeight: 600, cursor: preview ? 'pointer' : 'default',
-              opacity: uploading ? 0.6 : 1,
-            }}
-          >
-            {uploading ? 'Uploading...' : `Upload to ${pipeline === 'new' ? 'New' : 'Aged'} Pipeline`}
-          </button>
+          <button onClick={handleSave} disabled={saving || (!form.name && !form.phone)} style={{
+            padding: '10px 20px', borderRadius: '8px',
+            border: '1px solid rgba(0,212,255,0.3)',
+            background: (form.name || form.phone) ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.04)',
+            color: (form.name || form.phone) ? '#00d4ff' : '#52525b',
+            fontSize: '13px', fontWeight: 600, cursor: (form.name || form.phone) ? 'pointer' : 'default',
+            opacity: saving ? 0.6 : 1,
+          }}>{saving ? 'Saving...' : 'Create Lead'}</button>
         </div>
       </div>
     </div>
@@ -447,5 +685,5 @@ function timeAgo(dateStr) {
   const days = Math.floor(hours / 24)
   if (days === 0) return 'Today'
   if (days === 1) return 'Yesterday'
-  return `${days} days ago`
+  return `${days}d ago`
 }
