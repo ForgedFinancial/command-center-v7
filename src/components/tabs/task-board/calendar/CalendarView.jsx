@@ -28,7 +28,9 @@ export default function CalendarView() {
   const [modalDate, setModalDate] = useState(null)
   const [calendars, setCalendars] = useState([])
   const [creating, setCreating] = useState(false)
-  const [form, setForm] = useState({ title: '', date: '', startTime: '09:00', endTime: '10:00', calendar: 'Work', location: '', description: '' })
+  const [editingEvent, setEditingEvent] = useState(null)
+  const [deleting, setDeleting] = useState(false)
+  const [form, setForm] = useState({ title: '', date: '', startTime: '09:00', endTime: '10:00', calendar: 'Work', location: '', description: '', alerts: [15] })
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
@@ -93,35 +95,85 @@ export default function CalendarView() {
     const d = date || new Date()
     const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
     setForm({ title: '', date: dateStr, startTime: '09:00', endTime: '10:00', calendar: calendars[0]?.name || 'Work', location: '', description: '', alerts: [15] })
+    setEditingEvent(null)
     setModalDate(d)
     setShowModal(true)
   }
 
-  const handleCreate = async () => {
+  // Open edit modal for existing event
+  const openEditModal = (evt) => {
+    const startDt = new Date(evt.start)
+    const endDt = evt.end ? new Date(evt.end) : new Date(startDt.getTime() + 3600000)
+    const dateStr = `${startDt.getFullYear()}-${String(startDt.getMonth() + 1).padStart(2, '0')}-${String(startDt.getDate()).padStart(2, '0')}`
+    const startTime = `${String(startDt.getHours()).padStart(2, '0')}:${String(startDt.getMinutes()).padStart(2, '0')}`
+    const endTime = `${String(endDt.getHours()).padStart(2, '0')}:${String(endDt.getMinutes()).padStart(2, '0')}`
+    setForm({
+      title: evt.summary || '', date: dateStr, startTime, endTime,
+      calendar: evt.calendar || 'Work', location: evt.location || '', description: evt.description || '',
+      alerts: [15],
+    })
+    setEditingEvent(evt)
+    setShowModal(true)
+  }
+
+  const handleSave = async () => {
     if (!form.title || !form.date) return
     setCreating(true)
     try {
       const start = new Date(`${form.date}T${form.startTime}:00`)
       const end = new Date(`${form.date}T${form.endTime}:00`)
-      const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/events`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0' },
-        body: JSON.stringify({
-          title: form.title,
-          start: start.toISOString(),
-          end: end.toISOString(),
-          calendar: form.calendar,
-          location: form.location || undefined,
-          description: form.description || undefined,
-          alerts: form.alerts?.filter(a => a !== null && a !== undefined) || [],
-        }),
+      const payload = {
+        title: form.title,
+        start: start.toISOString(),
+        end: end.toISOString(),
+        calendar: form.calendar,
+        location: form.location || undefined,
+        description: form.description || undefined,
+        alerts: form.alerts?.filter(a => a !== null && a !== undefined) || [],
+      }
+
+      if (editingEvent?.uid) {
+        // Update existing event
+        const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/events/${encodeURIComponent(editingEvent.uid)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0' },
+          body: JSON.stringify(payload),
+        })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      } else {
+        // Create new event
+        const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/events`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0' },
+          body: JSON.stringify(payload),
+        })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      }
+      setShowModal(false)
+      setEditingEvent(null)
+      setTimeout(() => fetchEvents(), 1500)
+    } catch (err) {
+      alert(`Failed to ${editingEvent ? 'update' : 'create'} event: ${err.message}`)
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const handleDeleteEvent = async () => {
+    if (!editingEvent?.uid) return
+    if (!confirm(`Delete "${editingEvent.summary}"?`)) return
+    setCreating(true)
+    try {
+      const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/events/${encodeURIComponent(editingEvent.uid)}`, {
+        method: 'DELETE',
+        headers: { 'x-api-key': '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0' },
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       setShowModal(false)
-      // Re-fetch after a brief delay for CalDAV to settle
+      setEditingEvent(null)
       setTimeout(() => fetchEvents(), 1500)
     } catch (err) {
-      alert(`Failed to create event: ${err.message}`)
+      alert(`Failed to delete event: ${err.message}`)
     } finally {
       setCreating(false)
     }
@@ -217,12 +269,12 @@ export default function CalendarView() {
                 const color = getCalColor(evt.calendar)
                 const time = evt.start ? new Date(evt.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : ''
                 return (
-                  <div key={j} onClick={e => e.stopPropagation()} style={{
-                    padding: '2px 6px', borderRadius: '4px',
+                  <div key={j} onClick={e => { e.stopPropagation(); openEditModal(evt) }} style={{
+                    padding: '2px 6px', borderRadius: '4px', cursor: 'pointer',
                     background: `${color}20`, borderLeft: `2px solid ${color}`,
                     color, fontSize: '10px', fontWeight: 500, marginBottom: '2px',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                  }} title={`${evt.summary || evt.title}${evt.location ? ' — ' + evt.location : ''}`}>
+                  }} title={`${evt.summary || evt.title}${evt.location ? ' — ' + evt.location : ''} — Click to edit`}>
                     {time ? <span style={{ opacity: 0.7 }}>{time} </span> : null}{evt.summary || evt.title}
                   </div>
                 )
@@ -244,7 +296,7 @@ export default function CalendarView() {
             background: '#18181b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px',
             padding: '28px', width: '420px', maxWidth: '90vw',
           }}>
-            <h3 style={{ margin: '0 0 20px', fontSize: '18px', fontWeight: 700, color: '#e4e4e7' }}>New Event</h3>
+            <h3 style={{ margin: '0 0 20px', fontSize: '18px', fontWeight: 700, color: '#e4e4e7' }}>{editingEvent ? 'Edit Event' : 'New Event'}</h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <Field label="Title" required>
@@ -314,16 +366,24 @@ export default function CalendarView() {
               </Field>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '24px' }}>
-              <button onClick={() => setShowModal(false)} style={{
-                padding: '8px 20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
-                background: 'transparent', color: '#a1a1aa', fontSize: '13px', cursor: 'pointer',
-              }}>Cancel</button>
-              <button onClick={handleCreate} disabled={creating || !form.title} style={{
-                padding: '8px 20px', borderRadius: '8px', border: 'none',
-                background: creating || !form.title ? '#27272a' : '#00d4ff', color: creating || !form.title ? '#52525b' : '#000',
-                fontSize: '13px', fontWeight: 600, cursor: creating || !form.title ? 'default' : 'pointer',
-              }}>{creating ? 'Creating...' : 'Create Event'}</button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '24px' }}>
+              {editingEvent?.uid ? (
+                <button onClick={handleDeleteEvent} disabled={creating} style={{
+                  padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.3)',
+                  background: 'rgba(239,68,68,0.1)', color: '#ef4444', fontSize: '13px', fontWeight: 500, cursor: 'pointer',
+                }}>🗑️ Delete</button>
+              ) : <div />}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={() => { setShowModal(false); setEditingEvent(null) }} style={{
+                  padding: '8px 20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'transparent', color: '#a1a1aa', fontSize: '13px', cursor: 'pointer',
+                }}>Cancel</button>
+                <button onClick={handleSave} disabled={creating || !form.title} style={{
+                  padding: '8px 20px', borderRadius: '8px', border: 'none',
+                  background: creating || !form.title ? '#27272a' : '#00d4ff', color: creating || !form.title ? '#52525b' : '#000',
+                  fontSize: '13px', fontWeight: 600, cursor: creating || !form.title ? 'default' : 'pointer',
+                }}>{creating ? 'Saving...' : editingEvent ? 'Save Changes' : 'Create Event'}</button>
+              </div>
             </div>
           </div>
         </div>

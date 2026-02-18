@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import crmClient from '../../../../api/crmClient'
+import { WORKER_PROXY_URL } from '../../../../config/api'
 
 const TABS = [
   { key: 'contact', icon: '📋', label: 'Contact' },
