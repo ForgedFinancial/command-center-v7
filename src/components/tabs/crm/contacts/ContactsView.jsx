@@ -5,6 +5,8 @@ import { WORKER_PROXY_URL } from '../../../../config/api'
 import EmptyState from '../../../shared/EmptyState'
 import ContactActivityTimeline from './ContactActivityTimeline'
 import PipelineModeToggle, { filterByPipelineMode } from '../PipelineModeToggle'
+import DataSourceToggle from '../../../shared/DataSourceToggle'
+import { useDataSource } from '../../../../hooks/useDataSource'
 
 const TAG_COLORS = {
   'VIP Client': { color: '#4ade80', bg: 'rgba(74,222,128,0.15)' },
@@ -30,6 +32,7 @@ export default function ContactsView() {
   const { actions: appActions } = useApp()
   const [search, setSearch] = useState('')
   const [tagFilter, setTagFilter] = useState('')
+  const { source } = useDataSource()
   const [expandedContact, setExpandedContact] = useState(null)
   const [detailTab, setDetailTab] = useState('info')
 
@@ -45,6 +48,9 @@ export default function ContactsView() {
 
   const filteredLeads = useMemo(() => {
     let leads = filterByPipelineMode([...state.leads], state.pipelineMode)
+    // Data source filter
+    if (source === 'personal') leads = leads.filter(l => l.source === 'personal' || l.source === 'mac')
+    if (source === 'business') leads = leads.filter(l => !l.source || l.source === 'business' || l.source === 'crm')
     if (search) {
       const q = search.toLowerCase()
       leads = leads.filter(l =>
@@ -57,7 +63,7 @@ export default function ContactsView() {
       leads = leads.filter(l => l.tags?.includes(tagFilter))
     }
     return leads.sort((a, b) => new Date(b.lastContact || b.createdAt) - new Date(a.lastContact || a.createdAt))
-  }, [state.leads, search, tagFilter, state.pipelineMode])
+  }, [state.leads, search, tagFilter, state.pipelineMode, source])
 
   const allTags = useMemo(() => {
     const tags = new Set()
@@ -87,6 +93,7 @@ export default function ContactsView() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Contacts</h2>
+          <DataSourceToggle />
           <PipelineModeToggle />
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>

@@ -57,6 +57,14 @@ export const ENDPOINTS = {
   taskboardDocumentUpload: '/api/taskboard/documents/upload',
   taskboardLessons: '/api/taskboard/lessons',
 
+  // Notifications
+  notifications: '/api/notifications',
+  notificationRead: (id) => `/api/notifications/${id}/read`,
+  notificationsMarkAllRead: '/api/notifications/mark-all-read',
+
+  // Task Notify Webhook
+  tasksNotify: '/api/tasks/notify',
+
   // Auth
   authSetup: '/api/auth/setup',
   authLogin: '/api/auth/login',

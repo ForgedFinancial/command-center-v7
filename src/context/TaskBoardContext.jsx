@@ -14,6 +14,28 @@ function notifyTelegram(event, taskTitle, details = {}) {
   } catch { /* ignore */ }
 }
 
+// Fire-and-forget task notify webhook (Feature 3)
+function notifyTaskWebhook(task) {
+  try {
+    const token = sessionStorage.getItem('cc_auth_token') || ''
+    fetch(`${WORKER_PROXY_URL}/api/tasks/notify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        taskId: task.id,
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        startTime: task.startTime || null,
+        projectId: task.projectId || null,
+      }),
+    }).catch(() => {})
+  } catch { /* ignore */ }
+}
+
 const initialState = {
   activeView: 'board',
   tasks: [],
@@ -141,10 +163,18 @@ export function TaskBoardProvider({ children }) {
     updateTask: useCallback((task) => {
       dispatch({ type: ActionTypes.UPDATE_TASK, payload: task })
       notifyTelegram('task_updated', task.title || task.id, { stage: task.stage, priority: task.priority })
+      // Feature 3: webhook when task moves to new-task
+      if (task.stage === 'new_task') {
+        notifyTaskWebhook(task)
+      }
     }, []),
     addTask: useCallback((task) => {
       dispatch({ type: ActionTypes.ADD_TASK, payload: task })
       notifyTelegram('task_created', task.title || 'New Task', { stage: task.stage, priority: task.priority })
+      // Feature 3: webhook when task enters new-task
+      if (task.stage === 'new_task' || !task.stage) {
+        notifyTaskWebhook(task)
+      }
     }, []),
     removeTask: useCallback((id) => {
       dispatch({ type: ActionTypes.REMOVE_TASK, payload: id })

@@ -6,6 +6,7 @@ import { TABS } from '../../config/constants'
 import { TASK_BOARD_VIEWS } from '../../config/taskboard'
 import { CRM_VIEWS } from '../../config/crm'
 import { useSyncServer } from '../../hooks/useSyncServer'
+import { useAgentStatus } from '../../hooks/useAgentStatus'
 import Logo from '../shared/Logo'
 import TabBar from './TabBar'
 import Sidebar from './Sidebar'
@@ -19,6 +20,7 @@ import CRMTab from '../tabs/crm/CRMTab'
 import AgentDetailPanel from '../shared/AgentDetailPanel'
 import ErrorBoundary from '../shared/ErrorBoundary'
 import HealthPanel from '../shared/HealthPanel'
+import NotificationCenter from '../shared/NotificationCenter'
 
 const NetworkMonitor = import.meta.env.DEV
   ? lazy(() => import('../shared/NetworkMonitor'))
@@ -63,6 +65,7 @@ export default function Shell() {
   const closeHealth = useCallback(() => setHealthOpen(false), [])
 
   useSyncServer()
+  useAgentStatus()
 
   const hasSidebar = [TABS.TASK_BOARD, TABS.CRM].includes(state.activeTab)
 
@@ -156,6 +159,8 @@ export default function Shell() {
           </span>
           <TabBar />
           <div style={{ flex: 1 }} />
+          {/* Notification Center */}
+          <NotificationCenter />
           {/* Connection indicator */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <div style={{

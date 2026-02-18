@@ -118,6 +118,18 @@ export default function TaskDetailModal() {
             <span style={{ fontSize: '12px', color: '#a1a1aa' }}>{project.name}</span>
           </div>
         )}
+        {/* Start Time */}
+        {task.startTime && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <span style={{ fontSize: '10px', color: '#71717a', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              {new Date(task.startTime) > new Date() ? '🕐 Starts' : '▶️ Started'}
+            </span>
+            <span style={{ fontSize: '12px', color: '#a1a1aa' }}>
+              {new Date(task.startTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{' '}
+              {new Date(task.startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+            </span>
+          </div>
+        )}
         {/* Due Date */}
         {task.dueDate && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>

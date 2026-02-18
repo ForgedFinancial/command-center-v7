@@ -57,9 +57,21 @@ export default function TaskCard({ task }) {
         )}
       </div>
 
+      {/* Start time */}
+      {task.startTime && (
+        <div style={{ fontSize: '10px', color: '#71717a', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {new Date(task.startTime) > new Date() ? '🕐' : '▶️'}
+          <span>
+            {new Date(task.startTime) > new Date() ? 'Starts' : 'Started'}{' '}
+            {new Date(task.startTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{' '}
+            {new Date(task.startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+          </span>
+        </div>
+      )}
+
       {/* Due date */}
       {task.dueDate && (
-        <div style={{ fontSize: '10px', color: '#71717a', marginTop: '8px' }}>
+        <div style={{ fontSize: '10px', color: '#71717a', marginTop: task.startTime ? '4px' : '8px' }}>
           Due {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
         </div>
       )}

@@ -9,7 +9,7 @@ export default function TaskCreateModal() {
   const { actions: appActions } = useApp()
   const [form, setForm] = useState({
     title: '', description: '', priority: 'medium',
-    projectId: '', assignedAgent: '', dueDate: '', notes: '',
+    projectId: '', assignedAgent: '', dueDate: '', startTime: '', notes: '',
   })
   const [saving, setSaving] = useState(false)
 
@@ -29,6 +29,7 @@ export default function TaskCreateModal() {
         projectId: form.projectId || null,
         assignedAgent: form.assignedAgent || null,
         dueDate: form.dueDate || null,
+        startTime: form.startTime || null,
       })
       if (res.ok) {
         actions.addTask(res.data)
@@ -105,6 +106,18 @@ export default function TaskCreateModal() {
             <label style={labelStyle}>Due Date</label>
             <input style={inputStyle} type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} />
           </div>
+        </div>
+        <div>
+          <label style={labelStyle}>Start Time</label>
+          <input
+            style={inputStyle}
+            type="datetime-local"
+            value={form.startTime}
+            onChange={(e) => setForm({ ...form, startTime: e.target.value })}
+          />
+          <span style={{ fontSize: '10px', color: '#52525b', marginTop: '4px', display: 'block' }}>
+            Leave empty for immediate. Future times show a clock icon on the card.
+          </span>
         </div>
         <div>
           <label style={labelStyle}>Notes to Clawd</label>
