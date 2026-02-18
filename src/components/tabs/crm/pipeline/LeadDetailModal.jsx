@@ -62,6 +62,10 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
   const [form, setForm] = useState({})
   const [saving, setSaving] = useState(false)
   const [newNote, setNewNote] = useState('')
+  const [showSchedule, setShowSchedule] = useState(false)
+  const [schedDate, setSchedDate] = useState(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` })
+  const [schedTime, setSchedTime] = useState('10:00')
+  const [scheduling, setScheduling] = useState(false)
 
   useEffect(() => {
     if (lead) setForm({ ...lead })
@@ -81,6 +85,31 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
       console.error('Save failed:', e)
     }
     setSaving(false)
+  }
+
+  const handleSchedule = async () => {
+    setScheduling(true)
+    try {
+      const leadName = form.name || `${form.first_name || ''} ${form.last_name || ''}`.trim() || 'Lead'
+      const start = new Date(`${schedDate}T${schedTime}:00`)
+      const end = new Date(start.getTime() + 30 * 60000) // 30 min appointment
+      const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/events`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0' },
+        body: JSON.stringify({
+          title: `Call: ${leadName}`,
+          start: start.toISOString(), end: end.toISOString(),
+          calendar: 'Work',
+          description: `Phone: ${form.phone || 'N/A'}\nEmail: ${form.email || 'N/A'}\nState: ${form.state || 'N/A'}\nLead Type: ${form.lead_type || 'FEX'}`,
+          alerts: [10], // 10 min reminder
+        }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      setShowSchedule(false)
+      alert(`📅 Scheduled: Call ${leadName} on ${schedDate} at ${schedTime} (10-min reminder set)`)
+    } catch (err) {
+      alert(`Failed to schedule: ${err.message}`)
+    } finally { setScheduling(false) }
   }
 
   const handleDelete = () => {
@@ -257,21 +286,43 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
           padding: '16px 28px', borderTop: '1px solid rgba(255,255,255,0.06)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
-          <button onClick={handleDelete} style={{
-            padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.3)',
-            background: 'rgba(239,68,68,0.1)', color: '#ef4444', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
-          }}>🗑️ Delete Lead</button>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={onClose} style={{
-              padding: '8px 20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
-              background: 'transparent', color: '#a1a1aa', fontSize: '12px', cursor: 'pointer',
-            }}>Cancel</button>
-            <button onClick={handleSave} disabled={saving} style={{
-              padding: '8px 20px', borderRadius: '8px', border: '1px solid rgba(74,222,128,0.3)',
-              background: 'rgba(74,222,128,0.15)', color: '#4ade80', fontSize: '12px', fontWeight: 600,
-              cursor: 'pointer', opacity: saving ? 0.6 : 1,
-            }}>{saving ? 'Saving...' : 'Save'}</button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button onClick={handleDelete} style={{
+              padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.3)',
+              background: 'rgba(239,68,68,0.1)', color: '#ef4444', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+            }}>🗑️ Delete</button>
+            <button onClick={() => setShowSchedule(!showSchedule)} style={{
+              padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.3)',
+              background: showSchedule ? 'rgba(0,212,255,0.2)' : 'rgba(0,212,255,0.08)', color: '#00d4ff',
+              fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+            }}>📅 Schedule Call</button>
           </div>
+          {showSchedule && (
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input type="date" value={schedDate} onChange={e => setSchedDate(e.target.value)}
+                style={{ ...inputStyle, width: '140px', padding: '6px 8px', fontSize: '12px' }} />
+              <input type="time" value={schedTime} onChange={e => setSchedTime(e.target.value)}
+                style={{ ...inputStyle, width: '100px', padding: '6px 8px', fontSize: '12px' }} />
+              <button onClick={handleSchedule} disabled={scheduling} style={{
+                padding: '6px 14px', borderRadius: '6px', border: 'none', whiteSpace: 'nowrap',
+                background: scheduling ? '#27272a' : '#00d4ff', color: scheduling ? '#52525b' : '#000',
+                fontSize: '12px', fontWeight: 600, cursor: scheduling ? 'default' : 'pointer',
+              }}>{scheduling ? '...' : '✓ Add'}</button>
+            </div>
+          )}
+          {!showSchedule && (
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={onClose} style={{
+                padding: '8px 20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
+                background: 'transparent', color: '#a1a1aa', fontSize: '12px', cursor: 'pointer',
+              }}>Cancel</button>
+              <button onClick={handleSave} disabled={saving} style={{
+                padding: '8px 20px', borderRadius: '8px', border: '1px solid rgba(74,222,128,0.3)',
+                background: 'rgba(74,222,128,0.15)', color: '#4ade80', fontSize: '12px', fontWeight: 600,
+                cursor: 'pointer', opacity: saving ? 0.6 : 1,
+              }}>{saving ? 'Saving...' : 'Save'}</button>
+            </div>
+          )}
         </div>
       </div>
     </div>
