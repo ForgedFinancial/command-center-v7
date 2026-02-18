@@ -471,9 +471,14 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
         onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.15)' }}
       >🗑️</button>
 
-      {/* Name (always shown) */}
-      <div style={{ fontSize: '13px', fontWeight: 600, color: '#e4e4e7', marginBottom: '4px', paddingRight: '28px' }}>
+      {/* Name + AP (always shown) */}
+      <div style={{ fontSize: '13px', fontWeight: 600, color: '#e4e4e7', marginBottom: '4px', paddingRight: '28px', display: 'flex', alignItems: 'center', gap: '6px' }}>
         {lead.name || 'Unknown'}
+        {(lead.premium) && Number(lead.premium) > 0 && (
+          <span style={{ fontSize: '11px', fontWeight: 700, color: '#4ade80' }}>
+            (${(Number(lead.premium) * 12).toLocaleString()})
+          </span>
+        )}
       </div>
 
       {/* Dynamic fields in configured order */}

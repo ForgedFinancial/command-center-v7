@@ -161,7 +161,14 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
                 fontSize: '16px', fontWeight: 700, color: '#fff',
               }}>{initials}</div>
               <div>
-                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#e4e4e7' }}>{form.name || 'Lead'}</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#e4e4e7' }}>{form.name || 'Lead'}</h2>
+                  {form.premium && Number(form.premium) > 0 && (
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: '#4ade80' }}>
+                      (${(Number(form.premium) * 12).toLocaleString()})
+                    </span>
+                  )}
+                </div>
                 <span style={{
                   fontSize: '11px', padding: '2px 8px', borderRadius: '6px',
                   background: 'rgba(0,212,255,0.15)', color: '#00d4ff',
