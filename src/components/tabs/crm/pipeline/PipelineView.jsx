@@ -372,8 +372,15 @@ function LeadCard({ lead, color, onDragStart, onClick, onDelete, onPhoneCall, on
         </div>
       )}
 
-      {/* Time + Value */}
-      <div style={{ fontSize: '10px', color: '#52525b', marginTop: '4px', display: 'flex', justifyContent: 'space-between' }}>
+      {/* Received Date/Time */}
+      {lead.createdAt && (
+        <div style={{ fontSize: '10px', color: '#f59e0b', marginTop: '4px', fontWeight: 500 }}>
+          🕐 {formatLeadDate(lead.createdAt)}
+        </div>
+      )}
+
+      {/* Time ago + Value */}
+      <div style={{ fontSize: '10px', color: '#52525b', marginTop: '2px', display: 'flex', justifyContent: 'space-between' }}>
         <span>{lead.createdAt ? timeAgo(lead.createdAt) : ''}</span>
         {(lead.value || lead.premium) ? <span>${(lead.value || lead.premium).toLocaleString()}</span> : null}
       </div>
@@ -732,6 +739,18 @@ function NewLeadModal({ onClose, actions }) {
       </div>
     </div>
   )
+}
+
+function formatLeadDate(dateStr) {
+  if (!dateStr) return ''
+  // Handle "MM/DD/YY HH:MM:SS AM/PM" format from GSheet
+  if (dateStr.match(/^\d{2}\/\d{2}\/\d{2}\s/)) return dateStr
+  try {
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return dateStr
+    return d.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }) + ' ' +
+      d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+  } catch { return dateStr }
 }
 
 function timeAgo(dateStr) {
