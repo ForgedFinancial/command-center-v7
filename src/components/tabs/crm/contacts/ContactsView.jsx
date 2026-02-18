@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { useCRM } from '../../../../context/CRMContext'
 import { useApp } from '../../../../context/AppContext'
+import crmClient from '../../../../api/crmClient'
 import { WORKER_PROXY_URL } from '../../../../config/api'
 import EmptyState from '../../../shared/EmptyState'
 import ContactActivityTimeline from './ContactActivityTimeline'
@@ -90,6 +91,23 @@ export default function ContactsView() {
   const [tagFilter, setTagFilter] = useState('')
   const [leadTypeFilter, setLeadTypeFilter] = useState('')
   const { source } = useDataSource()
+  const [seenLeads, setSeenLeads] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('cc7-seen-leads') || '[]')) } catch { return new Set() }
+  })
+  const markSeen = useCallback((leadId) => {
+    setSeenLeads(prev => {
+      const next = new Set(prev)
+      next.add(leadId)
+      localStorage.setItem('cc7-seen-leads', JSON.stringify([...next]))
+      return next
+    })
+  }, [])
+  const handleDeleteLead = useCallback((leadId, leadName, e) => {
+    if (e) { e.stopPropagation(); e.preventDefault() }
+    if (!confirm(`Delete ${leadName || 'this lead'}?`)) return
+    actions.removeLead(leadId)
+    crmClient.deleteLead(leadId).catch(() => {})
+  }, [actions])
   const [expandedContact, setExpandedContact] = useState(null)
   const [detailTab, setDetailTab] = useState('info')
   const [activeColumns, setActiveColumns] = useState(loadColumnConfig)
@@ -109,6 +127,7 @@ export default function ContactsView() {
 
   const handleDial = useCallback((lead) => {
     if (!lead.phone) return
+    markSeen(lead.id)
     appActions.addToast({ id: Date.now(), type: 'info', message: `Dialing ${lead.name}...` })
     fetch(`${WORKER_PROXY_URL}/api/dial`, {
       method: 'POST',
@@ -149,7 +168,7 @@ export default function ContactsView() {
     return activeColumns.map(id => ALL_COLUMNS.find(c => c.id === id)).filter(Boolean)
   }, [activeColumns])
 
-  const gridTemplate = visibleColumns.map(c => c.width).join(' ')
+  const gridTemplate = visibleColumns.map(c => c.width).join(' ') + ' 40px'
 
   const toggleColumn = (colId) => {
     setActiveColumns(prev => {
@@ -335,6 +354,7 @@ export default function ContactsView() {
               {visibleColumns.map(col => (
                 <span key={col.id}>{col.label}</span>
               ))}
+              <span></span>
             </div>
 
             {/* Rows */}
@@ -353,11 +373,13 @@ export default function ContactsView() {
                     alignItems: 'center',
                   }}
                   onClick={() => { setExpandedContact(expandedContact === lead.id ? null : lead.id); setDetailTab('info') }}
+                  onMouseEnter={(e) => { if (!seenLeads.has(lead.id)) { e.currentTarget._seenTimer = setTimeout(() => markSeen(lead.id), 1500) } }}
+                  onMouseLeave={(e) => { if (e.currentTarget._seenTimer) { clearTimeout(e.currentTarget._seenTimer); e.currentTarget._seenTimer = null } }}
                   onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
                   onMouseOut={(e) => { e.currentTarget.style.background = 'transparent' }}
                 >
                   {visibleColumns.map(col => {
-                    // Special rendering for name column (with avatar)
+                    // Special rendering for name column (with avatar + NEW badge)
                     if (col.id === 'name') {
                       return (
                         <div key={col.id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -368,6 +390,14 @@ export default function ContactsView() {
                             fontSize: '10px', fontWeight: 700, color: '#fff', flexShrink: 0,
                           }}>{getInitials(lead.name || '?')}</div>
                           <span style={{ fontSize: '13px', fontWeight: 500, color: '#e4e4e7' }}>{lead.name}</span>
+                          {!seenLeads.has(lead.id) && (
+                            <span style={{
+                              fontSize: '9px', fontWeight: 700, color: '#0ff', letterSpacing: '1px',
+                              padding: '1px 6px', borderRadius: '4px',
+                              background: 'rgba(0,255,255,0.15)', border: '1px solid rgba(0,255,255,0.3)',
+                              animation: 'cc7-pulse 1.5s ease-in-out infinite',
+                            }}>NEW</span>
+                          )}
                         </div>
                       )
                     }
@@ -407,6 +437,19 @@ export default function ContactsView() {
                       </span>
                     )
                   })}
+                  {/* Delete button */}
+                  <button
+                    onClick={(e) => handleDeleteLead(lead.id, lead.name, e)}
+                    title="Delete lead"
+                    style={{
+                      background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)',
+                      color: '#ef4444', fontSize: '14px', cursor: 'pointer',
+                      padding: '3px 6px', borderRadius: '6px', lineHeight: 1,
+                      transition: 'all 0.15s',
+                    }}
+                    onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.25)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)' }}
+                    onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.15)' }}
+                  >🗑️</button>
                 </div>
                 {expandedContact === lead.id && (
                   <div style={{

@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useCallback } from 'react'
+import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
 import { useCRM } from '../../../../context/CRMContext'
 import { useApp } from '../../../../context/AppContext'
 import crmClient from '../../../../api/crmClient'
@@ -82,10 +82,23 @@ export default function PipelineView() {
     }
   }
 
+  // Seen leads tracking for NEW badge
+  const [seenLeads, setSeenLeads] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('cc7-seen-leads') || '[]')) } catch { return new Set() }
+  })
+  const markSeen = useCallback((leadId) => {
+    setSeenLeads(prev => {
+      const next = new Set(prev)
+      next.add(leadId)
+      localStorage.setItem('cc7-seen-leads', JSON.stringify([...next]))
+      return next
+    })
+  }, [])
+
   // Delete handler
-  const handleDeleteLead = (leadId, e) => {
+  const handleDeleteLead = (leadId, leadName, e) => {
     if (e) { e.stopPropagation(); e.preventDefault() }
-    if (!confirm('Delete this lead?')) return
+    if (!confirm(`Delete ${leadName || 'this lead'}?`)) return
     actions.removeLead(leadId)
     crmClient.deleteLead(leadId).catch(() => {})
   }
@@ -94,6 +107,7 @@ export default function PipelineView() {
   const handlePhoneCall = useCallback((lead, e) => {
     if (e) { e.stopPropagation(); e.preventDefault() }
     if (!lead.phone) return
+    markSeen(lead.id)
     appActions.addToast({ id: Date.now(), type: 'info', message: `📞 Calling ${lead.name}...` })
     fetch(`${WORKER_PROXY_URL}/api/phone/call`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -231,6 +245,8 @@ export default function PipelineView() {
                     onPhoneCall={handlePhoneCall}
                     onVideoCall={handleVideoCall}
                     onMessage={handleMessage}
+                    isNew={!seenLeads.has(lead.id)}
+                    onMarkSeen={markSeen}
                   />
                 ))}
               </div>
@@ -253,8 +269,23 @@ export default function PipelineView() {
   )
 }
 
-function LeadCard({ lead, color, onDragStart, onClick, onDelete, onPhoneCall, onVideoCall, onMessage }) {
+function LeadCard({ lead, color, onDragStart, onClick, onDelete, onPhoneCall, onVideoCall, onMessage, isNew, onMarkSeen }) {
   const age = lead.dob ? Math.floor((Date.now() - new Date(lead.dob).getTime()) / 31557600000) : null
+  const hoverTimer = useRef(null)
+  const [showNew, setShowNew] = useState(isNew)
+
+  useEffect(() => { setShowNew(isNew) }, [isNew])
+
+  const handleHoverStart = () => {
+    if (!showNew) return
+    hoverTimer.current = setTimeout(() => {
+      onMarkSeen(lead.id)
+      setShowNew(false)
+    }, 1500)
+  }
+  const handleHoverEnd = () => {
+    if (hoverTimer.current) { clearTimeout(hoverTimer.current); hoverTimer.current = null }
+  }
 
   const actionBtnStyle = {
     background: 'none', border: '1px solid rgba(255,255,255,0.08)',
@@ -267,6 +298,8 @@ function LeadCard({ lead, color, onDragStart, onClick, onDelete, onPhoneCall, on
       draggable="true"
       onDragStart={(e) => onDragStart(e, lead.id)}
       onClick={onClick}
+      onMouseEnter={handleHoverStart}
+      onMouseLeave={handleHoverEnd}
       style={{
         padding: '10px 12px', borderRadius: '8px',
         background: 'rgba(255,255,255,0.03)',
@@ -277,22 +310,35 @@ function LeadCard({ lead, color, onDragStart, onClick, onDelete, onPhoneCall, on
       onMouseOver={(e) => { e.currentTarget.style.borderColor = `${color}40` }}
       onMouseOut={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}
     >
-      {/* Delete button */}
+      {/* NEW badge */}
+      {showNew && (
+        <span style={{
+          position: 'absolute', top: '-6px', left: '8px',
+          fontSize: '9px', fontWeight: 700, color: '#0ff', letterSpacing: '1px',
+          padding: '2px 8px', borderRadius: '4px',
+          background: 'rgba(0,255,255,0.15)', border: '1px solid rgba(0,255,255,0.3)',
+          animation: 'cc7-pulse 1.5s ease-in-out infinite',
+          zIndex: 2,
+        }}>NEW</span>
+      )}
+
+      {/* Delete button — proper trash icon */}
       <button
-        onClick={(e) => onDelete(lead.id, e)}
+        onClick={(e) => onDelete(lead.id, lead.name, e)}
         title="Delete lead"
         style={{
           position: 'absolute', top: '6px', right: '6px',
-          background: 'none', border: 'none', color: '#52525b',
-          fontSize: '12px', cursor: 'pointer', padding: '2px 4px',
-          borderRadius: '4px', lineHeight: 1,
+          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)',
+          color: '#ef4444', fontSize: '14px', cursor: 'pointer',
+          padding: '3px 6px', borderRadius: '6px', lineHeight: 1,
+          transition: 'all 0.15s',
         }}
-        onMouseOver={(e) => { e.currentTarget.style.color = '#ef4444' }}
-        onMouseOut={(e) => { e.currentTarget.style.color = '#52525b' }}
-      >✕</button>
+        onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.25)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)' }}
+        onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.15)' }}
+      >🗑️</button>
 
       {/* Name */}
-      <div style={{ fontSize: '13px', fontWeight: 600, color: '#e4e4e7', marginBottom: '4px', paddingRight: '18px' }}>
+      <div style={{ fontSize: '13px', fontWeight: 600, color: '#e4e4e7', marginBottom: '4px', paddingRight: '28px' }}>
         {lead.name || 'Unknown'}
       </div>
 
