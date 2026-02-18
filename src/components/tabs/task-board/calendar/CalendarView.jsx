@@ -1,9 +1,19 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { WORKER_PROXY_URL } from '../../../../config/api'
-import EmptyState from '../../../shared/EmptyState'
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const VIEWS = ['Month', 'Week', 'Day']
+
+const CAL_COLORS = {
+  Work: '#3b82f6',
+  Personal: '#a855f7',
+  Reminders: '#f59e0b',
+  Home: '#10b981',
+}
+
+function getCalColor(name) {
+  return CAL_COLORS[name] || '#3b82f6'
+}
 
 export default function CalendarView() {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -12,6 +22,13 @@ export default function CalendarView() {
   const [syncing, setSyncing] = useState(false)
   const [lastSync, setLastSync] = useState(null)
   const [syncError, setSyncError] = useState(false)
+
+  // Create event modal state
+  const [showModal, setShowModal] = useState(false)
+  const [modalDate, setModalDate] = useState(null)
+  const [calendars, setCalendars] = useState([])
+  const [creating, setCreating] = useState(false)
+  const [form, setForm] = useState({ title: '', date: '', startTime: '09:00', endTime: '10:00', calendar: 'Work', location: '', description: '' })
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
@@ -33,7 +50,17 @@ export default function CalendarView() {
     }
   }, [])
 
-  useEffect(() => { fetchEvents() }, [fetchEvents])
+  const fetchCalendars = useCallback(async () => {
+    try {
+      const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/calendars`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.calendars?.length) setCalendars(data.calendars)
+      }
+    } catch {}
+  }, [])
+
+  useEffect(() => { fetchEvents(); fetchCalendars() }, [fetchEvents, fetchCalendars])
 
   const calendarDays = useMemo(() => {
     const firstDay = new Date(year, month, 1)
@@ -57,11 +84,47 @@ export default function CalendarView() {
 
   const today = new Date()
   const isToday = (d) => d.date.toDateString() === today.toDateString()
-
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-
   const prev = () => setCurrentDate(new Date(year, month - 1, 1))
   const next = () => setCurrentDate(new Date(year, month + 1, 1))
+
+  // Open create modal
+  const openCreateModal = (date) => {
+    const d = date || new Date()
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    setForm({ title: '', date: dateStr, startTime: '09:00', endTime: '10:00', calendar: calendars[0]?.name || 'Work', location: '', description: '' })
+    setModalDate(d)
+    setShowModal(true)
+  }
+
+  const handleCreate = async () => {
+    if (!form.title || !form.date) return
+    setCreating(true)
+    try {
+      const start = new Date(`${form.date}T${form.startTime}:00`)
+      const end = new Date(`${form.date}T${form.endTime}:00`)
+      const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/events`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0' },
+        body: JSON.stringify({
+          title: form.title,
+          start: start.toISOString(),
+          end: end.toISOString(),
+          calendar: form.calendar,
+          location: form.location || undefined,
+          description: form.description || undefined,
+        }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      setShowModal(false)
+      // Re-fetch after a brief delay for CalDAV to settle
+      setTimeout(() => fetchEvents(), 1500)
+    } catch (err) {
+      alert(`Failed to create event: ${err.message}`)
+    } finally {
+      setCreating(false)
+    }
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -69,7 +132,6 @@ export default function CalendarView() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Calendar</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* iCloud sync indicator */}
           <button
             onClick={fetchEvents}
             disabled={syncing}
@@ -87,54 +149,31 @@ export default function CalendarView() {
             {syncing ? 'Syncing...' : syncError ? 'Sync Failed — Retry' : lastSync ? 'Synced with iCloud' : 'Sync Now'}
           </button>
 
-          {/* View toggle */}
           <div style={{ display: 'flex', gap: '2px' }}>
             {VIEWS.map(v => (
-              <button
-                key={v}
-                onClick={() => setView(v)}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: v === 'Month' ? '8px 0 0 8px' : v === 'Day' ? '0 8px 8px 0' : '0',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  background: view === v ? 'rgba(0,212,255,0.15)' : 'transparent',
-                  color: view === v ? '#00d4ff' : '#71717a',
-                  fontSize: '12px',
-                  fontWeight: view === v ? 600 : 400,
-                  cursor: 'pointer',
-                }}
-              >
-                {v}
-              </button>
+              <button key={v} onClick={() => setView(v)} style={{
+                padding: '6px 14px',
+                borderRadius: v === 'Month' ? '8px 0 0 8px' : v === 'Day' ? '0 8px 8px 0' : '0',
+                border: '1px solid rgba(255,255,255,0.1)',
+                background: view === v ? 'rgba(0,212,255,0.15)' : 'transparent',
+                color: view === v ? '#00d4ff' : '#71717a',
+                fontSize: '12px', fontWeight: view === v ? 600 : 400, cursor: 'pointer',
+              }}>{v}</button>
             ))}
           </div>
 
-          {/* Nav */}
           <button onClick={prev} style={navBtn}>←</button>
-          <span style={{ fontSize: '14px', fontWeight: 600, color: '#e4e4e7', minWidth: '140px', textAlign: 'center' }}>
-            {monthName}
-          </span>
+          <span style={{ fontSize: '14px', fontWeight: 600, color: '#e4e4e7', minWidth: '140px', textAlign: 'center' }}>{monthName}</span>
           <button onClick={next} style={navBtn}>→</button>
 
-          {/* + Event */}
-          <button
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: '1px solid rgba(0,212,255,0.3)',
-              background: 'rgba(0,212,255,0.1)',
-              color: '#00d4ff',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
-            + Event
-          </button>
+          <button onClick={() => openCreateModal()} style={{
+            padding: '8px 16px', borderRadius: '8px',
+            border: '1px solid rgba(0,212,255,0.3)', background: 'rgba(0,212,255,0.1)',
+            color: '#00d4ff', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+          }}>+ Event</button>
         </div>
       </div>
 
-      {/* Empty state if no events */}
       {events.length === 0 && !syncing && (
         <div style={{ marginBottom: '16px', padding: '12px 16px', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', fontSize: '12px', color: '#71717a', textAlign: 'center' }}>
           No events — connect iCloud calendar to sync
@@ -142,35 +181,14 @@ export default function CalendarView() {
       )}
 
       {/* Day headers */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(7, 1fr)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-      }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         {DAYS.map(d => (
-          <div key={d} style={{
-            padding: '8px',
-            fontSize: '11px',
-            fontWeight: 600,
-            color: '#71717a',
-            textAlign: 'center',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-          }}>
-            {d}
-          </div>
+          <div key={d} style={{ padding: '8px', fontSize: '11px', fontWeight: 600, color: '#71717a', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '1px' }}>{d}</div>
         ))}
       </div>
 
       {/* Calendar grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(7, 1fr)',
-        gridTemplateRows: 'repeat(6, 1fr)',
-        flex: 1,
-        border: '1px solid rgba(255,255,255,0.06)',
-        borderTop: 'none',
-      }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gridTemplateRows: 'repeat(6, 1fr)', flex: 1, border: '1px solid rgba(255,255,255,0.06)', borderTop: 'none' }}>
         {calendarDays.map((d, i) => {
           const dayEvents = events.filter(e => {
             const eDate = new Date(e.start)
@@ -180,8 +198,9 @@ export default function CalendarView() {
           return (
             <div
               key={i}
+              onClick={() => openCreateModal(d.date)}
               style={{
-                padding: '6px 8px',
+                padding: '6px 8px', cursor: 'pointer',
                 borderRight: (i + 1) % 7 !== 0 ? '1px solid rgba(255,255,255,0.04)' : 'none',
                 borderBottom: i < 35 ? '1px solid rgba(255,255,255,0.04)' : 'none',
                 background: isToday(d) ? 'rgba(0,212,255,0.04)' : 'transparent',
@@ -189,47 +208,118 @@ export default function CalendarView() {
               }}
             >
               <div style={{
-                fontSize: '12px',
-                fontWeight: isToday(d) ? 700 : 400,
+                fontSize: '12px', fontWeight: isToday(d) ? 700 : 400,
                 color: !d.current ? '#3f3f46' : isToday(d) ? '#00d4ff' : '#a1a1aa',
                 marginBottom: '4px',
-              }}>
-                {d.day}
-              </div>
-              {dayEvents.map(evt => (
-                <div
-                  key={evt.id}
-                  style={{
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    background: `${evt.color || '#3b82f6'}20`,
-                    color: evt.color || '#3b82f6',
-                    fontSize: '10px',
-                    fontWeight: 500,
-                    marginBottom: '2px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {evt.title}
-                </div>
-              ))}
+              }}>{d.day}</div>
+              {dayEvents.slice(0, 3).map((evt, j) => {
+                const color = getCalColor(evt.calendar)
+                const time = evt.start ? new Date(evt.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : ''
+                return (
+                  <div key={j} onClick={e => e.stopPropagation()} style={{
+                    padding: '2px 6px', borderRadius: '4px',
+                    background: `${color}20`, borderLeft: `2px solid ${color}`,
+                    color, fontSize: '10px', fontWeight: 500, marginBottom: '2px',
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }} title={`${evt.summary || evt.title}${evt.location ? ' — ' + evt.location : ''}`}>
+                    {time ? <span style={{ opacity: 0.7 }}>{time} </span> : null}{evt.summary || evt.title}
+                  </div>
+                )
+              })}
+              {dayEvents.length > 3 && (
+                <div style={{ fontSize: '9px', color: '#71717a', paddingLeft: '6px' }}>+{dayEvents.length - 3} more</div>
+              )}
             </div>
           )
         })}
       </div>
+
+      {/* Create Event Modal */}
+      {showModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+        }} onClick={() => setShowModal(false)}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#18181b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px',
+            padding: '28px', width: '420px', maxWidth: '90vw',
+          }}>
+            <h3 style={{ margin: '0 0 20px', fontSize: '18px', fontWeight: 700, color: '#e4e4e7' }}>New Event</h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <Field label="Title" required>
+                <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                  placeholder="Event title" autoFocus style={inputStyle} />
+              </Field>
+
+              <Field label="Date" required>
+                <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} style={inputStyle} />
+              </Field>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <Field label="Start Time" style={{ flex: 1 }}>
+                  <input type="time" value={form.startTime} onChange={e => setForm(f => ({ ...f, startTime: e.target.value }))} style={inputStyle} />
+                </Field>
+                <Field label="End Time" style={{ flex: 1 }}>
+                  <input type="time" value={form.endTime} onChange={e => setForm(f => ({ ...f, endTime: e.target.value }))} style={inputStyle} />
+                </Field>
+              </div>
+
+              <Field label="Calendar">
+                <select value={form.calendar} onChange={e => setForm(f => ({ ...f, calendar: e.target.value }))} style={inputStyle}>
+                  {(calendars.length ? calendars : [{ name: 'Work' }, { name: 'Personal' }, { name: 'Reminders' }]).map(c => (
+                    <option key={c.name} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+              </Field>
+
+              <Field label="Location">
+                <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
+                  placeholder="Optional" style={inputStyle} />
+              </Field>
+
+              <Field label="Description">
+                <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                  placeholder="Optional" rows={2} style={{ ...inputStyle, resize: 'vertical' }} />
+              </Field>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '24px' }}>
+              <button onClick={() => setShowModal(false)} style={{
+                padding: '8px 20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
+                background: 'transparent', color: '#a1a1aa', fontSize: '13px', cursor: 'pointer',
+              }}>Cancel</button>
+              <button onClick={handleCreate} disabled={creating || !form.title} style={{
+                padding: '8px 20px', borderRadius: '8px', border: 'none',
+                background: creating || !form.title ? '#27272a' : '#00d4ff', color: creating || !form.title ? '#52525b' : '#000',
+                fontSize: '13px', fontWeight: 600, cursor: creating || !form.title ? 'default' : 'pointer',
+              }}>{creating ? 'Creating...' : 'Create Event'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
+function Field({ label, required, children, style }) {
+  return (
+    <div style={style}>
+      <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#71717a', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+        {label}{required && <span style={{ color: '#ef4444' }}> *</span>}
+      </label>
+      {children}
+    </div>
+  )
+}
+
+const inputStyle = {
+  width: '100%', padding: '8px 12px', borderRadius: '8px',
+  border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
+  color: '#e4e4e7', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
+}
+
 const navBtn = {
-  padding: '4px 10px',
-  borderRadius: '6px',
-  border: '1px solid rgba(255,255,255,0.1)',
-  background: 'transparent',
-  color: '#a1a1aa',
-  fontSize: '14px',
-  cursor: 'pointer',
+  padding: '4px 10px', borderRadius: '6px',
+  border: '1px solid rgba(255,255,255,0.1)', background: 'transparent',
+  color: '#a1a1aa', fontSize: '14px', cursor: 'pointer',
 }
