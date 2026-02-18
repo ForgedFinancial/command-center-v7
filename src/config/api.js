@@ -65,6 +65,9 @@ export const ENDPOINTS = {
   // Task Notify Webhook
   tasksNotify: '/api/tasks/notify',
 
+  // Lead Sources Settings
+  leadSources: '/api/settings/lead-sources',
+
   // Auth
   authSetup: '/api/auth/setup',
   authLogin: '/api/auth/login',

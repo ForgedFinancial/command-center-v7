@@ -8,6 +8,8 @@ import PipelineModeToggle, { filterByPipelineMode } from '../PipelineModeToggle'
 import DataSourceToggle from '../../../shared/DataSourceToggle'
 import { useDataSource } from '../../../../hooks/useDataSource'
 
+const LEAD_TYPES = ['FEX', 'VETERANS', 'MORTGAGE PROTECTION', 'TRUCKERS', 'IUL']
+
 const TAG_COLORS = {
   'VIP Client': { color: '#4ade80', bg: 'rgba(74,222,128,0.15)' },
   'Lead': { color: '#3b82f6', bg: 'rgba(59,130,246,0.15)' },
@@ -32,6 +34,7 @@ export default function ContactsView() {
   const { actions: appActions } = useApp()
   const [search, setSearch] = useState('')
   const [tagFilter, setTagFilter] = useState('')
+  const [leadTypeFilter, setLeadTypeFilter] = useState('')
   const { source } = useDataSource()
   const [expandedContact, setExpandedContact] = useState(null)
   const [detailTab, setDetailTab] = useState('info')
@@ -62,8 +65,11 @@ export default function ContactsView() {
     if (tagFilter) {
       leads = leads.filter(l => l.tags?.includes(tagFilter))
     }
+    if (leadTypeFilter) {
+      leads = leads.filter(l => l.leadType === leadTypeFilter)
+    }
     return leads.sort((a, b) => new Date(b.lastContact || b.createdAt) - new Date(a.lastContact || a.createdAt))
-  }, [state.leads, search, tagFilter, state.pipelineMode, source])
+  }, [state.leads, search, tagFilter, leadTypeFilter, state.pipelineMode, source])
 
   const allTags = useMemo(() => {
     const tags = new Set()
@@ -113,6 +119,10 @@ export default function ContactsView() {
               width: '180px',
             }}
           />
+          <select value={leadTypeFilter} onChange={(e) => setLeadTypeFilter(e.target.value)} style={selectStyle}>
+            <option value="">All Lead Types</option>
+            {LEAD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
           <select value={tagFilter} onChange={(e) => setTagFilter(e.target.value)} style={selectStyle}>
             <option value="">All Tags</option>
             {allTags.map(tag => <option key={tag} value={tag}>{tag}</option>)}
@@ -276,6 +286,7 @@ export default function ContactsView() {
                           {lead.phone && <span onClick={(e) => { e.stopPropagation(); handleDial(lead) }} style={{ cursor: 'pointer', marginLeft: '6px' }}>📞</span>}
                         </div>
                         <div><span style={{ color: '#71717a' }}>Company:</span> <span style={{ color: '#e4e4e7' }}>{lead.carrier || '—'}</span></div>
+                        <div><span style={{ color: '#71717a' }}>Lead Type:</span> <span style={{ color: '#e4e4e7' }}>{lead.leadType || '—'}</span></div>
                         <div><span style={{ color: '#71717a' }}>Stage:</span> <span style={{ color: '#e4e4e7' }}>{lead.stage || '—'}</span></div>
                         <div><span style={{ color: '#71717a' }}>Tags:</span> <span style={{ color: '#e4e4e7' }}>{lead.tags?.join(', ') || '—'}</span></div>
                         <div><span style={{ color: '#71717a' }}>Value:</span> <span style={{ color: '#e4e4e7' }}>{lead.value || lead.premium ? `$${lead.value || lead.premium}` : '—'}</span></div>

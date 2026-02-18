@@ -4,6 +4,8 @@ import { CRM_STAGES } from '../../../../config/crm'
 import PipelineModeToggle, { filterByPipelineMode } from '../PipelineModeToggle'
 import EmptyState from '../../../shared/EmptyState'
 
+const LEAD_TYPES = ['FEX', 'VETERANS', 'MORTGAGE PROTECTION', 'TRUCKERS', 'IUL']
+
 const STAGE_ORDER = ['new_lead', 'contact', 'engaged', 'qualified', 'application', 'sold']
 
 const STAGE_LABELS = {
@@ -27,8 +29,13 @@ const STAGE_COLORS = {
 export default function PipelineView() {
   const { state, actions } = useCRM()
   const [showUpload, setShowUpload] = useState(false)
+  const [leadTypeFilter, setLeadTypeFilter] = useState('')
 
-  const filteredLeads = useMemo(() => filterByPipelineMode(state.leads, state.pipelineMode), [state.leads, state.pipelineMode])
+  const filteredLeads = useMemo(() => {
+    let leads = filterByPipelineMode(state.leads, state.pipelineMode)
+    if (leadTypeFilter) leads = leads.filter(l => l.leadType === leadTypeFilter)
+    return leads
+  }, [state.leads, state.pipelineMode, leadTypeFilter])
 
   const columns = useMemo(() => {
     return STAGE_ORDER.map(stage => {
@@ -46,7 +53,24 @@ export default function PipelineView() {
           <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Pipeline</h2>
           <PipelineModeToggle />
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <select
+            value={leadTypeFilter}
+            onChange={(e) => setLeadTypeFilter(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '8px',
+              border: '1px solid rgba(255,255,255,0.1)',
+              background: 'rgba(255,255,255,0.04)',
+              color: '#a1a1aa',
+              fontSize: '12px',
+              outline: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            <option value="">All Lead Types</option>
+            {LEAD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
           <button
             onClick={() => setShowUpload(true)}
             style={{
@@ -181,6 +205,7 @@ function UploadLeadsModal({ onClose, actions }) {
   const fileRef = useRef(null)
   const [pipeline, setPipeline] = useState('new')
   const [stage, setStage] = useState('new_lead')
+  const [leadType, setLeadType] = useState('')
   const [preview, setPreview] = useState(null)
   const [uploading, setUploading] = useState(false)
   const [result, setResult] = useState(null)
@@ -220,6 +245,7 @@ function UploadLeadsModal({ onClose, actions }) {
         notes: r.notes || '',
         pipeline,
         stage,
+        leadType,
         createdAt: new Date().toISOString(),
       }))
       // POST to API
@@ -278,6 +304,21 @@ function UploadLeadsModal({ onClose, actions }) {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Lead Type selector */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            Lead Type
+          </label>
+          <select value={leadType} onChange={e => setLeadType(e.target.value)} style={{
+            width: '100%', padding: '10px 14px', borderRadius: '8px',
+            border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
+            color: '#e4e4e7', fontSize: '13px', outline: 'none',
+          }}>
+            <option value="">— Select Lead Type —</option>
+            {LEAD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
         </div>
 
         {/* Stage selector */}
