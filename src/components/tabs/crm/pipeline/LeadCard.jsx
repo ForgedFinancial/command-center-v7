@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import crmClient from '../../../../api/crmClient'
+import { WORKER_PROXY_URL, getSyncHeaders } from '../../../../config/api'
 import { DISPOSITION_TAGS, getTagById } from '../../../../config/dispositionTags'
 import { renderCardField, timeAgo } from './pipelineHelpers'
 
@@ -49,6 +50,53 @@ export default function LeadCard({ lead, color, cardFields, onDragStart, onClick
   }
   const handleHoverEnd = () => {
     if (hoverTimer.current) { clearTimeout(hoverTimer.current); hoverTimer.current = null }
+  }
+
+  const [scheduling, setScheduling] = useState(false)
+
+  const handleAutoSchedule = async (e) => {
+    e.stopPropagation()
+    if (scheduling) return
+    setScheduling(true)
+    try {
+      // Next business day at 1:15 PM CT
+      const now = new Date()
+      const ct = new Date(now.toLocaleString('en-US', { timeZone: 'America/Chicago' }))
+      const day = ct.getDay() // 0=Sun
+      let daysToAdd = 1
+      if (day === 5) daysToAdd = 3 // Fri → Mon
+      else if (day === 6) daysToAdd = 2 // Sat → Mon
+      // Also check if adding 1 lands on weekend
+      const next = new Date(ct)
+      next.setDate(next.getDate() + daysToAdd)
+      next.setHours(13, 15, 0, 0)
+      // Convert back: get the offset difference
+      const targetCT = new Date(next.toLocaleString('en-US', { timeZone: 'America/Chicago' }))
+      const offset = next.getTime() - targetCT.getTime()
+      const startUTC = new Date(next.getTime() + offset)
+      const endUTC = new Date(startUTC.getTime() + 30 * 60 * 1000)
+      const fmt = d => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+      const payload = {
+        title: `Call: ${lead.name || 'Unknown'}`,
+        startDate: fmt(startUTC),
+        endDate: fmt(endUTC),
+        calendar: 'Work',
+        description: `Phone: ${lead.phone || 'N/A'}\nLead Type: ${lead.lead_type || lead.leadType || 'N/A'}\nState: ${lead.state || 'N/A'}`,
+        alerts: [10],
+      }
+      const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/events`, {
+        method: 'POST',
+        headers: getSyncHeaders(),
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const dateStr = next.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+      appActions?.addToast({ id: Date.now(), type: 'success', message: `📅 Scheduled for ${dateStr} at 1:15 PM CT` })
+    } catch (err) {
+      appActions?.addToast({ id: Date.now(), type: 'error', message: `Failed to schedule: ${err.message}` })
+    } finally {
+      setScheduling(false)
+    }
   }
 
   const actionBtnStyle = {
@@ -184,6 +232,7 @@ export default function LeadCard({ lead, color, cardFields, onDragStart, onClick
           <button onClick={(e) => onMessage(lead, e)} title="Send message" style={{ ...actionBtnStyle, color: '#a855f7' }}>💬</button>
         </>}
         <button onClick={(e) => { e.stopPropagation(); setShowQuickNote(v => !v) }} title="Quick note" style={{ ...actionBtnStyle, color: '#f59e0b' }}>✏️</button>
+        <button onClick={handleAutoSchedule} title="Auto-schedule call (next business day 1:15 PM CT)" style={{ ...actionBtnStyle, color: '#3b82f6', opacity: scheduling ? 0.5 : 1 }}>{scheduling ? '⏳' : '📅'}</button>
       </div>
 
       {/* Quick Note Inline */}
