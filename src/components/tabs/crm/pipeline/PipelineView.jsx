@@ -994,9 +994,34 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
         </div>
       )}
 
-      {/* Time ago */}
-      <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', marginTop: '2px' }}>
-        {lead.createdAt || lead.created_at ? timeAgo(lead.createdAt || lead.created_at) : ''}
+      {/* Time ago + Disposition Dropdown */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+        <span style={{ fontSize: '10px', color: 'var(--theme-text-secondary)' }}>
+          {lead.createdAt || lead.created_at ? timeAgo(lead.createdAt || lead.created_at) : ''}
+        </span>
+        <select
+          value=""
+          onClick={e => e.stopPropagation()}
+          onChange={(e) => {
+            e.stopPropagation()
+            if (!e.target.value) return
+            toggleTag(e.target.value, e)
+            e.target.value = ''
+          }}
+          style={{
+            fontSize: '10px', padding: '1px 4px', borderRadius: '4px',
+            border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
+            color: 'var(--theme-text-secondary)', cursor: 'pointer', outline: 'none',
+            maxWidth: '130px',
+          }}
+        >
+          <option value="">+ Tag</option>
+          {DISPOSITION_TAGS.map(tag => (
+            <option key={tag.id} value={tag.id} style={{ color: leadTags.includes(tag.id) ? tag.color : undefined }}>
+              {leadTags.includes(tag.id) ? '✓ ' : ''}{tag.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Action Buttons */}
@@ -1006,9 +1031,8 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
           <button onClick={(e) => onVideoCall(lead, e)} title="Video call" style={{ ...actionBtnStyle, color: 'var(--theme-accent)' }}>📹</button>
           <button onClick={(e) => onMessage(lead, e)} title="Send message" style={{ ...actionBtnStyle, color: '#a855f7' }}>💬</button>
         </>}
-        <button onClick={(e) => { e.stopPropagation(); setShowQuickNote(v => !v); setShowDisposition(false); setShowTagDropdown(false) }} title="Quick note" style={{ ...actionBtnStyle, color: '#f59e0b' }}>✏️</button>
-        <button onClick={(e) => { e.stopPropagation(); setShowTagDropdown(v => !v); setShowQuickNote(false); setShowDisposition(false) }} title="Add/remove tags" style={{ ...actionBtnStyle, color: '#a855f7' }}>🏷️</button>
-        <button onClick={(e) => { e.stopPropagation(); setShowDisposition(v => !v); setShowQuickNote(false); setShowTagDropdown(false) }} title="Quick disposition" style={{ ...actionBtnStyle, color: '#3b82f6' }}>🔄</button>
+        <button onClick={(e) => { e.stopPropagation(); setShowQuickNote(v => !v); setShowDisposition(false) }} title="Quick note" style={{ ...actionBtnStyle, color: '#f59e0b' }}>✏️</button>
+        <button onClick={(e) => { e.stopPropagation(); setShowDisposition(v => !v); setShowQuickNote(false) }} title="Quick disposition" style={{ ...actionBtnStyle, color: '#3b82f6' }}>🔄</button>
       </div>
 
       {/* Quick Note Inline */}
@@ -1028,31 +1052,6 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
           />
           <button onClick={handleQuickNote} style={{ ...actionBtnStyle, color: 'var(--theme-success)', fontSize: '10px', padding: '3px 6px' }}>✓</button>
           <button onClick={() => { setShowQuickNote(false); setQuickNote('') }} style={{ ...actionBtnStyle, color: 'var(--theme-text-secondary)', fontSize: '10px', padding: '3px 6px' }}>✕</button>
-        </div>
-      )}
-
-      {/* Tag Dropdown */}
-      {showTagDropdown && (
-        <div onClick={e => e.stopPropagation()} style={{ marginTop: '6px', maxHeight: '180px', overflowY: 'auto', borderRadius: '6px', border: '1px solid var(--theme-border)', background: 'var(--theme-bg)', padding: '4px' }}>
-          {DISPOSITION_TAGS.map(tag => {
-            const active = leadTags.includes(tag.id)
-            return (
-              <div
-                key={tag.id}
-                onClick={(e) => toggleTag(tag.id, e)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  padding: '4px 8px', borderRadius: '4px', cursor: 'pointer',
-                  background: active ? tag.bg : 'transparent',
-                  marginBottom: '1px', transition: 'background 100ms',
-                }}
-              >
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: tag.color, flexShrink: 0 }} />
-                <span style={{ fontSize: '11px', color: active ? tag.color : 'var(--theme-text-secondary)', fontWeight: active ? 600 : 400, flex: 1 }}>{tag.label}</span>
-                {active && <span style={{ fontSize: '10px', color: tag.color }}>✓</span>}
-              </div>
-            )
-          })}
         </div>
       )}
 
