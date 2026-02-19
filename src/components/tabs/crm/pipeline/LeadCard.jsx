@@ -107,6 +107,17 @@ export default function LeadCard({ lead, color, cardFields, onDragStart, onClick
       const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h
       const timeStr = `${h12}:${mi} ${ampm}`
       appActions?.addToast({ id: Date.now(), type: 'success', message: `📅 Scheduled: ${lead.name || 'Unknown'} on ${dateStr} at ${timeStr}` })
+      // Fire internal notification
+      fetch(`${WORKER_PROXY_URL}/api/notifications`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionStorage.getItem('cc_auth_token') || ''}` },
+        body: JSON.stringify({
+          title: `📅 Appointment Scheduled`,
+          description: `${lead.name || 'Unknown'} — ${dateStr} at ${timeStr}`,
+          type: 'success',
+          meta: { leadId: lead.id, leadName: lead.name, date: schedDate, time: schedTime }
+        })
+      }).catch(() => {}) // fire-and-forget
       // Auto-add "Appointment Booked" tag
       if (!leadTags.includes('appt_booked')) {
         toggleTag('appt_booked', null)
