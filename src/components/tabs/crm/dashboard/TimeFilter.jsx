@@ -24,11 +24,13 @@ export default function TimeFilter({ value, onChange, customStart, customEnd, on
             }
             onChange(r.key)
           }}
-          className={`text-xs px-2.5 py-1.5 rounded-md transition-all ${
-            value === r.key
-              ? 'bg-blue-600 text-white'
-              : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
-          }`}
+          className="text-xs px-2.5 py-1.5 rounded-md transition-all"
+          style={{
+            background: value === r.key ? 'var(--theme-accent)' : 'var(--theme-surface)',
+            color: value === r.key ? 'var(--theme-accent-text)' : 'var(--theme-text-secondary)',
+          }}
+          onMouseOver={e => { if (value !== r.key) { e.currentTarget.style.background = 'var(--theme-surface-hover)'; e.currentTarget.style.color = 'var(--theme-text-primary)' } }}
+          onMouseOut={e => { if (value !== r.key) { e.currentTarget.style.background = 'var(--theme-surface)'; e.currentTarget.style.color = 'var(--theme-text-secondary)' } }}
         >
           {r.label}
         </button>

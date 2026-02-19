@@ -7,6 +7,17 @@
    ============================================ */
 
 /* === DEFAULT: Obsidian (Professional Focus) === */
+:root {
+  --ui-scale: 1;
+}
+
+.app-scale-wrapper {
+  transform: scale(var(--ui-scale, 1));
+  transform-origin: top left;
+  width: calc(100% / var(--ui-scale, 1));
+  height: calc(100% / var(--ui-scale, 1));
+}
+
 :root,
 [data-theme="obsidian"] {
   --theme-bg:              #0f172a;

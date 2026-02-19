@@ -14,18 +14,15 @@ const UI_SCALE_KEY = 'cc7-ui-scale'
 const DEFAULT_SCALE = 100
 const MIN_SCALE = 75
 const MAX_SCALE = 150
-const STEP = 5
+const KB_STEP = 5
 
 function clampScale(v) {
-  return Math.min(MAX_SCALE, Math.max(MIN_SCALE, Math.round(v / STEP) * STEP))
+  return Math.min(MAX_SCALE, Math.max(MIN_SCALE, Math.round(v)))
 }
 
-function applyZoom(pct) {
-  document.documentElement.style.zoom = `${pct}%`
-  // Compensate so content still fills full viewport
-  const scale = 100 / pct * 100
-  document.documentElement.style.minWidth = `${scale}vw`
-  document.documentElement.style.minHeight = `${scale}vh`
+function applyScale(pct) {
+  const decimal = pct / 100
+  document.documentElement.style.setProperty('--ui-scale', decimal)
 }
 
 // Global getter so Settings can read current scale
@@ -37,16 +34,16 @@ export function getUIScale() {
 export function setUIScale(pct) {
   const clamped = clampScale(pct)
   localStorage.setItem(UI_SCALE_KEY, String(clamped))
-  applyZoom(clamped)
+  applyScale(clamped)
   window.dispatchEvent(new CustomEvent('cc7-ui-scale-change', { detail: clamped }))
 }
 
 function App() {
   const authenticated = sessionStorage.getItem('forged-os-session') === 'true'
 
-  // Apply zoom on mount
+  // Apply scale on mount
   useEffect(() => {
-    applyZoom(getUIScale())
+    applyScale(getUIScale())
   }, [])
 
   // Keyboard shortcuts: Ctrl+Plus, Ctrl+Minus, Ctrl+0
@@ -55,10 +52,10 @@ function App() {
       if (!e.ctrlKey && !e.metaKey) return
       if (e.key === '=' || e.key === '+') {
         e.preventDefault()
-        setUIScale(getUIScale() + STEP)
+        setUIScale(getUIScale() + KB_STEP)
       } else if (e.key === '-') {
         e.preventDefault()
-        setUIScale(getUIScale() - STEP)
+        setUIScale(getUIScale() - KB_STEP)
       } else if (e.key === '0') {
         e.preventDefault()
         setUIScale(DEFAULT_SCALE)
@@ -74,17 +71,19 @@ function App() {
 
   return (
     <ThemeProvider>
-      <PhoneProvider>
-        <TaskBoardProvider>
-          <CRMProvider>
-            <Shell />
-            <FloatingCallBar />
-            <IncomingCallBanner />
-            <DialerModal />
-            <CallScriptPanel isVisible={true} />
-          </CRMProvider>
-        </TaskBoardProvider>
-      </PhoneProvider>
+      <div className="app-scale-wrapper">
+        <PhoneProvider>
+          <TaskBoardProvider>
+            <CRMProvider>
+              <Shell />
+              <FloatingCallBar />
+              <IncomingCallBanner />
+              <DialerModal />
+              <CallScriptPanel isVisible={true} />
+            </CRMProvider>
+          </TaskBoardProvider>
+        </PhoneProvider>
+      </div>
     </ThemeProvider>
   )
 }

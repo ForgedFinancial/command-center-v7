@@ -21,10 +21,7 @@ function InlineUIScale() {
     const c = Math.max(75, Math.min(150, v))
     setScaleVal(c)
     localStorage.setItem('cc7-ui-scale', String(c))
-    document.documentElement.style.zoom = `${c}%`
-    const scale = 100 / c * 100
-    document.documentElement.style.minWidth = `${scale}vw`
-    document.documentElement.style.minHeight = `${scale}vh`
+    document.documentElement.style.setProperty('--ui-scale', c / 100)
     try { setUIScale(c) } catch {}
   }
   const presets = [75, 90, 100, 110, 125, 150]
@@ -33,7 +30,7 @@ function InlineUIScale() {
       <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--theme-text-primary)', marginBottom: '16px' }}>🔍 Display Scale</h3>
       <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '16px' }}>
         <span style={{ fontSize: '24px', fontWeight: 700, color: 'var(--theme-accent)', minWidth: '64px' }}>{scale}%</span>
-        <input type="range" min={75} max={150} step={5} value={scale} onChange={e => apply(parseInt(e.target.value, 10))}
+        <input type="range" min={75} max={150} step={1} value={scale} onChange={e => apply(parseInt(e.target.value, 10))}
           style={{ minWidth: '300px', flex: 1, accentColor: 'var(--theme-accent)', cursor: 'pointer', height: '6px' }} />
       </div>
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -594,10 +591,9 @@ function UIScaleControl() {
   const applyPreset = (v) => { setScale(v); setUIScale(v) }
 
   const presets = [75, 90, 100, 110, 125, 150]
-  const counterZoom = 100 / scale
 
   return (
-    <div style={{ ...cardStyle, padding: '24px', zoom: `${counterZoom}%` }}>
+    <div style={{ ...cardStyle, padding: '24px' }}>
       <h3 style={sectionTitle}>🔍 Display Scale</h3>
       <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '16px' }}>
         <span style={{ fontSize: '24px', fontWeight: 700, color: 'var(--theme-accent)', minWidth: '64px' }}>
@@ -607,7 +603,7 @@ function UIScaleControl() {
           type="range"
           min={75}
           max={150}
-          step={5}
+          step={1}
           value={scale}
           onChange={handleChange}
           style={{
