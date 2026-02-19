@@ -53,28 +53,35 @@ export default function LeadCard({ lead, color, cardFields, onDragStart, onClick
   }
 
   const [scheduling, setScheduling] = useState(false)
+  const [showScheduler, setShowScheduler] = useState(false)
+  const [schedDate, setSchedDate] = useState('')
+  const [schedTime, setSchedTime] = useState('')
 
-  const handleAutoSchedule = async (e) => {
+  const handleOpenScheduler = (e) => {
     e.stopPropagation()
-    if (scheduling) return
+    const now = new Date()
+    const today = new Date(now.toLocaleString('en-US', { timeZone: 'America/Chicago' }))
+    const yyyy = today.getFullYear()
+    const mm = String(today.getMonth() + 1).padStart(2, '0')
+    const dd = String(today.getDate()).padStart(2, '0')
+    setSchedDate(`${yyyy}-${mm}-${dd}`)
+    setSchedTime('')
+    setShowScheduler(true)
+  }
+
+  const handleScheduleSubmit = async (e) => {
+    e.stopPropagation()
+    if (!schedTime || !schedDate || scheduling) return
     setScheduling(true)
     try {
-      // Next business day at 1:15 PM CT
-      const now = new Date()
-      const ct = new Date(now.toLocaleString('en-US', { timeZone: 'America/Chicago' }))
-      const day = ct.getDay() // 0=Sun
-      let daysToAdd = 1
-      if (day === 5) daysToAdd = 3 // Fri → Mon
-      else if (day === 6) daysToAdd = 2 // Sat → Mon
-      // Also check if adding 1 lands on weekend
-      const next = new Date(ct)
-      next.setDate(next.getDate() + daysToAdd)
-      next.setHours(13, 15, 0, 0)
-      // Convert back: get the offset difference
-      const targetCT = new Date(next.toLocaleString('en-US', { timeZone: 'America/Chicago' }))
-      const offset = next.getTime() - targetCT.getTime()
-      const startUTC = new Date(next.getTime() + offset)
-      const endUTC = new Date(startUTC.getTime() + 30 * 60 * 1000)
+      // Build a date string in CT, then convert to UTC
+      const ctDateTimeStr = `${schedDate}T${schedTime}:00`
+      // Create date as if in CT by computing offset
+      const naive = new Date(ctDateTimeStr)
+      const ctRef = new Date(naive.toLocaleString('en-US', { timeZone: 'America/Chicago' }))
+      const offset = naive.getTime() - ctRef.getTime()
+      const startUTC = new Date(naive.getTime() + offset)
+      const endUTC = new Date(startUTC.getTime() + 15 * 60 * 1000)
       const fmt = d => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
       const payload = {
         title: `Call: ${lead.name || 'Unknown'}`,
@@ -90,8 +97,17 @@ export default function LeadCard({ lead, color, cardFields, onDragStart, onClick
         body: JSON.stringify(payload),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const dateStr = next.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-      appActions?.addToast({ id: Date.now(), type: 'success', message: `📅 Scheduled for ${dateStr} at 1:15 PM CT` })
+      // Format for toast
+      const [y, m, d] = schedDate.split('-')
+      const dateObj = new Date(Number(y), Number(m) - 1, Number(d))
+      const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+      const [hh, mi] = schedTime.split(':')
+      const h = Number(hh)
+      const ampm = h >= 12 ? 'PM' : 'AM'
+      const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h
+      const timeStr = `${h12}:${mi} ${ampm}`
+      appActions?.addToast({ id: Date.now(), type: 'success', message: `📅 Scheduled: ${lead.name || 'Unknown'} on ${dateStr} at ${timeStr}` })
+      setShowScheduler(false)
     } catch (err) {
       appActions?.addToast({ id: Date.now(), type: 'error', message: `Failed to schedule: ${err.message}` })
     } finally {
@@ -232,7 +248,7 @@ export default function LeadCard({ lead, color, cardFields, onDragStart, onClick
           <button onClick={(e) => onMessage(lead, e)} title="Send message" style={{ ...actionBtnStyle, color: '#a855f7' }}>💬</button>
         </>}
         <button onClick={(e) => { e.stopPropagation(); setShowQuickNote(v => !v) }} title="Quick note" style={{ ...actionBtnStyle, color: '#f59e0b' }}>✏️</button>
-        <button onClick={handleAutoSchedule} title="Auto-schedule call (next business day 1:15 PM CT)" style={{ ...actionBtnStyle, color: '#3b82f6', opacity: scheduling ? 0.5 : 1 }}>{scheduling ? '⏳' : '📅'}</button>
+        <button onClick={handleOpenScheduler} title="Schedule call" style={{ ...actionBtnStyle, color: '#3b82f6', opacity: scheduling ? 0.5 : 1 }}>{scheduling ? '⏳' : '📅'}</button>
       </div>
 
       {/* Quick Note Inline */}
@@ -252,6 +268,35 @@ export default function LeadCard({ lead, color, cardFields, onDragStart, onClick
           />
           <button onClick={handleQuickNote} style={{ ...actionBtnStyle, color: 'var(--theme-success)', fontSize: '10px', padding: '3px 6px' }}>✓</button>
           <button onClick={() => { setShowQuickNote(false); setQuickNote('') }} style={{ ...actionBtnStyle, color: 'var(--theme-text-secondary)', fontSize: '10px', padding: '3px 6px' }}>✕</button>
+        </div>
+      )}
+
+      {/* Schedule Call Inline */}
+      {showScheduler && (
+        <div onClick={e => e.stopPropagation()} style={{ marginTop: '6px', display: 'flex', gap: '4px', alignItems: 'center' }}>
+          <input
+            type="date"
+            value={schedDate}
+            onChange={e => setSchedDate(e.target.value)}
+            style={{
+              padding: '4px 6px', fontSize: '11px', borderRadius: '4px',
+              border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
+              color: 'var(--theme-text-primary)', outline: 'none',
+            }}
+          />
+          <input
+            type="time"
+            value={schedTime}
+            onChange={e => setSchedTime(e.target.value)}
+            autoFocus
+            style={{
+              padding: '4px 6px', fontSize: '11px', borderRadius: '4px',
+              border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
+              color: 'var(--theme-text-primary)', outline: 'none',
+            }}
+          />
+          <button onClick={handleScheduleSubmit} disabled={!schedTime || scheduling} style={{ ...actionBtnStyle, color: 'var(--theme-success)', fontSize: '10px', padding: '3px 6px', opacity: !schedTime || scheduling ? 0.4 : 1 }}>Schedule</button>
+          <button onClick={() => setShowScheduler(false)} style={{ ...actionBtnStyle, color: 'var(--theme-text-secondary)', fontSize: '10px', padding: '3px 6px' }}>✕</button>
         </div>
       )}
     </div>
