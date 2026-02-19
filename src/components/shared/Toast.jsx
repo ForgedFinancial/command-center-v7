@@ -71,22 +71,7 @@ export function Toast({ id, type = 'info', message, onClose }) {
       >
         {message}
       </span>
-      <button
-        onClick={() => onClose(id)}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: 'var(--text-muted)',
-          cursor: 'pointer',
-          padding: '4px',
-          fontSize: '16px',
-          lineHeight: 1,
-          flexShrink: 0,
-        }}
-        aria-label="Close"
-      >
-        \u2715
-      </button>
+      {/* Toast auto-dismisses — no close button */}
       <style>
         {`
           @keyframes slideIn {
