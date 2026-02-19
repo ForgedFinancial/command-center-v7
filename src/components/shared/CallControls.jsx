@@ -22,7 +22,6 @@ export default function CallControls({ contactName, contactNumber, onEnd }) {
   const handleHold = async () => toggleHold()
 
   const handleEnd = () => {
-    setIsOnHold(false)
     if (activeCall) {
       activeCall.disconnect()
     }

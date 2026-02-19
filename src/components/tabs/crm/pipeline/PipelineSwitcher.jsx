@@ -16,15 +16,7 @@ function getShortName(name) {
   return PIPELINE_SHORT[name] || name
 }
 
-const PIPELINE_ICONS = {
-  'Lead Management': '🎯',
-  'Approval Process': '📋',
-  'Policy Lifecycle': '📄',
-  'Retention Exceptions': '⚠️',
-  'Rewrite | Rejected': '🔄',
-  'Active | Inforce': '✅',
-  'Nurture | Long Term': '🌱',
-}
+import { PIPELINE_ICONS } from '../../../../config/pipelineConfig'
 
 export default function PipelineSwitcher({ pipelines, currentPipelineId, onSelect, leadCounts }) {
   if (!pipelines || pipelines.length === 0) return null

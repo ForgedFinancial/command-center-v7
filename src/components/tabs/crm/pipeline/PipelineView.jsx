@@ -8,7 +8,7 @@ import PipelineSwitcher, { usePipelines } from './PipelineSwitcher'
 import EmptyState from '../../../shared/EmptyState'
 import LeadDetailModal from './LeadDetailModal'
 
-const LEAD_TYPES = ['FEX', 'VETERANS', 'MORTGAGE PROTECTION', 'TRUCKERS', 'IUL']
+import { LEAD_TYPES } from '../../../../config/leadTypes'
 
 // ========================================
 // Card Field Customization System

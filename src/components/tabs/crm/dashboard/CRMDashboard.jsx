@@ -8,15 +8,7 @@ const PIPELINE_COLORS = [
   '#3b82f6', '#a855f7', '#00d4ff', '#f59e0b', '#f97316', '#4ade80', '#ec4899',
 ]
 
-const PIPELINE_ICONS = {
-  'Lead Management': '🎯',
-  'Approval Process': '📋',
-  'Policy Lifecycle': '📄',
-  'Retention Exceptions': '⚠️',
-  'Rewrite | Rejected': '🔄',
-  'Active | Inforce': '✅',
-  'Nurture | Long Term': '🌱',
-}
+import { PIPELINE_ICONS } from '../../../../config/pipelineConfig'
 
 export default function CRMDashboard() {
   const { state, actions } = useCRM()
