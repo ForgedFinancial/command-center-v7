@@ -1053,6 +1053,21 @@ const CRM_FIELDS = [
   { key: 'payment_method', label: 'Payment Method' },
 ]
 
+// Persistent custom fields — saved across uploads
+const CUSTOM_FIELDS_STORAGE_KEY = 'cc7-custom-crm-fields'
+function loadSavedCustomFields() {
+  try { return JSON.parse(localStorage.getItem(CUSTOM_FIELDS_STORAGE_KEY) || '[]') } catch { return [] }
+}
+function saveCustomField(name) {
+  const existing = loadSavedCustomFields()
+  const key = `custom_${name.toLowerCase().replace(/\s+/g, '_')}`
+  if (!existing.find(f => f.key === key)) {
+    existing.push({ key, label: name })
+    localStorage.setItem(CUSTOM_FIELDS_STORAGE_KEY, JSON.stringify(existing))
+  }
+  return key
+}
+
 // Auto-guess mapping from CSV header to CRM field
 function guessMapping(header) {
   const h = header.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -1091,6 +1106,7 @@ function UploadLeadsModal({ onClose, actions, pipelines, stages, currentPipeline
   const [preview, setPreview] = useState(null)
   const [columnMap, setColumnMap] = useState({})
   const [customFieldNames, setCustomFieldNames] = useState({}) // csvCol → custom field name
+  const [savedCustomFields, setSavedCustomFields] = useState(loadSavedCustomFields)
   const [step, setStep] = useState(1) // 1=config, 2=mapping, 3=done
   const [uploading, setUploading] = useState(false)
   const [result, setResult] = useState(null)
@@ -1163,6 +1179,11 @@ function UploadLeadsModal({ onClose, actions, pipelines, stages, currentPipeline
             // Custom field — use the user-provided name
             const fieldName = customFieldNames[csvCol] || preview.rawHeaders[preview.headers.indexOf(csvCol)] || csvCol
             customFields[fieldName] = r[csvCol]
+          } else if (crmField?.startsWith('custom_')) {
+            // Previously saved custom field
+            const saved = savedCustomFields.find(f => f.key === crmField)
+            const fieldName = saved?.label || crmField
+            customFields[fieldName] = r[csvCol]
           } else if (crmField) {
             if (mapped[crmField]) mapped[crmField] += ' ' + r[csvCol]
             else mapped[crmField] = r[csvCol]
@@ -1216,6 +1237,14 @@ function UploadLeadsModal({ onClose, actions, pipelines, stages, currentPipeline
       } catch {
         setResult({ success: true, count: leads.length, local: true })
       }
+      // Persist any new custom field names for future uploads
+      Object.entries(columnMap).forEach(([csvCol, crmField]) => {
+        if (crmField === '__custom__') {
+          const fieldName = customFieldNames[csvCol] || preview.rawHeaders[preview.headers.indexOf(csvCol)] || csvCol
+          saveCustomField(fieldName)
+        }
+      })
+      setSavedCustomFields(loadSavedCustomFields())
       setStep(3)
     } finally { setUploading(false) }
   }
@@ -1313,6 +1342,8 @@ function UploadLeadsModal({ onClose, actions, pipelines, stages, currentPipeline
                     style={{ ...inputStyle, padding: '6px 10px', fontSize: '12px', background: columnMap[h] ? 'var(--theme-accent-muted)' : 'var(--theme-bg)', borderColor: columnMap[h] ? 'var(--theme-accent)' : 'var(--theme-border)' }}
                   >
                     {CRM_FIELDS.map(f => <option key={f.key} value={f.key}>{f.label}</option>)}
+                    {savedCustomFields.length > 0 && <option disabled>── Custom Fields ──</option>}
+                    {savedCustomFields.map(f => <option key={f.key} value={f.key}>{f.label}</option>)}
                     <option value="__custom__">+ New Custom Text Field</option>
                   </select>
                   <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
