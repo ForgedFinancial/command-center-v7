@@ -1,6 +1,7 @@
 import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
 import { useCRM } from '../../../../context/CRMContext'
 import { useApp } from '../../../../context/AppContext'
+import { usePhone } from '../../../../context/PhoneContext'
 import crmClient from '../../../../api/crmClient'
 import { CRM_STAGES } from '../../../../config/crm'
 import { WORKER_PROXY_URL } from '../../../../config/api'
@@ -147,17 +148,24 @@ export default function PipelineView() {
     crmClient.deleteLead(leadId).catch(() => {})
   }
 
-  // Phone action handlers
-  const handlePhoneCall = useCallback((lead, e) => {
+  // Phone action handlers — smart routing via PhoneContext
+  const { makeCall: phoneContextMakeCall } = usePhone()
+  const handlePhoneCall = useCallback(async (lead, e) => {
     if (e) { e.stopPropagation(); e.preventDefault() }
     if (!lead.phone) return
     markSeen(lead.id)
     appActions.addToast({ id: Date.now(), type: 'info', message: `📞 Calling ${lead.name}...` })
-    fetch(`${WORKER_PROXY_URL}/api/phone/call`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ number: lead.phone }),
-    }).catch(() => appActions.addToast({ id: Date.now(), type: 'error', message: 'Call failed' }))
-  }, [appActions])
+    try {
+      const result = await phoneContextMakeCall(lead)
+      if (result?.method === 'iphone') {
+        appActions.addToast({ id: Date.now(), type: 'success', message: `📱 Calling via iPhone` })
+      } else if (result?.method === 'twilio') {
+        appActions.addToast({ id: Date.now(), type: 'success', message: `📞 Connected via Twilio` })
+      }
+    } catch (err) {
+      appActions.addToast({ id: Date.now(), type: 'error', message: `Call failed: ${err.message}` })
+    }
+  }, [appActions, phoneContextMakeCall])
 
   const handleVideoCall = useCallback((lead, e) => {
     if (e) { e.stopPropagation(); e.preventDefault() }

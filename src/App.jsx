@@ -4,6 +4,7 @@ import { TaskBoardProvider } from './context/TaskBoardContext'
 import { CRMProvider } from './context/CRMContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { PhoneProvider } from './context/PhoneContext'
+import FloatingCallBar from './components/shared/FloatingCallBar'
 
 function App() {
   const authenticated = sessionStorage.getItem('forged-os-session') === 'true'
@@ -18,6 +19,7 @@ function App() {
         <TaskBoardProvider>
           <CRMProvider>
             <Shell />
+            <FloatingCallBar />
           </CRMProvider>
         </TaskBoardProvider>
       </PhoneProvider>

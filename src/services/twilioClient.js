@@ -1,6 +1,5 @@
 // ========================================
-// Twilio API Client
-// Frontend service for all Twilio endpoints
+// Twilio API Client — Phase 1 Power Dialer
 // Routes through Worker proxy → VPS sync server
 // ========================================
 
@@ -32,31 +31,28 @@ const twilioClient = {
     method: 'POST', body: JSON.stringify(config),
   }),
 
-  // ── Token (for browser calling) ──
+  // ── Token ──
   getToken: (identity = 'boss') => request('/api/twilio/token', {
     method: 'POST', body: JSON.stringify({ identity }),
   }),
 
   // ── Calls ──
-  makeCall: (to, contactId = null) => request('/api/twilio/call', {
-    method: 'POST', body: JSON.stringify({ to, contactId }),
+  makeCall: (to, contactId = null, leadName = null, leadState = null) => request('/api/twilio/call', {
+    method: 'POST', body: JSON.stringify({ to, contactId, leadName, leadState }),
+  }),
+  holdCall: (callSid) => request(`/api/twilio/call/${callSid}/hold`, { method: 'POST' }),
+  unholdCall: (callSid) => request(`/api/twilio/call/${callSid}/unhold`, { method: 'POST' }),
+  endCall: (callSid) => request(`/api/twilio/call/${callSid}/end`, { method: 'POST' }),
+  dispositionCall: (callSid, disposition, notes = '') => request(`/api/twilio/call/${callSid}/disposition`, {
+    method: 'POST', body: JSON.stringify({ disposition, notes }),
   }),
   getCalls: (params = {}) => {
     const qs = new URLSearchParams(params).toString()
     return request(`/api/twilio/calls${qs ? '?' + qs : ''}`)
   },
 
-  // ── SMS ──
-  sendSMS: (to, body, contactId = null) => request('/api/twilio/sms/send', {
-    method: 'POST', body: JSON.stringify({ to, body, contactId }),
-  }),
-  getMessages: (params = {}) => {
-    const qs = new URLSearchParams(params).toString()
-    return request(`/api/twilio/sms/messages${qs ? '?' + qs : ''}`)
-  },
-  getThreads: (limit = 30) => request(`/api/twilio/sms/threads?limit=${limit}`),
-
-  // ── Phone Lines ──
+  // ── Lines ──
+  getLines: () => request('/api/twilio/lines'),
   getNumbers: () => request('/api/twilio/numbers'),
   setPrimaryLine: (lineId) => request('/api/twilio/numbers/primary', {
     method: 'POST', body: JSON.stringify({ lineId }),
@@ -68,13 +64,18 @@ const twilioClient = {
     method: 'POST', body: JSON.stringify({ number, sid }),
   }),
 
-  // ── Hold ──
-  holdCall: (callSid) => request('/api/twilio/call/hold', {
-    method: 'POST', body: JSON.stringify({ callSid }),
+  // ── Routing ──
+  previewRouting: (phone, state) => request(`/api/twilio/routing/preview?phone=${encodeURIComponent(phone || '')}&state=${encodeURIComponent(state || '')}`),
+
+  // ── SMS ──
+  sendSMS: (to, body, contactId = null, leadState = null) => request('/api/twilio/sms/send', {
+    method: 'POST', body: JSON.stringify({ to, body, contactId, leadState }),
   }),
-  unholdCall: (callSid) => request('/api/twilio/call/unhold', {
-    method: 'POST', body: JSON.stringify({ callSid }),
-  }),
+  getMessages: (params = {}) => {
+    const qs = new URLSearchParams(params).toString()
+    return request(`/api/twilio/sms/messages${qs ? '?' + qs : ''}`)
+  },
+  getThreads: (limit = 30) => request(`/api/twilio/sms/threads?limit=${limit}`),
 
   // ── Failover ──
   getFailoverStatus: () => request('/api/twilio/failover/status'),
