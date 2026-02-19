@@ -19,8 +19,10 @@ import PhoneNumberHealth from '../../crm/phone/PhoneNumberHealth'
 import { RingSettings } from '../../crm/phone/RingingSystem'
 import LiveCallDashboard from '../../crm/phone/LiveCallDashboard'
 import CallQueue from '../../crm/phone/CallQueue'
+import CallbackQueue from '../../crm/phone/CallbackQueue'
+import BestTimeIntelligence from '../../crm/phone/BestTimeIntelligence'
 
-const TABS = ['Dialer', 'Dashboard', 'Call History', 'Voicemail', 'Settings']
+const TABS = ['Dialer', 'Dashboard', 'Call History', 'Callbacks', 'Intelligence', 'Voicemail', 'Settings']
 const FILTERS = ['All', 'Missed', 'Incoming', 'Outgoing']
 const REFRESH_INTERVAL = 60000
 
@@ -222,6 +224,12 @@ export default function PhoneView() {
         )}
         {activeTab === 'Dashboard' && (
           <LiveCallDashboard />
+        )}
+        {activeTab === 'Callbacks' && (
+          <CallbackQueue />
+        )}
+        {activeTab === 'Intelligence' && (
+          <BestTimeIntelligence />
         )}
         {activeTab === 'Call History' && (
           <CallHistoryTab

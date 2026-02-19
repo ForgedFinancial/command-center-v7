@@ -47,17 +47,28 @@ export default function LiveCallDashboard() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const intervalRef = useState(null)
+  // Phase 4C: Intelligence Suite
+  const [intelligence, setIntelligence] = useState({
+    connectionRateByNumber: {},
+    callToCloseRatio: {},
+    avgAttemptsToConnect: 0,
+    talkTimeVsIdle: { talk: 0, idle: 0 },
+    leadSourceROI: {},
+  })
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true)
     setError(null)
     
     try {
-      const [statsRes, callsRes] = await Promise.all([
+      const [statsRes, callsRes, intelligenceRes] = await Promise.all([
         fetch(`${WORKER_PROXY_URL}/api/twilio/dashboard/stats`, {
           headers: getSyncHeaders()
         }),
         fetch(`${WORKER_PROXY_URL}/api/twilio/calls?limit=50&today=true`, {
+          headers: getSyncHeaders()
+        }),
+        fetch(`${WORKER_PROXY_URL}/api/twilio/intelligence/call-metrics`, {
           headers: getSyncHeaders()
         })
       ])
@@ -80,6 +91,11 @@ export default function LiveCallDashboard() {
                       call.status === 'no-answer' ? '#f59e0b' :
                       call.status === 'busy' ? '#ef4444' : '#71717a',
         })))
+      }
+
+      if (intelligenceRes.ok) {
+        const intelligenceData = await intelligenceRes.json()
+        setIntelligence(intelligenceData.intelligence || {})
       }
     } catch (err) {
       setError(err.message)
@@ -232,6 +248,84 @@ export default function LiveCallDashboard() {
         </div>
       </div>
 
+      {/* Phase 4C: Intelligence Suite */}
+      <div style={{
+        padding: '20px',
+        borderRadius: '12px',
+        background: 'rgba(139,92,246,0.05)',
+        border: '1px solid rgba(139,92,246,0.2)',
+      }}>
+        <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: 600, color: '#8b5cf6' }}>
+          🧠 Auto-Intelligence Suite
+        </h3>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+          {/* Connection Rate by Number */}
+          <IntelligenceCard
+            title="Connection Rate by Number"
+            icon="📞"
+            data={intelligence.connectionRateByNumber}
+            formatter={rate => `${Math.round(rate || 0)}%`}
+            colorKey="rate"
+          />
+          
+          {/* Call-to-Close Ratio by Lead Type */}
+          <IntelligenceCard
+            title="Call-to-Close by Lead Type"
+            icon="🎯"
+            data={intelligence.callToCloseRatio}
+            formatter={ratio => `${Math.round(ratio || 0)}%`}
+            colorKey="ratio"
+          />
+          
+          {/* Average Attempts to Connect */}
+          <div style={{
+            padding: '16px',
+            borderRadius: '10px',
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(139,92,246,0.2)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <span style={{ fontSize: '16px' }}>🔄</span>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#a1a1aa' }}>Avg Attempts</span>
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: '#8b5cf6' }}>
+              {(intelligence.avgAttemptsToConnect || 0).toFixed(1)}
+            </div>
+            <div style={{ fontSize: '10px', color: '#71717a' }}>
+              Average attempts before connection
+            </div>
+          </div>
+          
+          {/* Talk Time vs Idle Time */}
+          <div style={{
+            padding: '16px',
+            borderRadius: '10px',
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(139,92,246,0.2)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <span style={{ fontSize: '16px' }}>⏱️</span>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#a1a1aa' }}>Talk vs Idle</span>
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div>
+                <div style={{ fontSize: '18px', fontWeight: 700, color: '#4ade80' }}>
+                  {formatDuration(intelligence.talkTimeVsIdle?.talk || 0)}
+                </div>
+                <div style={{ fontSize: '9px', color: '#71717a' }}>Talk Time</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '18px', fontWeight: 700, color: '#f59e0b' }}>
+                  {formatDuration(intelligence.talkTimeVsIdle?.idle || 0)}
+                </div>
+                <div style={{ fontSize: '9px', color: '#71717a' }}>Idle Time</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <style>{`
         @keyframes pulse {
           0%, 100% { opacity: 1; }
@@ -299,6 +393,41 @@ function OutcomeBar({ label, value, total, color }) {
           {value} ({Math.round(percentage)}%)
         </div>
       </div>
+    </div>
+  )
+}
+
+function IntelligenceCard({ title, icon, data, formatter, colorKey }) {
+  const entries = Object.entries(data || {}).slice(0, 3) // Show top 3
+  
+  return (
+    <div style={{
+      padding: '16px',
+      borderRadius: '10px',
+      background: 'rgba(255,255,255,0.03)',
+      border: '1px solid rgba(139,92,246,0.2)',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+        <span style={{ fontSize: '16px' }}>{icon}</span>
+        <span style={{ fontSize: '12px', fontWeight: 600, color: '#a1a1aa' }}>{title}</span>
+      </div>
+      
+      {entries.length > 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {entries.map(([key, value]) => (
+            <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '11px', color: '#e4e4e7' }}>{key}</span>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#8b5cf6' }}>
+                {formatter ? formatter(value) : value}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ fontSize: '11px', color: '#71717a', textAlign: 'center', padding: '12px 0' }}>
+          No data available
+        </div>
+      )}
     </div>
   )
 }
