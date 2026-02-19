@@ -1090,6 +1090,7 @@ function UploadLeadsModal({ onClose, actions, pipelines, stages, currentPipeline
   const [leadAge, setLeadAge] = useState('new_lead')
   const [preview, setPreview] = useState(null)
   const [columnMap, setColumnMap] = useState({})
+  const [customFieldNames, setCustomFieldNames] = useState({}) // csvCol → custom field name
   const [step, setStep] = useState(1) // 1=config, 2=mapping, 3=done
   const [uploading, setUploading] = useState(false)
   const [result, setResult] = useState(null)
@@ -1155,17 +1156,18 @@ function UploadLeadsModal({ onClose, actions, pipelines, stages, currentPipeline
     try {
       const leads = preview.rows.map(r => {
         const mapped = {}
-        Object.entries(columnMap).forEach(([csvCol, crmField]) => {
-          if (crmField && r[csvCol]) {
-            if (mapped[crmField]) mapped[crmField] += ' ' + r[csvCol]
-            else mapped[crmField] = r[csvCol]
-          }
-        })
-        // Collect unmapped columns into custom_fields
         const customFields = {}
         Object.entries(columnMap).forEach(([csvCol, crmField]) => {
-          if (!crmField && r[csvCol]?.trim()) {
-            // Store skipped columns with original header name
+          if (!r[csvCol]?.trim()) return
+          if (crmField === '__custom__') {
+            // Custom field — use the user-provided name
+            const fieldName = customFieldNames[csvCol] || preview.rawHeaders[preview.headers.indexOf(csvCol)] || csvCol
+            customFields[fieldName] = r[csvCol]
+          } else if (crmField) {
+            if (mapped[crmField]) mapped[crmField] += ' ' + r[csvCol]
+            else mapped[crmField] = r[csvCol]
+          } else {
+            // Skipped — store as custom field with original header name
             const label = preview.rawHeaders[preview.headers.indexOf(csvCol)] || csvCol
             customFields[label] = r[csvCol]
           }
@@ -1292,19 +1294,46 @@ function UploadLeadsModal({ onClose, actions, pipelines, stages, currentPipeline
               <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Preview</div>
             </div>
             {preview.headers.map((h, i) => (
-              <div key={h} style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr auto', gap: '8px', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                <div style={{ fontSize: '12px', color: 'var(--theme-text-primary)', fontFamily: 'monospace' }}>{preview.rawHeaders[i]}</div>
-                <div style={{ fontSize: '12px', color: 'var(--theme-text-secondary)' }}>→</div>
-                <select
-                  value={columnMap[h] || ''}
-                  onChange={e => setColumnMap(prev => ({ ...prev, [h]: e.target.value }))}
-                  style={{ ...inputStyle, padding: '6px 10px', fontSize: '12px', background: columnMap[h] ? 'var(--theme-accent-muted)' : 'var(--theme-bg)', borderColor: columnMap[h] ? 'var(--theme-accent)' : 'var(--theme-border)' }}
-                >
-                  {CRM_FIELDS.map(f => <option key={f.key} value={f.key}>{f.label}</option>)}
-                </select>
-                <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {preview.rows[0]?.[h] || '—'}
+              <div key={h} style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr auto', gap: '8px', alignItems: 'center' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--theme-text-primary)', fontFamily: 'monospace' }}>{preview.rawHeaders[i]}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--theme-text-secondary)' }}>→</div>
+                  <select
+                    value={columnMap[h] || ''}
+                    onChange={e => {
+                      const val = e.target.value
+                      if (val === '__custom__') {
+                        setColumnMap(prev => ({ ...prev, [h]: '__custom__' }))
+                        setCustomFieldNames(prev => ({ ...prev, [h]: preview.rawHeaders[i] }))
+                      } else {
+                        setColumnMap(prev => ({ ...prev, [h]: val }))
+                        setCustomFieldNames(prev => { const n = { ...prev }; delete n[h]; return n })
+                      }
+                    }}
+                    style={{ ...inputStyle, padding: '6px 10px', fontSize: '12px', background: columnMap[h] ? 'var(--theme-accent-muted)' : 'var(--theme-bg)', borderColor: columnMap[h] ? 'var(--theme-accent)' : 'var(--theme-border)' }}
+                  >
+                    {CRM_FIELDS.map(f => <option key={f.key} value={f.key}>{f.label}</option>)}
+                    <option value="__custom__">+ New Custom Text Field</option>
+                  </select>
+                  <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {preview.rows[0]?.[h] || '—'}
+                  </div>
                 </div>
+                {columnMap[h] === '__custom__' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr auto', gap: '8px', alignItems: 'center' }}>
+                    <div />
+                    <div />
+                    <input
+                      type="text"
+                      placeholder="Custom field name..."
+                      value={customFieldNames[h] || ''}
+                      onChange={e => setCustomFieldNames(prev => ({ ...prev, [h]: e.target.value }))}
+                      style={{ ...inputStyle, padding: '6px 10px', fontSize: '12px', borderColor: 'var(--theme-phone)', background: 'rgba(245,158,11,0.08)' }}
+                      autoFocus
+                    />
+                    <div />
+                  </div>
+                )}
               </div>
             ))}
           </div>
