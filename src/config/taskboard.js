@@ -33,13 +33,14 @@ export const PRIORITY_CONFIG = {
   low:    { label: 'Low',    color: '#4ade80', bg: 'rgba(74,222,128,0.15)' },
 }
 
-export const DOC_CATEGORIES = { REPORT: 'report', BRIEF: 'brief', RESEARCH: 'research', ATTACHMENT: 'attachment' }
+export const DOC_CATEGORIES = { REPORT: 'report', BRIEF: 'brief', RESEARCH: 'research', ATTACHMENT: 'attachment', DELIVERABLE: 'deliverable' }
 
 export const DOC_CATEGORY_CONFIG = {
   report:     { label: 'Report',     color: '#3b82f6', bg: 'rgba(59,130,246,0.12)' },
   brief:      { label: 'Brief',      color: '#a855f7', bg: 'rgba(168,85,247,0.12)' },
   research:   { label: 'Research',   color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
   attachment: { label: 'Attachment', color: '#9ca3af', bg: 'rgba(107,114,128,0.12)' },
+  deliverable: { label: 'Deliverable', color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
 }
 
 export const TASK_BOARD_VIEWS = { BOARD: 'board', CALENDAR: 'calendar', PHONE: 'phone', MESSAGES: 'messages', PROJECTS: 'projects', TASKS: 'tasks', DOCUMENTS: 'documents' }
