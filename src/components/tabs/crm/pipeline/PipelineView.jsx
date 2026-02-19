@@ -1161,6 +1161,22 @@ function UploadLeadsModal({ onClose, actions, pipelines, stages, currentPipeline
             else mapped[crmField] = r[csvCol]
           }
         })
+        // Collect unmapped columns into custom_fields
+        const customFields = {}
+        Object.entries(columnMap).forEach(([csvCol, crmField]) => {
+          if (!crmField && r[csvCol]?.trim()) {
+            // Store skipped columns with original header name
+            const label = preview.rawHeaders[preview.headers.indexOf(csvCol)] || csvCol
+            customFields[label] = r[csvCol]
+          }
+        })
+        // Also include CSV columns that aren't in columnMap at all
+        Object.keys(r).forEach(csvCol => {
+          if (!(csvCol in columnMap) && r[csvCol]?.trim()) {
+            const label = preview.rawHeaders[preview.headers.indexOf(csvCol)] || csvCol
+            customFields[label] = r[csvCol]
+          }
+        })
         // Build name from first+last if no full name
         const name = mapped.name || `${mapped.first_name || ''} ${mapped.last_name || ''}`.trim()
         if (!name) return null
@@ -1184,6 +1200,7 @@ function UploadLeadsModal({ onClose, actions, pipelines, stages, currentPipeline
           has_life_insurance: mapped.has_life_insurance || '',
           bank_name: mapped.bank_name || '',
           payment_method: mapped.payment_method || '',
+          custom_fields: Object.keys(customFields).length > 0 ? JSON.stringify(customFields) : '',
           pipeline_id: pipelineId,
           stage_id: stageId,
           lead_type: leadType,

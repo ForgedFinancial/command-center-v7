@@ -74,13 +74,40 @@ const ALL_COLUMNS = [
 const DEFAULT_COLUMNS = ['name', 'company', 'email', 'phone', 'tags', 'lastContact']
 const STORAGE_KEY = 'cc7-contacts-columns'
 
-function loadColumnConfig() {
+// Discover custom fields from all leads' custom_fields JSON
+function discoverCustomColumns(leads) {
+  const keys = new Set()
+  leads.forEach(l => {
+    const cf = l.customFields || l.custom_fields
+    if (!cf) return
+    try {
+      const parsed = typeof cf === 'string' ? JSON.parse(cf) : cf
+      Object.keys(parsed).forEach(k => keys.add(k))
+    } catch {}
+  })
+  return Array.from(keys).map(key => ({
+    id: `cf_${key.toLowerCase().replace(/\s+/g, '_')}`,
+    label: key,
+    width: '1fr',
+    accessor: l => {
+      const cf = l.customFields || l.custom_fields
+      if (!cf) return '—'
+      try {
+        const parsed = typeof cf === 'string' ? JSON.parse(cf) : cf
+        return parsed[key] || '—'
+      } catch { return '—' }
+    },
+    isCustom: true,
+  }))
+}
+
+function loadColumnConfig(allColumns) {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
       const parsed = JSON.parse(saved)
-      // Validate column ids exist
-      const valid = parsed.filter(id => ALL_COLUMNS.find(c => c.id === id))
+      // Validate column ids exist in current available columns
+      const valid = parsed.filter(id => allColumns.find(c => c.id === id))
       if (valid.length > 0) return valid
     }
   } catch {}
@@ -117,7 +144,11 @@ export default function ContactsView() {
   }, [actions])
   const [expandedContact, setExpandedContact] = useState(null)
   const [detailTab, setDetailTab] = useState('info')
-  const [activeColumns, setActiveColumns] = useState(loadColumnConfig)
+  // Discover custom columns from lead data
+  const customColumns = useMemo(() => discoverCustomColumns(state.leads), [state.leads])
+  const allAvailableColumns = useMemo(() => [...ALL_COLUMNS, ...customColumns], [customColumns])
+
+  const [activeColumns, setActiveColumns] = useState(() => loadColumnConfig([...ALL_COLUMNS]))
   const [showColumnPicker, setShowColumnPicker] = useState(false)
   const [dragIdx, setDragIdx] = useState(null)
   const pickerRef = useRef(null)
@@ -172,8 +203,8 @@ export default function ContactsView() {
   const paginatedLeads = filteredLeads.slice((page - 1) * pageSize, page * pageSize)
 
   const visibleColumns = useMemo(() => {
-    return activeColumns.map(id => ALL_COLUMNS.find(c => c.id === id)).filter(Boolean)
-  }, [activeColumns])
+    return activeColumns.map(id => allAvailableColumns.find(c => c.id === id)).filter(Boolean)
+  }, [activeColumns, allAvailableColumns])
 
   const gridTemplate = visibleColumns.map(c => c.width).join(' ') + ' 40px'
 
@@ -262,7 +293,7 @@ export default function ContactsView() {
                 </div>
                 {/* Active columns — reorderable */}
                 {activeColumns.map((colId, idx) => {
-                  const col = ALL_COLUMNS.find(c => c.id === colId)
+                  const col = allAvailableColumns.find(c => c.id === colId)
                   if (!col) return null
                   return (
                     <div
@@ -292,6 +323,7 @@ export default function ContactsView() {
                 <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
                   Available Columns
                 </div>
+                {/* Standard CRM columns */}
                 {ALL_COLUMNS.filter(c => !activeColumns.includes(c.id)).map(col => (
                   <div
                     key={col.id}
@@ -307,6 +339,28 @@ export default function ContactsView() {
                     <span style={{ fontSize: '12px', color: 'var(--theme-text-secondary)' }}>{col.label}</span>
                   </div>
                 ))}
+                {/* Custom fields from uploaded spreadsheets */}
+                {customColumns.length > 0 && (<>
+                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '10px 0' }} />
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--theme-phone)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
+                    📋 Custom Fields (from uploads)
+                  </div>
+                  {customColumns.filter(c => !activeColumns.includes(c.id)).map(col => (
+                    <div
+                      key={col.id}
+                      onClick={() => toggleColumn(col.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px',
+                        borderRadius: '6px', cursor: 'pointer', marginBottom: '2px',
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.background = 'var(--theme-bg)'}
+                      onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <span style={{ fontSize: '12px', color: 'var(--theme-phone)' }}>+</span>
+                      <span style={{ fontSize: '12px', color: 'var(--theme-text-secondary)' }}>{col.label}</span>
+                    </div>
+                  ))}
+                </>)}
                 <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'flex-end' }}>
                   <button
                     onClick={() => { setActiveColumns(DEFAULT_COLUMNS); saveColumnConfig(DEFAULT_COLUMNS) }}
