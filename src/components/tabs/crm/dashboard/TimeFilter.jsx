@@ -42,14 +42,16 @@ export default function TimeFilter({ value, onChange, customStart, customEnd, on
             type="date"
             value={customStart || ''}
             onChange={e => onCustomChange?.('start', e.target.value)}
-            className="text-xs bg-zinc-800 text-zinc-300 border border-zinc-600 rounded px-2 py-1"
+            className="text-xs rounded px-2 py-1"
+            style={{ background: 'var(--theme-surface)', color: 'var(--theme-text-primary)', border: '1px solid var(--theme-border)' }}
           />
-          <span className="text-zinc-500 text-xs">to</span>
+          <span style={{ color: 'var(--theme-text-secondary)', fontSize: '12px' }}>to</span>
           <input
             type="date"
             value={customEnd || ''}
             onChange={e => onCustomChange?.('end', e.target.value)}
-            className="text-xs bg-zinc-800 text-zinc-300 border border-zinc-600 rounded px-2 py-1"
+            className="text-xs rounded px-2 py-1"
+            style={{ background: 'var(--theme-surface)', color: 'var(--theme-text-primary)', border: '1px solid var(--theme-border)' }}
           />
         </div>
       )}

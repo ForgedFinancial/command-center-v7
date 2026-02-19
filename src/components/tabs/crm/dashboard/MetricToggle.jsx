@@ -3,10 +3,10 @@ import { METRIC_DEFINITIONS, CATEGORIES } from '../../../../services/metricEngin
 
 const TOGGLE_STATES = ['off', 'watch', 'active']
 const TOGGLE_LABELS = { off: 'Off', watch: 'Watch', active: 'Active' }
-const TOGGLE_COLORS = {
-  off: 'bg-zinc-700 text-zinc-400',
-  watch: 'bg-blue-600/30 text-blue-400 border border-blue-500/40',
-  active: 'bg-emerald-600/30 text-emerald-400 border border-emerald-500/40',
+const TOGGLE_STYLES = {
+  off: { background: 'var(--theme-surface)', color: 'var(--theme-text-secondary)' },
+  watch: { background: 'var(--theme-accent-muted)', color: 'var(--theme-accent)', border: '1px solid var(--theme-accent)' },
+  active: { background: 'color-mix(in srgb, var(--theme-success) 20%, transparent)', color: 'var(--theme-success)', border: '1px solid var(--theme-success)' },
 }
 const TOGGLE_DESCRIPTIONS = {
   off: 'Hidden (still collecting data)',
@@ -29,13 +29,14 @@ export default function MetricToggle({ toggles, onToggleChange, onBulkChange }) 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-zinc-300">Metric Visibility</h3>
+        <h3 className="text-sm font-semibold" style={{ color: 'var(--theme-text-primary)' }}>Metric Visibility</h3>
         <div className="flex gap-2">
           {TOGGLE_STATES.map(s => (
             <button
               key={s}
               onClick={() => onBulkChange?.(s)}
-              className="text-xs px-2 py-1 rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-300"
+              className="text-xs px-2 py-1 rounded transition-colors"
+              style={{ background: 'var(--theme-surface)', color: 'var(--theme-text-secondary)' }}
             >
               All {TOGGLE_LABELS[s]}
             </button>
@@ -49,17 +50,20 @@ export default function MetricToggle({ toggles, onToggleChange, onBulkChange }) 
         const isExpanded = expandedCategory === catKey
 
         return (
-          <div key={catKey} className="rounded-lg bg-zinc-800/50 overflow-hidden">
+          <div key={catKey} className="rounded-lg overflow-hidden" style={{ background: 'var(--theme-surface)' }}>
             <button
               onClick={() => setExpandedCategory(isExpanded ? null : catKey)}
-              className="w-full flex items-center justify-between px-4 py-3 hover:bg-zinc-700/50 transition-colors"
+              className="w-full flex items-center justify-between px-4 py-3 transition-colors"
+              style={{ color: 'var(--theme-text-primary)' }}
+              onMouseOver={e => { e.currentTarget.style.background = 'var(--theme-surface-hover)' }}
+              onMouseOut={e => { e.currentTarget.style.background = 'transparent' }}
             >
-              <span className="flex items-center gap-2 text-sm font-medium text-zinc-200">
+              <span className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--theme-text-primary)' }}>
                 <span>{catDef.icon}</span>
                 <span>{catDef.label}</span>
-                <span className="text-zinc-500 text-xs">({metrics.length})</span>
+                <span className="text-xs" style={{ color: 'var(--theme-text-secondary)' }}>({metrics.length})</span>
               </span>
-              <span className="text-zinc-500 text-xs">{isExpanded ? '▲' : '▼'}</span>
+              <span className="text-xs" style={{ color: 'var(--theme-text-secondary)' }}>{isExpanded ? '▲' : '▼'}</span>
             </button>
 
             {isExpanded && (
@@ -69,17 +73,16 @@ export default function MetricToggle({ toggles, onToggleChange, onBulkChange }) 
                   return (
                     <div key={m.id} className="flex items-center justify-between py-1">
                       <div className="min-w-0 flex-1 mr-3">
-                        <span className="text-sm text-zinc-300">{m.label}</span>
-                        <p className="text-[11px] text-zinc-500 truncate">{m.description}</p>
+                        <span className="text-sm" style={{ color: 'var(--theme-text-primary)' }}>{m.label}</span>
+                        <p className="text-[11px] truncate" style={{ color: 'var(--theme-text-secondary)' }}>{m.description}</p>
                       </div>
                       <div className="flex gap-1 shrink-0">
                         {TOGGLE_STATES.map(s => (
                           <button
                             key={s}
                             onClick={() => onToggleChange?.(m.id, s)}
-                            className={`text-xs px-2 py-1 rounded transition-all ${
-                              current === s ? TOGGLE_COLORS[s] : 'bg-zinc-700/50 text-zinc-500 hover:bg-zinc-600'
-                            }`}
+                            className="text-xs px-2 py-1 rounded transition-all"
+                            style={current === s ? TOGGLE_STYLES[s] : { background: 'var(--theme-surface)', color: 'var(--theme-text-secondary)' }}
                             title={TOGGLE_DESCRIPTIONS[s]}
                           >
                             {TOGGLE_LABELS[s]}

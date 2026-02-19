@@ -98,14 +98,17 @@ export default function DashboardView() {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="shrink-0 px-4 pt-4 pb-2 border-b border-zinc-800">
+      <div className="shrink-0 px-4 pt-4 pb-2" style={{ borderBottom: '1px solid var(--theme-border)' }}>
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
+          <h1 className="text-lg font-bold flex items-center gap-2" style={{ color: 'var(--theme-text-primary)' }}>
             📊 Production Dashboard
           </h1>
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="text-xs px-3 py-1.5 rounded-md bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300 transition-colors"
+            className="text-xs px-3 py-1.5 rounded-md transition-colors"
+            style={{ background: 'var(--theme-surface)', color: 'var(--theme-text-secondary)' }}
+            onMouseOver={e => { e.currentTarget.style.background = 'var(--theme-surface-hover)'; e.currentTarget.style.color = 'var(--theme-text-primary)' }}
+            onMouseOut={e => { e.currentTarget.style.background = 'var(--theme-surface)'; e.currentTarget.style.color = 'var(--theme-text-secondary)' }}
           >
             {showSettings ? '← Back to Dashboard' : '⚙️ Settings'}
           </button>
@@ -119,11 +122,13 @@ export default function DashboardView() {
                 <button
                   key={v.key}
                   onClick={() => setActiveView(v.key)}
-                  className={`text-xs px-3 py-1.5 rounded-md whitespace-nowrap transition-all ${
-                    activeView === v.key
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
-                  }`}
+                  className="text-xs px-3 py-1.5 rounded-md whitespace-nowrap transition-all"
+                  style={{
+                    background: activeView === v.key ? 'var(--theme-accent)' : 'var(--theme-surface)',
+                    color: activeView === v.key ? 'var(--theme-accent-text)' : 'var(--theme-text-secondary)',
+                  }}
+                  onMouseOver={e => { if (activeView !== v.key) { e.currentTarget.style.background = 'var(--theme-surface-hover)' } }}
+                  onMouseOut={e => { if (activeView !== v.key) { e.currentTarget.style.background = 'var(--theme-surface)' } }}
                 >
                   {v.icon} {v.label}
                 </button>
@@ -152,8 +157,8 @@ export default function DashboardView() {
           />
 
           <div className="mt-6">
-            <h3 className="text-sm font-semibold text-zinc-300 mb-3">Scorecard Metrics</h3>
-            <p className="text-xs text-zinc-500 mb-2">Select which metrics appear in the top scorecard bar.</p>
+            <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--theme-text-primary)' }}>Scorecard Metrics</h3>
+            <p className="text-xs mb-2" style={{ color: 'var(--theme-text-secondary)' }}>Select which metrics appear in the top scorecard bar.</p>
             <div className="flex flex-wrap gap-2">
               {Object.keys(metrics).map(k => {
                 const m = metrics[k]
@@ -166,11 +171,12 @@ export default function DashboardView() {
                         selected ? prev.filter(x => x !== k) : [...prev, k]
                       )
                     }}
-                    className={`text-xs px-2 py-1 rounded transition-all ${
-                      selected
-                        ? 'bg-blue-600/30 text-blue-400 border border-blue-500/40'
-                        : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700'
-                    }`}
+                    className="text-xs px-2 py-1 rounded transition-all"
+                    style={{
+                      background: selected ? 'var(--theme-accent-muted)' : 'var(--theme-surface)',
+                      color: selected ? 'var(--theme-accent)' : 'var(--theme-text-secondary)',
+                      border: selected ? '1px solid var(--theme-accent)' : '1px solid transparent',
+                    }}
                   >
                     {m.label}
                   </button>
@@ -192,10 +198,10 @@ export default function DashboardView() {
           {/* Metric sections */}
           {visibleCategories.map(cat => (
             <div key={cat.key}>
-              <h2 className="text-sm font-semibold text-zinc-300 mb-3 flex items-center gap-2">
+              <h2 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--theme-text-primary)' }}>
                 <span>{cat.icon}</span>
                 <span>{cat.label}</span>
-                <span className="text-zinc-600 text-xs font-normal">({cat.metrics.length})</span>
+                <span className="text-xs font-normal" style={{ color: 'var(--theme-text-secondary)' }}>({cat.metrics.length})</span>
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {cat.metrics.map(m => (
@@ -210,7 +216,7 @@ export default function DashboardView() {
           ))}
 
           {visibleCategories.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20 text-zinc-500">
+            <div className="flex flex-col items-center justify-center py-20" style={{ color: 'var(--theme-text-secondary)' }}>
               <span className="text-4xl mb-3">📊</span>
               <p className="text-sm">No metrics visible. Enable metrics in Settings.</p>
             </div>
