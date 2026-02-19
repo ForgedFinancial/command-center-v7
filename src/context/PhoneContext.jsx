@@ -3,7 +3,19 @@
 // Phase 1 Power Dialer Foundation
 // ========================================
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
-import { Device } from '@twilio/voice-sdk'
+// Lazy-loaded to prevent app crash if SDK fails
+let _Device = null
+const getDevice = async () => {
+  if (!_Device) {
+    try {
+      const mod = await import('@twilio/voice-sdk')
+      _Device = mod.Device
+    } catch (e) {
+      console.warn('[PHONE] Twilio Voice SDK not available:', e.message)
+    }
+  }
+  return _Device
+}
 import twilioClient from '../services/twilioClient'
 import { WORKER_PROXY_URL, getSyncHeaders } from '../config/api'
 
@@ -80,7 +92,9 @@ export function PhoneProvider({ children }) {
 
       if (deviceRef.current) deviceRef.current.destroy()
 
-      const device = new Device(data.token, {
+      const DeviceClass = await getDevice()
+      if (!DeviceClass) { console.warn('[PHONE] Voice SDK unavailable'); return }
+      const device = new DeviceClass(data.token, {
         codecPreferences: ['opus', 'pcmu'],
         enableRingingState: true,
         logLevel: 1,

@@ -1,3 +1,15 @@
+// Global error catcher for module evaluation errors
+window.addEventListener('error', (e) => {
+  console.error('[FATAL] Uncaught error:', e.message, e.filename, e.lineno)
+  const root = document.getElementById('root')
+  if (root && !root.innerHTML) {
+    root.innerHTML = `<div style="color:red;padding:40px;font-family:monospace"><h2>App Crash</h2><pre>${e.message}\n${e.filename}:${e.lineno}</pre></div>`
+  }
+})
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('[FATAL] Unhandled rejection:', e.reason)
+})
+
 import React, { Component } from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'

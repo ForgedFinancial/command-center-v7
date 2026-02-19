@@ -16,7 +16,7 @@ Do you have a quick minute to talk about securing your family's financial future
 
 [PAUSE FOR RESPONSE]
 
-Great! I see you're looking for about ${{face_amount}} in coverage for your {{carrier}}. Let me ask you a few quick questions to see how we can best help you...`
+Great! I see you're looking for about \${{face_amount}} in coverage for your {{carrier}}. Let me ask you a few quick questions to see how we can best help you...`
   },
   follow_up: {
     title: 'Follow-Up',
@@ -25,7 +25,7 @@ Great! I see you're looking for about ${{face_amount}} in coverage for your {{ca
 
 I wanted to follow up on the life insurance coverage we talked about for your family in {{state}}.
 
-Have you had a chance to think about what we discussed regarding the ${{face_amount}} policy?
+Have you had a chance to think about what we discussed regarding the \${{face_amount}} policy?
 
 [PAUSE FOR RESPONSE]
 
@@ -36,7 +36,7 @@ Perfect! Let me walk you through the next steps...`
     icon: '📋',
     script: `{{name}}, I think we have some great options for you based on what you've told me about your situation in {{state}}.
 
-Rather than trying to go through all the details over the phone, I'd love to schedule a brief 15-minute appointment where I can show you exactly how we can get you that ${{face_amount}} in coverage.
+Rather than trying to go through all the details over the phone, I'd love to schedule a brief 15-minute appointment where I can show you exactly how we can get you that \${{face_amount}} in coverage.
 
 Would tomorrow evening work, or would later this week be better?
 
@@ -49,7 +49,7 @@ Excellent! I'm going to send you a calendar invite right now...`
     icon: '🎯',
     script: `{{name}}, based on everything you've shared with me, here's what I recommend for your family:
 
-A ${{face_amount}} {{lead_type}} policy with {{carrier}} that will give your family complete peace of mind.
+A \${{face_amount}} {{lead_type}} policy with {{carrier}} that will give your family complete peace of mind.
 
 The monthly premium is going to be [AMOUNT] - which breaks down to just [DAILY AMOUNT] per day. 
 
