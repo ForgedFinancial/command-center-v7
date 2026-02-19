@@ -191,23 +191,28 @@ export default function LeadCard({ lead, color, cardFields, onDragStart, onClick
         )}
       </div>
 
-      {/* Disposition Tags — prominent display */}
-      {leadTags.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px', marginBottom: '4px', paddingLeft: '20px' }}>
-          {leadTags.map(tagId => {
-            const tag = getTagById(tagId)
-            if (!tag) return <span key={tagId} style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '6px', fontWeight: 700, background: 'rgba(255,255,255,0.08)', color: '#a1a1aa' }}>{tagId}</span>
-            return (
-              <span key={tagId} style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: tag.bg, color: tag.color }}>
-                {tag.label}
-              </span>
-            )
-          })}
+      {/* Lead Type + Disposition Tags — same row, tags right-aligned under 🔄🗑️ */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '2px', marginBottom: '4px', paddingLeft: '20px', paddingRight: '2px' }}>
+        <div style={{ flex: '0 0 auto' }}>
+          {(lead.leadType || lead.lead_type) && (
+            <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', background: 'rgba(99,102,241,0.15)', color: '#818cf8' }}>{lead.leadType || lead.lead_type}</span>
+          )}
         </div>
-      )}
+        {leadTags.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', justifyContent: 'flex-end', maxWidth: '60%' }}>
+            {leadTags.map(tagId => {
+              const tag = getTagById(tagId)
+              if (!tag) return <span key={tagId} style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '5px', fontWeight: 700, background: 'rgba(255,255,255,0.08)', color: '#a1a1aa' }}>{tagId}</span>
+              return (
+                <span key={tagId} style={{ fontSize: '10px', fontWeight: 700, padding: '2px 6px', borderRadius: '5px', background: tag.bg, color: tag.color }}>{tag.label}</span>
+              )
+            })}
+          </div>
+        )}
+      </div>
 
-      {/* Dynamic fields */}
-      {cardFields.map(key => renderCardField(key, lead))}
+      {/* Dynamic fields (excluding leadType — rendered above) */}
+      {cardFields.filter(key => key !== 'leadType').map(key => renderCardField(key, lead))}
 
       {/* Time ago */}
       <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', marginTop: '2px' }}>
