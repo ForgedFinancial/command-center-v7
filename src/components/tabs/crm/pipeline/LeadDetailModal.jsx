@@ -166,7 +166,7 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
     try {
       const leadName = form.name || `${form.first_name || ''} ${form.last_name || ''}`.trim() || 'Lead'
       const start = new Date(`${schedDate}T${schedTime}:00`)
-      const end = new Date(start.getTime() + 30 * 60000) // 30 min appointment
+      const end = new Date(start.getTime() + 15 * 60000) // 15 min appointment
       const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/events`, {
         method: 'POST',
         headers: getSyncHeaders(),
@@ -174,11 +174,18 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
           title: `Call: ${leadName}`,
           start: start.toISOString(), end: end.toISOString(),
           calendar: 'Work',
-          description: `Phone: ${form.phone || 'N/A'}\nEmail: ${form.email || 'N/A'}\nState: ${form.state || 'N/A'}\nLead Type: ${form.lead_type || 'FEX'}`,
-          alerts: [10], // 10 min reminder
+          description: `Phone: ${form.phone || 'N/A'}\nEmail: ${form.email || 'N/A'}\nState: ${form.state || 'N/A'}\nLead Type: ${form.lead_type || form.leadType || 'FEX'}`,
+          alerts: [10], // 10 min reminder via iCloud VALARM
         }),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      // Auto-add Appointment Booked tag
+      const currentTags = (() => { try { return JSON.parse(form.tags || '[]') } catch { return [] } })()
+      if (!currentTags.includes('appt_booked')) {
+        const newTags = [...currentTags, 'appt_booked']
+        await crmClient.updateLead(lead.id, { tags: JSON.stringify(newTags) })
+        onUpdate({ ...form, id: lead.id, tags: JSON.stringify(newTags) }, false)
+      }
       setShowSchedule(false)
     } catch (err) {
       console.error('Schedule failed:', err)
