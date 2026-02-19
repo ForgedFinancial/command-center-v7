@@ -92,16 +92,23 @@ function discoverCustomCardFields(leads) {
   }))
 }
 
-function loadCardFields() {
+function loadCardFields(mode = 'all') {
   try {
-    const saved = JSON.parse(localStorage.getItem('cc7-card-fields'))
+    const key = mode === 'all' ? 'cc7-card-fields' : `cc7-card-fields-${mode}`
+    const saved = JSON.parse(localStorage.getItem(key))
     if (Array.isArray(saved) && saved.length > 0) return saved
+  } catch {}
+  // Fall back to the shared config, then defaults
+  try {
+    const shared = JSON.parse(localStorage.getItem('cc7-card-fields'))
+    if (Array.isArray(shared) && shared.length > 0) return shared
   } catch {}
   return DEFAULT_CARD_FIELDS
 }
 
-function saveCardFields(fields) {
-  localStorage.setItem('cc7-card-fields', JSON.stringify(fields))
+function saveCardFields(fields, mode = 'all') {
+  const key = mode === 'all' ? 'cc7-card-fields' : `cc7-card-fields-${mode}`
+  localStorage.setItem(key, JSON.stringify(fields))
 }
 
 // Default stage colors for dynamic stages
@@ -121,10 +128,16 @@ export default function PipelineView() {
   const [showCardSettings, setShowCardSettings] = useState(false)
   const [showTransferModal, setShowTransferModal] = useState(null) // lead to transfer
   const [stageTransition, setStageTransition] = useState(null) // { lead, fromStage, toStage }
-  const [cardFields, setCardFields] = useState(loadCardFields)
+  const [cardFields, setCardFields] = useState(() => loadCardFields(state.pipelineMode))
   // Discover custom fields from leads for card field picker
   const customCardFields = useMemo(() => discoverCustomCardFields(state.leads), [state.leads])
   const allCardFieldOptions = useMemo(() => [...ALL_CARD_FIELDS, ...customCardFields], [customCardFields])
+
+  // Reload card fields when pipeline mode changes (New/Aged/All have separate configs)
+  useEffect(() => {
+    setCardFields(loadCardFields(state.pipelineMode))
+  }, [state.pipelineMode])
+
   const dragLeadId = useRef(null)
 
   // Pipeline management
@@ -589,7 +602,8 @@ export default function PipelineView() {
       {showCardSettings && <CardFieldSettings
         fields={cardFields}
         allFields={allCardFieldOptions}
-        onSave={(f) => { setCardFields(f); saveCardFields(f); setShowCardSettings(false) }}
+        onSave={(f) => { setCardFields(f); saveCardFields(f, state.pipelineMode); setShowCardSettings(false) }}
+        currentMode={state.pipelineMode}
         onClose={() => setShowCardSettings(false)}
       />}
       {showTransferModal && (
@@ -1001,7 +1015,7 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
 // ========================================
 // Card Field Settings Modal
 // ========================================
-function CardFieldSettings({ fields, allFields, onSave, onClose }) {
+function CardFieldSettings({ fields, allFields, onSave, onClose, currentMode }) {
   const ALL_FIELDS = allFields || ALL_CARD_FIELDS
   const [selected, setSelected] = useState([...fields])
   const isSelected = (key) => selected.includes(key)
@@ -1016,7 +1030,7 @@ function CardFieldSettings({ fields, allFields, onSave, onClose }) {
     <div style={{ position: 'fixed', inset: 0, background: 'var(--theme-modal-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{ width: '440px', maxHeight: '80vh', overflow: 'auto', background: 'var(--theme-surface)', borderRadius: '16px', border: '1px solid var(--theme-border)', padding: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>⚙️ Card Fields</h3>
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>⚙️ Card Fields <span style={{ fontSize: '11px', fontWeight: 500, color: 'var(--theme-accent)', marginLeft: '8px' }}>({currentMode === 'new' ? '🆕 New Leads' : currentMode === 'aged' ? '📜 Aged Leads' : '📋 All Leads'})</span></h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--theme-text-secondary)', fontSize: '18px', cursor: 'pointer' }}>✕</button>
         </div>
         <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginBottom: '12px' }}>
