@@ -3,7 +3,7 @@
 // Worker proxy URL and endpoint definitions
 // ========================================
 
-export const WORKER_PROXY_URL = 'https://forged-sync.danielruh.workers.dev'
+export const WORKER_PROXY_URL = 'https://api.forgedfinancial.us'
 
 // Sync server auth — pulled from env at build or fallback
 export const SYNC_API_KEY = import.meta.env.VITE_SYNC_API_KEY || '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0'
