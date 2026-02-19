@@ -972,6 +972,7 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
             }}
           />
           <button onClick={handleQuickNote} style={{ ...actionBtnStyle, color: 'var(--theme-success)', fontSize: '10px', padding: '3px 6px' }}>✓</button>
+          <button onClick={() => { setShowQuickNote(false); setQuickNote('') }} style={{ ...actionBtnStyle, color: 'var(--theme-text-secondary)', fontSize: '10px', padding: '3px 6px' }}>✕</button>
         </div>
       )}
 
