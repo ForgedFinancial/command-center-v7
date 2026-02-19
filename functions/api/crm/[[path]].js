@@ -926,7 +926,7 @@ async function updateLead(id, request, agent, env, corsHeaders) {
   const data = await request.json();
   const updates = [];
   const values = [];
-  const fields = ['name','phone','email','stage','pipeline','lead_type','value','notes','last_contact','next_followup','state','carrier','premium','policy_number','face_amount','draft_date','payment_method','beneficiary','beneficiary_relation','beneficiary2','beneficiary2_relation','dob','ssn','bank_name','routing','priority','pipeline_id','stage_id','in_force_date','cycle_count','exception_type','exception_outcome'];
+  const fields = ['name','phone','email','stage','pipeline','lead_type','lead_age','value','notes','last_contact','next_followup','state','carrier','premium','policy_number','face_amount','draft_date','payment_method','beneficiary','beneficiary_relation','beneficiary2','beneficiary2_relation','dob','ssn','bank_name','routing','priority','pipeline_id','stage_id','in_force_date','cycle_count','exception_type','exception_outcome'];
   for (const f of fields) {
     if (data[f] !== undefined) { updates.push(`${f} = ?`); values.push(data[f]); }
   }
