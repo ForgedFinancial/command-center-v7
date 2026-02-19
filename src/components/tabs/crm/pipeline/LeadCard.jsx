@@ -110,7 +110,7 @@ export default function LeadCard({ lead, color, cardFields, onDragStart, onClick
       // Fire internal notification
       fetch(`${WORKER_PROXY_URL}/api/notifications`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionStorage.getItem('cc_auth_token') || ''}` },
+        headers: getSyncHeaders(),
         body: JSON.stringify({
           title: `📅 Appointment Scheduled`,
           description: `${lead.name || 'Unknown'} — ${dateStr} at ${timeStr}`,

@@ -180,13 +180,12 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       // Fire internal notification
-      const _start = new Date(`${schedDate}T${schedTime}:00`)
-      const _dateStr = _start.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-      const _h = _start.getHours(), _ampm = _h >= 12 ? 'PM' : 'AM', _h12 = _h === 0 ? 12 : _h > 12 ? _h - 12 : _h
-      const _timeStr = `${_h12}:${String(_start.getMinutes()).padStart(2,'0')} ${_ampm}`
+      const _dateStr = start.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+      const _h = start.getHours(), _ampm = _h >= 12 ? 'PM' : 'AM', _h12 = _h === 0 ? 12 : _h > 12 ? _h - 12 : _h
+      const _timeStr = `${_h12}:${String(start.getMinutes()).padStart(2,'0')} ${_ampm}`
       fetch(`${WORKER_PROXY_URL}/api/notifications`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionStorage.getItem('cc_auth_token') || ''}` },
+        headers: getSyncHeaders(),
         body: JSON.stringify({
           title: `📅 Appointment Scheduled`,
           description: `${leadName} — ${_dateStr} at ${_timeStr}`,
