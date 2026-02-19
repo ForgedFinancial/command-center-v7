@@ -839,7 +839,6 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
   const [showNew, setShowNew] = useState(isNew)
   const [quickNote, setQuickNote] = useState('')
   const [showQuickNote, setShowQuickNote] = useState(false)
-  const [showDisposition, setShowDisposition] = useState(false)
   const [showTagDropdown, setShowTagDropdown] = useState(false)
 
   // Parse lead tags
@@ -872,17 +871,6 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
     appActions?.addToast({ id: Date.now(), type: 'success', message: `Note added to ${lead.name}` })
   }
 
-  const handleQuickDisposition = async (e, stageId) => {
-    e.stopPropagation()
-    const fromStageId = lead.stage_id || lead.stageId
-    if (stageId === fromStageId) return
-    actions?.updateLead({ id: lead.id, stage_id: stageId, stageId: stageId })
-    try {
-      await crmClient.moveLead(lead.id, currentPipelineId, stageId, lead.pipeline_id || lead.pipelineId, fromStageId)
-      appActions?.addToast({ id: Date.now(), type: 'success', message: `${lead.name} moved` })
-    } catch { actions?.updateLead({ id: lead.id, stage_id: fromStageId, stageId: fromStageId }) }
-    setShowDisposition(false)
-  }
 
   const handleHoverStart = () => {
     if (!showNew) return
@@ -1027,8 +1015,7 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
           <button onClick={(e) => onVideoCall(lead, e)} title="Video call" style={{ ...actionBtnStyle, color: 'var(--theme-accent)' }}>📹</button>
           <button onClick={(e) => onMessage(lead, e)} title="Send message" style={{ ...actionBtnStyle, color: '#a855f7' }}>💬</button>
         </>}
-        <button onClick={(e) => { e.stopPropagation(); setShowQuickNote(v => !v); setShowDisposition(false) }} title="Quick note" style={{ ...actionBtnStyle, color: '#f59e0b' }}>✏️</button>
-        <button onClick={(e) => { e.stopPropagation(); setShowDisposition(v => !v); setShowQuickNote(false) }} title="Quick disposition" style={{ ...actionBtnStyle, color: '#3b82f6' }}>🔄</button>
+        <button onClick={(e) => { e.stopPropagation(); setShowQuickNote(v => !v) }} title="Quick note" style={{ ...actionBtnStyle, color: '#f59e0b' }}>✏️</button>
       </div>
 
       {/* Quick Note Inline */}
@@ -1051,24 +1038,6 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
         </div>
       )}
 
-      {/* Quick Disposition Inline */}
-      {showDisposition && (
-        <div onClick={e => e.stopPropagation()} style={{ marginTop: '6px' }}>
-          <select
-            onChange={(e) => handleQuickDisposition(e, e.target.value)}
-            defaultValue=""
-            autoFocus
-            style={{
-              width: '100%', padding: '4px 8px', fontSize: '11px', borderRadius: '4px',
-              border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
-              color: 'var(--theme-text-primary)', outline: 'none', cursor: 'pointer',
-            }}
-          >
-            <option value="" disabled>Move to stage…</option>
-            {(stages || []).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-        </div>
-      )}
     </div>
   )
 }
