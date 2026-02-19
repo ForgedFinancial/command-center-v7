@@ -124,7 +124,7 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
           snakeData[camelToSnake[k] || k] = v
         }
         await crmClient.updateLead(lead.id, snakeData)
-        onUpdate({ ...form, id: lead.id })
+        onUpdate({ ...form, id: lead.id }, false) // don't close modal on auto-save
       } catch {}
     }, 500)
   }, [form, lead?.id, onUpdate])
@@ -153,7 +153,7 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
         snakeData[camelToSnake[k] || k] = v
       }
       await crmClient.updateLead(lead.id, snakeData)
-      onUpdate({ ...form, id: lead.id })
+      onUpdate({ ...form, id: lead.id }, true) // close modal on explicit Save
     } catch (e) {
       console.error('Save failed:', e)
     }

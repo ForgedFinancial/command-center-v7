@@ -342,9 +342,9 @@ export default function PipelineView() {
   }, [actions, appActions])
 
   // Modal handlers
-  const handleModalUpdate = (updatedLead) => {
+  const handleModalUpdate = (updatedLead, closeModal = false) => {
     actions.updateLead(updatedLead)
-    setSelectedLead(null)
+    if (closeModal) setSelectedLead(null)
   }
   const handleModalDelete = (id) => {
     actions.removeLead(id)
