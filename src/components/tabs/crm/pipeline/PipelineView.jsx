@@ -167,7 +167,19 @@ export default function PipelineView() {
     if (!stages || stages.length === 0) return []
     return stages.map((stage, idx) => {
       const stageLeads = filteredLeads.filter(l => l.stage_id === stage.id || l.stageId === stage.id)
-        // Preserve API order (rowid ASC = spreadsheet insertion order)
+        .sort((a, b) => {
+          if (stage.name === 'New Lead' || idx === 0) {
+            // New Lead stage: spreadsheet/insertion order (created_at ASC)
+            const aTime = new Date(a.createdAt || a.created_at || 0).getTime()
+            const bTime = new Date(b.createdAt || b.created_at || 0).getTime()
+            return aTime - bTime
+          } else {
+            // All other stages: most recently moved = top (updated_at DESC)
+            const aTime = new Date(a.updatedAt || a.updated_at || 0).getTime()
+            const bTime = new Date(b.updatedAt || b.updated_at || 0).getTime()
+            return bTime - aTime
+          }
+        })
       const totalValue = stageLeads.reduce((s, l) => s + (Number(l.premium) > 0 ? Number(l.premium) * 12 : 0), 0)
       return {
         stage: stage.id,
