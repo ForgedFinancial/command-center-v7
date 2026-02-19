@@ -199,7 +199,7 @@ export default function LeadCard({ lead, color, cardFields, onDragStart, onClick
           )}
         </div>
         {leadTags.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', justifyContent: 'flex-end', maxWidth: '60%' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'flex-end' }}>
             {leadTags.map(tagId => {
               const tag = getTagById(tagId)
               if (!tag) return <span key={tagId} style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '5px', fontWeight: 700, background: 'rgba(255,255,255,0.08)', color: '#a1a1aa' }}>{tagId}</span>
