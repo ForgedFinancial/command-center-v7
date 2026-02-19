@@ -168,18 +168,7 @@ class CRMClient {
       method: 'PUT',
       body: JSON.stringify({ pipeline_id: toPipelineId, stage_id: toStageId }),
     })
-    // Log in pipeline history
-    await this.request('/pipeline-history', {
-      method: 'POST',
-      body: JSON.stringify({
-        lead_id: leadId,
-        from_pipeline_id: fromPipelineId || null,
-        from_stage_id: fromStageId || null,
-        to_pipeline_id: toPipelineId,
-        to_stage_id: toStageId,
-        reason: reason || null,
-      }),
-    }).catch(() => {}) // non-blocking
+    // History is logged server-side by the worker's lead update handler
     return updateRes
   }
 
