@@ -97,7 +97,7 @@ export default function PipelineView() {
           if (stage.name === 'New Lead' || idx === 0) {
             const aTime = new Date(a.createdAt || a.created_at || 0).getTime()
             const bTime = new Date(b.createdAt || b.created_at || 0).getTime()
-            return aTime - bTime
+            return bTime - aTime
           } else {
             const aTime = new Date(a.updatedAt || a.updated_at || 0).getTime()
             const bTime = new Date(b.updatedAt || b.updated_at || 0).getTime()
