@@ -961,19 +961,9 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
         >🗑️</button>
       </div>
 
-      {/* Name + AP */}
-      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--theme-text-primary)', marginBottom: '4px', paddingRight: '52px', paddingLeft: '20px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-        {lead.name || 'Unknown'}
-        {Number(lead.premium) > 0 && (
-          <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--theme-success)' }}>
-            (${(Number(lead.premium) * 12).toLocaleString()})
-          </span>
-        )}
-      </div>
-
-      {/* Disposition Tags — prominent display */}
+      {/* Disposition Tags — stacked below action buttons */}
       {leadTags.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px', marginBottom: '4px', paddingLeft: '20px' }}>
+        <div style={{ position: 'absolute', top: '30px', right: '6px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', zIndex: 1 }}>
           {leadTags.map(tagId => {
             const tag = getTagById(tagId)
             if (!tag) return <span key={tagId} style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '6px', fontWeight: 700, background: 'rgba(255,255,255,0.08)', color: '#a1a1aa' }}>{tagId}</span>
@@ -985,6 +975,16 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
           })}
         </div>
       )}
+
+      {/* Name + AP */}
+      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--theme-text-primary)', marginBottom: '4px', paddingRight: '52px', paddingLeft: '20px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {lead.name || 'Unknown'}
+        {Number(lead.premium) > 0 && (
+          <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--theme-success)' }}>
+            (${(Number(lead.premium) * 12).toLocaleString()})
+          </span>
+        )}
+      </div>
 
       {/* Dynamic fields */}
       {cardFields.map(key => renderCardField(key, lead))}
