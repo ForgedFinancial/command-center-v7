@@ -20,8 +20,8 @@ export default function ApprovalQueue() {
       const res = await crmClient.request('/sms-queue')
       setMessages(Array.isArray(res) ? res : res.messages || res.data || [])
     } catch {
-      // Use mock data for now
-      setMessages(getMockMessages())
+      // Only use mock data in development; production shows empty state
+      setMessages(import.meta.env.DEV ? getMockMessages() : [])
     } finally {
       setLoading(false)
     }

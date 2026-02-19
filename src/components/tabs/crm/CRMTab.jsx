@@ -4,7 +4,8 @@ import { useApp } from '../../../context/AppContext'
 import { CRM_VIEWS } from '../../../config/crm'
 import { TABS } from '../../../config/constants'
 import crmClient from '../../../api/crmClient'
-import CRMDashboard from './dashboard/CRMDashboard'
+import DashboardView from './dashboard/DashboardView'
+// Legacy: import CRMDashboard from './dashboard/CRMDashboard'
 import PipelineView from './pipeline/PipelineView'
 import ContactsView from './contacts/ContactsView'
 import CRMSettings from './settings/CRMSettings'
@@ -105,7 +106,7 @@ export default function CRMTab() {
   switch (state.activeView) {
     case CRM_VIEWS.DASHBOARD:
     case 'dashboard':
-      return <CRMDashboard />
+      return <DashboardView />
     case CRM_VIEWS.PIPELINE:
     case 'pipeline':
       return <PipelineView />
@@ -129,6 +130,6 @@ export default function CRMTab() {
     case 'calendar':
       return <CalendarView />
     default:
-      return <CRMDashboard />
+      return <DashboardView />
   }
 }

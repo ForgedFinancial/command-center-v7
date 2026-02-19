@@ -1,17 +1,6 @@
 import { useState, useEffect } from 'react'
 import crmClient from '../../../../api/crmClient'
-
-const DEFAULT_TIMERS = [
-  { id: 'p1-new-lead', pipeline: 'P1 - Sales', stage: 'New Lead', duration: 3, unit: 'days', min: 1, max: 7, enabled: true, destination: 'Contact' },
-  { id: 'p1-contact', pipeline: 'P1 - Sales', stage: 'Contact', duration: 4, unit: 'days', min: 1, max: 10, enabled: true, destination: 'Nurture (P7)' },
-  { id: 'p1-engaged', pipeline: 'P1 - Sales', stage: 'Engaged Interest', duration: 14, unit: 'days', min: 3, max: 30, enabled: true, destination: 'Nurture (P7)' },
-  { id: 'p1-qualified', pipeline: 'P1 - Sales', stage: 'Qualified Interest', duration: 7, unit: 'days', min: 2, max: 14, enabled: true, destination: 'Nurture (P7)' },
-  { id: 'p1-app', pipeline: 'P1 - Sales', stage: 'Application Process', duration: 11, unit: 'days', min: 3, max: 21, enabled: true, destination: 'Nurture (P7)' },
-  { id: 'p4-recovery', pipeline: 'P4 - Retention', stage: 'Active Recovery', duration: 30, unit: 'days', min: 7, max: 60, enabled: true, destination: 'Terminated' },
-  { id: 'p7-nurture', pipeline: 'P7 - Nurture', stage: 'Nurture', duration: 180, unit: 'days', min: 30, max: 365, enabled: true, destination: 'Recycle (P5)' },
-  { id: 'p5-recycle', pipeline: 'P5 - Recycle', stage: 'Recycle', duration: 45, unit: 'days', min: 14, max: 90, enabled: true, destination: 'Uninsurable' },
-  { id: 'p5-rewrite', pipeline: 'P5 - Recycle', stage: 'Rewrite', duration: 7, unit: 'days', min: 3, max: 14, enabled: true, destination: 'Recycle' },
-]
+import { DEFAULT_TIMERS } from '../../../../config/automationDefaults'
 
 export default function TimerConfig() {
   const [timers, setTimers] = useState([])
@@ -19,15 +8,22 @@ export default function TimerConfig() {
   const [editingId, setEditingId] = useState(null)
   const [editValue, setEditValue] = useState('')
   const [saveMsg, setSaveMsg] = useState({})
+  const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
     (async () => {
       try {
         const res = await crmClient.request('/timer-configs')
         const data = Array.isArray(res) ? res : res.timers || res.data || []
-        setTimers(data.length > 0 ? data : DEFAULT_TIMERS)
+        if (data.length > 0) {
+          setTimers(data)
+        } else {
+          setTimers(DEFAULT_TIMERS)
+          setLoadError(true)
+        }
       } catch {
         setTimers(DEFAULT_TIMERS)
+        setLoadError(true)
       } finally {
         setLoading(false)
       }
@@ -77,6 +73,12 @@ export default function TimerConfig() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Error banner */}
+      {loadError && (
+        <div style={{ padding: '10px 14px', background: 'rgba(245,158,11,0.12)', borderRadius: 8, border: '1px solid rgba(245,158,11,0.3)', color: '#f59e0b', fontSize: 13 }}>
+          ⚠️ Failed to load from server — showing defaults. Edits won't persist until the server is available.
+        </div>
+      )}
       <div style={{ fontSize: 12, color: '#64748b', padding: '0 4px' }}>
         ⏱ Timer durations control auto-move deadlines. Leads exceeding the timer are flagged as overdue.
         <br />⚠️ Timer changes require manager role.
