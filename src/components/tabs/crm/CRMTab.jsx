@@ -37,6 +37,11 @@ function normalizeLead(lead) {
     favoriteHobby: lead.favorite_hobby || lead.favoriteHobby || '',
     adSource: lead.ad_source || lead.adSource || '',
     agentId: lead.agent_id || lead.agentId || '',
+    // Pipeline fields
+    pipeline_id: lead.pipeline_id || lead.pipelineId || null,
+    pipelineId: lead.pipeline_id || lead.pipelineId || null,
+    stage_id: lead.stage_id || lead.stageId || null,
+    stageId: lead.stage_id || lead.stageId || null,
   }
 }
 

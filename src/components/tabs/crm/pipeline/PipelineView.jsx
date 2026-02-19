@@ -3,9 +3,8 @@ import { useCRM } from '../../../../context/CRMContext'
 import { useApp } from '../../../../context/AppContext'
 import { usePhone } from '../../../../context/PhoneContext'
 import crmClient from '../../../../api/crmClient'
-import { CRM_STAGES } from '../../../../config/crm'
 import { WORKER_PROXY_URL } from '../../../../config/api'
-import PipelineModeToggle, { filterByPipelineMode } from '../PipelineModeToggle'
+import PipelineSwitcher, { usePipelines } from './PipelineSwitcher'
 import EmptyState from '../../../shared/EmptyState'
 import LeadDetailModal from './LeadDetailModal'
 
@@ -15,7 +14,6 @@ const LEAD_TYPES = ['FEX', 'VETERANS', 'MORTGAGE PROTECTION', 'TRUCKERS', 'IUL']
 // Card Field Customization System
 // ========================================
 const DEFAULT_CARD_FIELDS = ['leadType', 'dob', 'phone', 'faceAmount', 'beneficiary', 'createdAt']
-const ALWAYS_SHOWN = ['name']
 const MAX_CUSTOM_FIELDS = 10
 
 const ALL_CARD_FIELDS = [
@@ -53,25 +51,11 @@ function saveCardFields(fields) {
   localStorage.setItem('cc7-card-fields', JSON.stringify(fields))
 }
 
-const STAGE_ORDER = ['new_lead', 'contact', 'engaged', 'qualified', 'proposal', 'sold']
-
-const STAGE_LABELS = {
-  new_lead: 'New Leads',
-  contact: 'Contacted',
-  engaged: 'Engaged',
-  qualified: 'Qualified',
-  proposal: 'Proposal',
-  sold: 'Won',
-}
-
-const STAGE_COLORS = {
-  new_lead: '#3b82f6',
-  contact: '#a855f7',
-  engaged: 'var(--theme-accent)',
-  qualified: '#f59e0b',
-  proposal: '#f97316',
-  sold: '#4ade80',
-}
+// Default stage colors for dynamic stages
+const STAGE_COLOR_PALETTE = [
+  '#3b82f6', '#a855f7', '#00d4ff', '#f59e0b', '#f97316',
+  '#4ade80', '#ec4899', '#06b6d4', '#8b5cf6', '#ef4444',
+]
 
 export default function PipelineView() {
   const { state, actions } = useCRM()
@@ -82,48 +66,111 @@ export default function PipelineView() {
   const [dragOverStage, setDragOverStage] = useState(null)
   const [showNewLead, setShowNewLead] = useState(false)
   const [showCardSettings, setShowCardSettings] = useState(false)
+  const [showTransferModal, setShowTransferModal] = useState(null) // lead to transfer
   const [cardFields, setCardFields] = useState(loadCardFields)
   const dragLeadId = useRef(null)
 
-  const filteredLeads = useMemo(() => {
-    let leads = filterByPipelineMode(state.leads, state.pipelineMode)
-    if (leadTypeFilter) leads = leads.filter(l => l.leadType === leadTypeFilter)
-    return leads
-  }, [state.leads, state.pipelineMode, leadTypeFilter])
+  // Pipeline management
+  const {
+    pipelines, stages, currentPipelineId, loading,
+    leadCounts, selectPipeline, fetchPipelines, setLeadCounts,
+  } = usePipelines()
 
+  // Filter leads for current pipeline
+  const pipelineLeads = useMemo(() => {
+    if (!currentPipelineId) return []
+    return state.leads.filter(l => l.pipeline_id === currentPipelineId || l.pipelineId === currentPipelineId)
+  }, [state.leads, currentPipelineId])
+
+  const filteredLeads = useMemo(() => {
+    let leads = pipelineLeads
+    if (leadTypeFilter) leads = leads.filter(l => (l.leadType || l.lead_type) === leadTypeFilter)
+    return leads
+  }, [pipelineLeads, leadTypeFilter])
+
+  // Build dynamic columns from stages
   const columns = useMemo(() => {
-    return STAGE_ORDER.map(stage => {
-      const leads = filteredLeads.filter(l => l.stage === stage)
-      const totalValue = leads.reduce((s, l) => s + (Number(l.premium) > 0 ? Number(l.premium) * 12 : 0), 0)
-      return { stage, label: STAGE_LABELS[stage], color: STAGE_COLORS[stage], leads, totalValue }
+    if (!stages || stages.length === 0) return []
+    return stages.map((stage, idx) => {
+      const stageLeads = filteredLeads.filter(l => l.stage_id === stage.id || l.stageId === stage.id)
+      const totalValue = stageLeads.reduce((s, l) => s + (Number(l.premium) > 0 ? Number(l.premium) * 12 : 0), 0)
+      return {
+        stage: stage.id,
+        label: stage.name,
+        color: stage.color || STAGE_COLOR_PALETTE[idx % STAGE_COLOR_PALETTE.length],
+        leads: stageLeads,
+        totalValue,
+      }
     })
-  }, [filteredLeads])
+  }, [stages, filteredLeads])
+
+  // Update lead counts when leads change
+  useEffect(() => {
+    if (pipelines.length > 0) {
+      const counts = {}
+      pipelines.forEach(p => {
+        counts[p.id] = state.leads.filter(l => l.pipeline_id === p.id || l.pipelineId === p.id).length
+      })
+      setLeadCounts(counts)
+    }
+  }, [state.leads, pipelines])
 
   // Drag handlers
   const onDragStart = (e, leadId) => {
     dragLeadId.current = leadId
     e.dataTransfer.effectAllowed = 'move'
   }
-  const onDragOver = (e, stage) => {
+  const onDragOver = (e, stageId) => {
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
-    setDragOverStage(stage)
+    setDragOverStage(stageId)
   }
   const onDragLeave = () => setDragOverStage(null)
-  const onDrop = async (e, targetStage) => {
+  const onDrop = async (e, targetStageId) => {
     e.preventDefault()
     setDragOverStage(null)
     const leadId = dragLeadId.current
     if (!leadId) return
     const lead = state.leads.find(l => l.id === leadId)
-    if (!lead || lead.stage === targetStage) return
+    if (!lead) return
+    const currentStageId = lead.stage_id || lead.stageId
+    if (currentStageId === targetStageId) return
+
     // Optimistic update
-    actions.updateLead({ id: leadId, stage: targetStage })
+    actions.updateLead({ id: leadId, stage_id: targetStageId, stageId: targetStageId })
     try {
-      await crmClient.updateLead(leadId, { stage: targetStage })
+      await crmClient.moveLead(
+        leadId, currentPipelineId, targetStageId,
+        lead.pipeline_id || lead.pipelineId, currentStageId
+      )
     } catch (err) {
       console.error('Failed to update stage:', err)
-      actions.updateLead({ id: leadId, stage: lead.stage }) // rollback
+      actions.updateLead({ id: leadId, stage_id: currentStageId, stageId: currentStageId })
+    }
+  }
+
+  // Cross-pipeline transfer
+  const handleTransfer = async (lead, toPipelineId, toStageId) => {
+    const fromPipelineId = lead.pipeline_id || lead.pipelineId
+    const fromStageId = lead.stage_id || lead.stageId
+    // Optimistic update
+    actions.updateLead({
+      id: lead.id,
+      pipeline_id: toPipelineId, pipelineId: toPipelineId,
+      stage_id: toStageId, stageId: toStageId,
+    })
+    setShowTransferModal(null)
+    try {
+      await crmClient.moveLead(lead.id, toPipelineId, toStageId, fromPipelineId, fromStageId, 'Cross-pipeline transfer')
+      appActions.addToast({ id: Date.now(), type: 'success', message: `Lead transferred successfully` })
+    } catch (err) {
+      console.error('Transfer failed:', err)
+      actions.updateLead({
+        id: lead.id,
+        pipeline_id: fromPipelineId, pipelineId: fromPipelineId,
+        stage_id: fromStageId, stageId: fromStageId,
+      })
+      appActions.addToast({ id: Date.now(), type: 'error', message: `Transfer failed: ${err.message}` })
     }
   }
 
@@ -148,7 +195,7 @@ export default function PipelineView() {
     crmClient.deleteLead(leadId).catch(() => {})
   }
 
-  // Phone action handlers — smart routing via PhoneContext
+  // Phone action handlers
   const { makeCall: phoneContextMakeCall } = usePhone()
   const handlePhoneCall = useCallback(async (lead, e) => {
     if (e) { e.stopPropagation(); e.preventDefault() }
@@ -185,10 +232,8 @@ export default function PipelineView() {
   const handleMessage = useCallback((lead, e) => {
     if (e) { e.stopPropagation(); e.preventDefault() }
     if (!lead.phone) return
-    // Navigate to CRM Messages view
     actions.setView('messages')
     appActions.addToast({ id: Date.now(), type: 'info', message: `💬 Opening messages for ${lead.name}...` })
-    // Also trigger Mac Messages app
     fetch(`${WORKER_PROXY_URL}/api/phone/message`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ number: lead.phone }),
@@ -205,12 +250,37 @@ export default function PipelineView() {
     setSelectedLead(null)
   }
 
+  const currentPipeline = pipelines.find(p => p.id === currentPipelineId)
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--theme-text-secondary)' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '24px', marginBottom: '8px' }}>⏳</div>
+          <div style={{ fontSize: '13px' }}>Loading pipelines...</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Pipeline Switcher */}
+      <div style={{ marginBottom: '12px' }}>
+        <PipelineSwitcher
+          pipelines={pipelines}
+          currentPipelineId={currentPipelineId}
+          onSelect={selectPipeline}
+          leadCounts={leadCounts}
+        />
+      </div>
+
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>Pipeline</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>
+            {currentPipeline?.name || 'Pipeline'}
+          </h2>
           <button
             onClick={() => setShowCardSettings(true)}
             title="Customize card fields"
@@ -219,10 +289,7 @@ export default function PipelineView() {
               borderRadius: '8px', padding: '6px 10px', cursor: 'pointer',
               fontSize: '14px', color: 'var(--theme-text-secondary)', transition: 'all 0.15s',
             }}
-            onMouseOver={(e) => { e.currentTarget.style.background = 'var(--theme-surface-hover)'; e.currentTarget.style.color = 'var(--theme-text-primary)' }}
-            onMouseOut={(e) => { e.currentTarget.style.background = 'var(--theme-bg)'; e.currentTarget.style.color = 'var(--theme-text-secondary)' }}
           >⚙️</button>
-          <PipelineModeToggle />
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <select
@@ -241,7 +308,7 @@ export default function PipelineView() {
             padding: '8px 16px', borderRadius: '8px',
             border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
             color: 'var(--theme-text-secondary)', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
-          }}>📤 Upload Leads</button>
+          }}>📤 Upload</button>
           <button onClick={() => setShowNewLead(true)} style={{
             padding: '8px 16px', borderRadius: '8px',
             border: '1px solid var(--theme-accent)', background: 'var(--theme-accent-muted)',
@@ -251,8 +318,8 @@ export default function PipelineView() {
       </div>
 
       {/* Kanban */}
-      {state.leads.length === 0 ? (
-        <EmptyState icon="🔀" title="No Leads Yet" message="Add leads to see your pipeline." />
+      {columns.length === 0 ? (
+        <EmptyState icon="🔀" title="No Stages" message="This pipeline has no stages configured." />
       ) : (
         <div style={{ display: 'flex', gap: '12px', flex: 1, overflowX: 'auto', paddingBottom: '12px' }}>
           {columns.map(col => (
@@ -309,6 +376,7 @@ export default function PipelineView() {
                     onPhoneCall={handlePhoneCall}
                     onVideoCall={handleVideoCall}
                     onMessage={handleMessage}
+                    onTransfer={(lead) => setShowTransferModal(lead)}
                     isNew={!seenLeads.has(lead.id)}
                     onMarkSeen={markSeen}
                   />
@@ -319,13 +387,22 @@ export default function PipelineView() {
         </div>
       )}
 
-      {showUpload && <UploadLeadsModal onClose={() => setShowUpload(false)} actions={actions} />}
-      {showNewLead && <NewLeadModal onClose={() => setShowNewLead(false)} actions={actions} />}
+      {showUpload && <UploadLeadsModal onClose={() => setShowUpload(false)} actions={actions} pipelines={pipelines} stages={stages} currentPipelineId={currentPipelineId} />}
+      {showNewLead && <NewLeadModal onClose={() => setShowNewLead(false)} actions={actions} pipelines={pipelines} stages={stages} currentPipelineId={currentPipelineId} />}
       {showCardSettings && <CardFieldSettings
         fields={cardFields}
         onSave={(f) => { setCardFields(f); saveCardFields(f); setShowCardSettings(false) }}
         onClose={() => setShowCardSettings(false)}
       />}
+      {showTransferModal && (
+        <TransferModal
+          lead={showTransferModal}
+          pipelines={pipelines}
+          currentPipelineId={currentPipelineId}
+          onTransfer={handleTransfer}
+          onClose={() => setShowTransferModal(null)}
+        />
+      )}
       {selectedLead && (
         <LeadDetailModal
           lead={selectedLead}
@@ -338,7 +415,109 @@ export default function PipelineView() {
   )
 }
 
+// ========================================
+// Transfer Modal — Cross-Pipeline
+// ========================================
+function TransferModal({ lead, pipelines, currentPipelineId, onTransfer, onClose }) {
+  const [targetPipelineId, setTargetPipelineId] = useState('')
+  const [targetStageId, setTargetStageId] = useState('')
+  const [targetStages, setTargetStages] = useState([])
+  const [loadingStages, setLoadingStages] = useState(false)
+
+  const otherPipelines = pipelines.filter(p => p.id !== currentPipelineId)
+
+  useEffect(() => {
+    if (!targetPipelineId) { setTargetStages([]); setTargetStageId(''); return }
+    let cancelled = false
+    setLoadingStages(true)
+    crmClient.getStages(targetPipelineId).then(res => {
+      if (cancelled) return
+      const list = res.stages || res.data || []
+      setTargetStages(list)
+      if (list.length > 0) setTargetStageId(list[0].id)
+      setLoadingStages(false)
+    }).catch(() => { if (!cancelled) setLoadingStages(false) })
+    return () => { cancelled = true }
+  }, [targetPipelineId])
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'var(--theme-modal-overlay)', display: 'flex',
+      alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+    }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{
+        width: '420px', background: 'var(--theme-surface)', borderRadius: '16px',
+        border: '1px solid var(--theme-border)', padding: '24px',
+      }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>
+          🔄 Transfer Lead
+        </h3>
+        <div style={{ fontSize: '13px', color: 'var(--theme-text-secondary)', marginBottom: '16px' }}>
+          Move <strong style={{ color: 'var(--theme-text-primary)' }}>{lead.name}</strong> to another pipeline
+        </div>
+
+        <div style={{ marginBottom: '12px' }}>
+          <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '6px', textTransform: 'uppercase' }}>Target Pipeline</label>
+          <select
+            value={targetPipelineId}
+            onChange={e => setTargetPipelineId(e.target.value)}
+            style={{
+              width: '100%', padding: '10px 14px', borderRadius: '8px',
+              border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
+              color: 'var(--theme-text-primary)', fontSize: '13px', outline: 'none',
+            }}
+          >
+            <option value="">— Select Pipeline —</option>
+            {otherPipelines.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+        </div>
+
+        {targetPipelineId && (
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '6px', textTransform: 'uppercase' }}>Target Stage</label>
+            {loadingStages ? (
+              <div style={{ fontSize: '12px', color: 'var(--theme-text-secondary)' }}>Loading stages...</div>
+            ) : (
+              <select
+                value={targetStageId}
+                onChange={e => setTargetStageId(e.target.value)}
+                style={{
+                  width: '100%', padding: '10px 14px', borderRadius: '8px',
+                  border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
+                  color: 'var(--theme-text-primary)', fontSize: '13px', outline: 'none',
+                }}
+              >
+                {targetStages.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            )}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+          <button onClick={onClose} style={{
+            padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--theme-border)',
+            background: 'transparent', color: 'var(--theme-text-secondary)', fontSize: '12px', cursor: 'pointer',
+          }}>Cancel</button>
+          <button
+            onClick={() => onTransfer(lead, targetPipelineId, targetStageId)}
+            disabled={!targetPipelineId || !targetStageId}
+            style={{
+              padding: '8px 16px', borderRadius: '8px',
+              border: '1px solid var(--theme-accent)',
+              background: targetPipelineId && targetStageId ? 'var(--theme-accent-muted)' : 'rgba(255,255,255,0.04)',
+              color: targetPipelineId && targetStageId ? 'var(--theme-accent)' : '#52525b',
+              fontSize: '12px', fontWeight: 600, cursor: targetPipelineId && targetStageId ? 'pointer' : 'default',
+            }}
+          >Transfer</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ========================================
 // Field renderer for dynamic card fields
+// ========================================
 function renderCardField(key, lead) {
   const age = lead.dob ? Math.floor((Date.now() - new Date(lead.dob).getTime()) / 31557600000) : null
   const fieldStyle = { fontSize: '11px', color: 'var(--theme-text-secondary)', marginBottom: '2px' }
@@ -416,7 +595,7 @@ function renderCardField(key, lead) {
   }
 }
 
-function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onPhoneCall, onVideoCall, onMessage, isNew, onMarkSeen }) {
+function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onPhoneCall, onVideoCall, onMessage, onTransfer, isNew, onMarkSeen }) {
   const hoverTimer = useRef(null)
   const [showNew, setShowNew] = useState(isNew)
 
@@ -468,23 +647,30 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
         }}>NEW</span>
       )}
 
-      {/* Delete button */}
-      <button
-        onClick={(e) => onDelete(lead.id, lead.name, e)}
-        title="Delete lead"
-        style={{
-          position: 'absolute', top: '6px', right: '6px',
-          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)',
-          color: 'var(--theme-error)', fontSize: '14px', cursor: 'pointer',
-          padding: '3px 6px', borderRadius: '6px', lineHeight: 1,
-          transition: 'all 0.15s',
-        }}
-        onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.25)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)' }}
-        onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.15)' }}
-      >🗑️</button>
+      {/* Action buttons top-right */}
+      <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', gap: '2px' }}>
+        <button
+          onClick={(e) => { e.stopPropagation(); onTransfer(lead) }}
+          title="Transfer to another pipeline"
+          style={{
+            background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.15)',
+            color: '#3b82f6', fontSize: '11px', cursor: 'pointer',
+            padding: '3px 5px', borderRadius: '6px', lineHeight: 1, transition: 'all 0.15s',
+          }}
+        >🔄</button>
+        <button
+          onClick={(e) => onDelete(lead.id, lead.name, e)}
+          title="Delete lead"
+          style={{
+            background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)',
+            color: 'var(--theme-error)', fontSize: '11px', cursor: 'pointer',
+            padding: '3px 5px', borderRadius: '6px', lineHeight: 1, transition: 'all 0.15s',
+          }}
+        >🗑️</button>
+      </div>
 
-      {/* Name + AP (always shown) */}
-      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--theme-text-primary)', marginBottom: '4px', paddingRight: '28px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+      {/* Name + AP */}
+      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--theme-text-primary)', marginBottom: '4px', paddingRight: '52px', display: 'flex', alignItems: 'center', gap: '6px' }}>
         {lead.name || 'Unknown'}
         {Number(lead.premium) > 0 && (
           <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--theme-success)' }}>
@@ -493,7 +679,7 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
         )}
       </div>
 
-      {/* Dynamic fields in configured order */}
+      {/* Dynamic fields */}
       {cardFields.map(key => renderCardField(key, lead))}
 
       {/* Time ago */}
@@ -501,115 +687,60 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
         {lead.createdAt ? timeAgo(lead.createdAt) : ''}
       </div>
 
-      {/* Action Buttons — Phone, Video, Message */}
+      {/* Action Buttons */}
       {lead.phone && (
         <div style={{ display: 'flex', gap: '4px', marginTop: '8px', borderTop: '1px solid var(--theme-border-subtle)', paddingTop: '8px' }}>
-          <button
-            onClick={(e) => onPhoneCall(lead, e)}
-            title="Phone call"
-            style={{ ...actionBtnStyle, color: 'var(--theme-success)' }}
-            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(74,222,128,0.1)'; e.currentTarget.style.borderColor = 'rgba(74,222,128,0.3)' }}
-            onMouseOut={(e) => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
-          >📞</button>
-          <button
-            onClick={(e) => onVideoCall(lead, e)}
-            title="Video call"
-            style={{ ...actionBtnStyle, color: 'var(--theme-accent)' }}
-            onMouseOver={(e) => { e.currentTarget.style.background = 'var(--theme-accent-muted)'; e.currentTarget.style.borderColor = 'var(--theme-accent)' }}
-            onMouseOut={(e) => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
-          >📹</button>
-          <button
-            onClick={(e) => onMessage(lead, e)}
-            title="Send message"
-            style={{ ...actionBtnStyle, color: '#a855f7' }}
-            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(168,85,247,0.1)'; e.currentTarget.style.borderColor = 'rgba(168,85,247,0.3)' }}
-            onMouseOut={(e) => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
-          >💬</button>
+          <button onClick={(e) => onPhoneCall(lead, e)} title="Phone call" style={{ ...actionBtnStyle, color: 'var(--theme-success)' }}>📞</button>
+          <button onClick={(e) => onVideoCall(lead, e)} title="Video call" style={{ ...actionBtnStyle, color: 'var(--theme-accent)' }}>📹</button>
+          <button onClick={(e) => onMessage(lead, e)} title="Send message" style={{ ...actionBtnStyle, color: '#a855f7' }}>💬</button>
         </div>
       )}
     </div>
   )
 }
 
+// ========================================
+// Card Field Settings Modal
+// ========================================
 function CardFieldSettings({ fields, onSave, onClose }) {
   const [selected, setSelected] = useState([...fields])
-
   const isSelected = (key) => selected.includes(key)
-
   const toggle = (key) => {
-    if (isSelected(key)) {
-      setSelected(selected.filter(k => k !== key))
-    } else if (selected.length < MAX_CUSTOM_FIELDS) {
-      setSelected([...selected, key])
-    }
+    if (isSelected(key)) setSelected(selected.filter(k => k !== key))
+    else if (selected.length < MAX_CUSTOM_FIELDS) setSelected([...selected, key])
   }
-
-  const moveUp = (idx) => {
-    if (idx <= 0) return
-    const next = [...selected];
-    [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]]
-    setSelected(next)
-  }
-
-  const moveDown = (idx) => {
-    if (idx >= selected.length - 1) return
-    const next = [...selected];
-    [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]]
-    setSelected(next)
-  }
+  const moveUp = (idx) => { if (idx <= 0) return; const next = [...selected]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; setSelected(next) }
+  const moveDown = (idx) => { if (idx >= selected.length - 1) return; const next = [...selected]; [next[idx], next[idx+1]] = [next[idx+1], next[idx]]; setSelected(next) }
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'var(--theme-modal-overlay)', display: 'flex',
-      alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-    }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{
-        width: '440px', maxHeight: '80vh', overflow: 'auto',
-        background: 'var(--theme-surface)', borderRadius: '16px',
-        border: '1px solid var(--theme-border)', padding: '24px',
-      }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'var(--theme-modal-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '440px', maxHeight: '80vh', overflow: 'auto', background: 'var(--theme-surface)', borderRadius: '16px', border: '1px solid var(--theme-border)', padding: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>⚙️ Card Fields</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--theme-text-secondary)', fontSize: '18px', cursor: 'pointer' }}>✕</button>
         </div>
         <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginBottom: '12px' }}>
-          Select up to {MAX_CUSTOM_FIELDS} fields. Name and Date/Time are always shown. Drag order = card order.
+          Select up to {MAX_CUSTOM_FIELDS} fields. Name is always shown.
         </div>
-
-        {/* Selected fields with reorder */}
         {selected.length > 0 && (
           <div style={{ marginBottom: '16px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active Fields ({selected.length}/{MAX_CUSTOM_FIELDS})</div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active ({selected.length}/{MAX_CUSTOM_FIELDS})</div>
             {selected.map((key, idx) => {
               const field = ALL_CARD_FIELDS.find(f => f.key === key)
               if (!field) return null
               return (
-                <div key={key} style={{
-                  display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px',
-                  background: 'var(--theme-accent-muted)', border: '1px solid var(--theme-accent)',
-                  borderRadius: '8px', marginBottom: '4px',
-                }}>
+                <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: 'var(--theme-accent-muted)', border: '1px solid var(--theme-accent)', borderRadius: '8px', marginBottom: '4px' }}>
                   <span style={{ fontSize: '13px' }}>{field.icon}</span>
                   <span style={{ flex: 1, fontSize: '12px', color: 'var(--theme-text-primary)', fontWeight: 500 }}>{field.label}</span>
-                  <button onClick={() => moveUp(idx)} disabled={idx === 0} style={{
-                    background: 'none', border: 'none', color: idx === 0 ? '#333' : '#71717a',
-                    cursor: idx === 0 ? 'default' : 'pointer', fontSize: '12px', padding: '2px 4px',
-                  }}>▲</button>
-                  <button onClick={() => moveDown(idx)} disabled={idx === selected.length - 1} style={{
-                    background: 'none', border: 'none', color: idx === selected.length - 1 ? '#333' : '#71717a',
-                    cursor: idx === selected.length - 1 ? 'default' : 'pointer', fontSize: '12px', padding: '2px 4px',
-                  }}>▼</button>
-                  <button onClick={() => toggle(key)} style={{
-                    background: 'none', border: 'none', color: 'var(--theme-error)', cursor: 'pointer', fontSize: '12px', padding: '2px 4px',
-                  }}>✕</button>
+                  <button onClick={() => moveUp(idx)} disabled={idx === 0} style={{ background: 'none', border: 'none', color: idx === 0 ? '#333' : '#71717a', cursor: idx === 0 ? 'default' : 'pointer', fontSize: '12px', padding: '2px 4px' }}>▲</button>
+                  <button onClick={() => moveDown(idx)} disabled={idx === selected.length - 1} style={{ background: 'none', border: 'none', color: idx === selected.length - 1 ? '#333' : '#71717a', cursor: idx === selected.length - 1 ? 'default' : 'pointer', fontSize: '12px', padding: '2px 4px' }}>▼</button>
+                  <button onClick={() => toggle(key)} style={{ background: 'none', border: 'none', color: 'var(--theme-error)', cursor: 'pointer', fontSize: '12px', padding: '2px 4px' }}>✕</button>
                 </div>
               )
             })}
           </div>
         )}
-
-        {/* Available fields */}
-        <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Available Fields</div>
+        <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Available</div>
         {ALL_CARD_FIELDS.filter(f => !isSelected(f.key)).map(field => (
           <div key={field.key} onClick={() => toggle(field.key)} style={{
             display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px',
@@ -622,32 +753,42 @@ function CardFieldSettings({ fields, onSave, onClose }) {
             <span style={{ fontSize: '11px', color: 'var(--theme-success)' }}>+ Add</span>
           </div>
         ))}
-
         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }}>
-          <button onClick={onClose} style={{
-            padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--theme-border)',
-            background: 'transparent', color: 'var(--theme-text-secondary)', fontSize: '12px', cursor: 'pointer',
-          }}>Cancel</button>
-          <button onClick={() => { onSave(selected.length > 0 ? selected : DEFAULT_CARD_FIELDS) }} style={{
-            padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--theme-accent)',
-            background: 'var(--theme-accent-muted)', color: 'var(--theme-accent)', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
-          }}>Save</button>
+          <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--theme-border)', background: 'transparent', color: 'var(--theme-text-secondary)', fontSize: '12px', cursor: 'pointer' }}>Cancel</button>
+          <button onClick={() => { onSave(selected.length > 0 ? selected : DEFAULT_CARD_FIELDS) }} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--theme-accent)', background: 'var(--theme-accent-muted)', color: 'var(--theme-accent)', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Save</button>
         </div>
       </div>
     </div>
   )
 }
 
-function UploadLeadsModal({ onClose, actions }) {
+// ========================================
+// Upload Leads Modal (updated for dynamic pipelines)
+// ========================================
+function UploadLeadsModal({ onClose, actions, pipelines, stages, currentPipelineId }) {
   const fileRef = useRef(null)
-  const [pipeline, setPipeline] = useState('new')
-  const [stage, setStage] = useState('new_lead')
+  const [pipelineId, setPipelineId] = useState(currentPipelineId || '')
+  const [stageId, setStageId] = useState(stages?.[0]?.id || '')
   const [leadType, setLeadType] = useState('')
   const [preview, setPreview] = useState(null)
   const [uploading, setUploading] = useState(false)
   const [result, setResult] = useState(null)
+  const [uploadStages, setUploadStages] = useState(stages || [])
 
-  const LEAD_TYPES = ['FEX', 'VETERANS', 'MORTGAGE PROTECTION', 'TRUCKERS', 'IUL']
+  // Fetch stages when pipeline changes
+  useEffect(() => {
+    if (!pipelineId) return
+    if (pipelineId === currentPipelineId) {
+      setUploadStages(stages || [])
+      if (stages?.[0]) setStageId(stages[0].id)
+      return
+    }
+    crmClient.getStages(pipelineId).then(res => {
+      const list = res.stages || []
+      setUploadStages(list)
+      if (list[0]) setStageId(list[0].id)
+    }).catch(() => {})
+  }, [pipelineId])
 
   const handleFile = (e) => {
     const file = e.target.files?.[0]
@@ -657,7 +798,6 @@ function UploadLeadsModal({ onClose, actions }) {
       try {
         const text = ev.target.result
         const lines = text.trim().split('\n')
-        // Proper CSV parsing that handles quoted commas (e.g. "$15,000")
         const parseCSVLine = (line) => {
           const result = []; let current = ''; let inQuotes = false
           for (let i = 0; i < line.length; i++) {
@@ -690,7 +830,8 @@ function UploadLeadsModal({ onClose, actions }) {
         name: r.name || r.fullname || `${r.first_name || ''} ${r.last_name || ''}`.trim(),
         phone: r.phone || r.phone_number || '',
         email: r.email || '', state: r.state || '', notes: r.notes || '',
-        pipeline, stage, leadType, createdAt: new Date().toISOString(),
+        pipeline_id: pipelineId, stage_id: stageId,
+        lead_type: leadType, createdAt: new Date().toISOString(),
       }))
       try {
         const data = await crmClient.importLeads({ leads })
@@ -701,83 +842,46 @@ function UploadLeadsModal({ onClose, actions }) {
     } finally { setUploading(false) }
   }
 
+  const inputStyle = { width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--theme-border)', background: 'var(--theme-bg)', color: 'var(--theme-text-primary)', fontSize: '13px', outline: 'none' }
+  const labelStyle = { display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }
+
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'var(--theme-modal-overlay)', display: 'flex',
-      alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-    }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{
-        width: '560px', maxHeight: '80vh', overflow: 'auto',
-        background: 'var(--theme-surface)', borderRadius: '16px',
-        border: '1px solid var(--theme-border)', padding: '32px',
-      }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'var(--theme-modal-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '560px', maxHeight: '80vh', overflow: 'auto', background: 'var(--theme-surface)', borderRadius: '16px', border: '1px solid var(--theme-border)', padding: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>Upload Leads</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--theme-text-secondary)', fontSize: '20px', cursor: 'pointer' }}>✕</button>
         </div>
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Assign to Pipeline</label>
-          <div style={{ display: 'flex', gap: '4px' }}>
-            {[['new', '🆕 New Leads'], ['aged', '📜 Aged Leads']].map(([val, label]) => (
-              <button key={val} onClick={() => setPipeline(val)} style={{
-                flex: 1, padding: '10px', borderRadius: '8px', fontSize: '13px', fontWeight: pipeline === val ? 600 : 400,
-                border: `1px solid ${pipeline === val ? 'var(--theme-accent)' : 'rgba(255,255,255,0.08)'}`,
-                background: pipeline === val ? 'var(--theme-accent-muted)' : 'transparent',
-                color: pipeline === val ? 'var(--theme-accent)' : '#71717a', cursor: 'pointer',
-              }}>{label}</button>
-            ))}
-          </div>
+          <label style={labelStyle}>Pipeline</label>
+          <select value={pipelineId} onChange={e => setPipelineId(e.target.value)} style={inputStyle}>
+            {pipelines.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
         </div>
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Lead Type</label>
-          <select value={leadType} onChange={e => setLeadType(e.target.value)} style={{
-            width: '100%', padding: '10px 14px', borderRadius: '8px',
-            border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
-            color: 'var(--theme-text-primary)', fontSize: '13px', outline: 'none',
-          }}>
-            <option value="">— Select Lead Type —</option>
+          <label style={labelStyle}>Starting Stage</label>
+          <select value={stageId} onChange={e => setStageId(e.target.value)} style={inputStyle}>
+            {uploadStages.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
+        </div>
+        <div style={{ marginBottom: '16px' }}>
+          <label style={labelStyle}>Lead Type</label>
+          <select value={leadType} onChange={e => setLeadType(e.target.value)} style={inputStyle}>
+            <option value="">— Select —</option>
             {LEAD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Starting Stage</label>
-          <select value={stage} onChange={e => setStage(e.target.value)} style={{
-            width: '100%', padding: '10px 14px', borderRadius: '8px',
-            border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
-            color: 'var(--theme-text-primary)', fontSize: '13px', outline: 'none',
-          }}>
-            {['new_lead', 'contact', 'engaged', 'qualified', 'proposal', 'sold'].map(s => (
-              <option key={s} value={s}>{{new_lead:'New Leads',contact:'Contacted',engaged:'Engaged',qualified:'Qualified',proposal:'Proposal',sold:'Won'}[s]}</option>
-            ))}
-          </select>
-        </div>
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>CSV File</label>
-          <div onClick={() => fileRef.current?.click()} style={{
-            padding: '32px', borderRadius: '10px', border: '2px dashed var(--theme-border)',
-            background: 'var(--theme-bg)', textAlign: 'center', cursor: 'pointer',
-          }}>
+          <label style={labelStyle}>CSV File</label>
+          <div onClick={() => fileRef.current?.click()} style={{ padding: '32px', borderRadius: '10px', border: '2px dashed var(--theme-border)', background: 'var(--theme-bg)', textAlign: 'center', cursor: 'pointer' }}>
             <div style={{ fontSize: '28px', marginBottom: '8px' }}>📄</div>
             <div style={{ fontSize: '13px', color: 'var(--theme-text-secondary)' }}>{preview ? preview.fileName : 'Click to select CSV file'}</div>
-            <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginTop: '4px' }}>Columns: name, phone, email, state, notes</div>
             <input ref={fileRef} type="file" accept=".csv" onChange={handleFile} style={{ display: 'none' }} />
           </div>
         </div>
         {preview && (
           <div style={{ marginBottom: '16px' }}>
             <div style={{ fontSize: '12px', color: 'var(--theme-success)', marginBottom: '8px' }}>✅ {preview.rows.length} leads found</div>
-            <div style={{ maxHeight: '150px', overflow: 'auto', borderRadius: '8px', border: '1px solid var(--theme-border-subtle)', fontSize: '11px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead><tr>{preview.headers.slice(0, 4).map(h => (
-                  <th key={h} style={{ padding: '6px 10px', textAlign: 'left', color: 'var(--theme-text-secondary)', borderBottom: '1px solid var(--theme-border-subtle)' }}>{h}</th>
-                ))}</tr></thead>
-                <tbody>{preview.rows.slice(0, 5).map((r, i) => (
-                  <tr key={i}>{preview.headers.slice(0, 4).map(h => (
-                    <td key={h} style={{ padding: '6px 10px', color: 'var(--theme-text-secondary)', borderBottom: '1px solid var(--theme-border-subtle)' }}>{r[h]}</td>
-                  ))}</tr>
-                ))}</tbody>
-              </table>
-            </div>
           </div>
         )}
         {result && (
@@ -799,14 +903,32 @@ function UploadLeadsModal({ onClose, actions }) {
   )
 }
 
-function NewLeadModal({ onClose, actions }) {
+// ========================================
+// New Lead Modal (updated for dynamic pipelines)
+// ========================================
+function NewLeadModal({ onClose, actions, pipelines, stages, currentPipelineId }) {
   const [form, setForm] = useState({
     name: '', phone: '', email: '', state: '', dob: '', age: '',
-    leadType: 'FEX', stage: 'new_lead', pipeline: 'new',
+    leadType: 'FEX',
+    pipelineId: currentPipelineId || '',
+    stageId: stages?.[0]?.id || '',
     faceAmount: '', beneficiary: '', beneficiaryRelation: '',
     gender: '', notes: '',
   })
   const [saving, setSaving] = useState(false)
+  const [modalStages, setModalStages] = useState(stages || [])
+
+  useEffect(() => {
+    if (!form.pipelineId || form.pipelineId === currentPipelineId) {
+      setModalStages(stages || [])
+      return
+    }
+    crmClient.getStages(form.pipelineId).then(res => {
+      const list = res.stages || []
+      setModalStages(list)
+      if (list[0]) setForm(prev => ({ ...prev, stageId: list[0].id }))
+    }).catch(() => {})
+  }, [form.pipelineId])
 
   const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }))
 
@@ -815,22 +937,12 @@ function NewLeadModal({ onClose, actions }) {
     setSaving(true)
     try {
       const lead = {
-        name: form.name,
-        phone: form.phone,
-        email: form.email,
-        state: form.state,
-        dob: form.dob,
-        age: form.age,
-        lead_type: form.leadType,
-        stage: form.stage,
-        pipeline: form.pipeline,
-        face_amount: form.faceAmount,
-        beneficiary: form.beneficiary,
-        beneficiary_relation: form.beneficiaryRelation,
-        gender: form.gender,
-        notes: form.notes,
-        priority: 'medium',
-        tags: ['Lead', 'Manual'],
+        name: form.name, phone: form.phone, email: form.email, state: form.state,
+        dob: form.dob, age: form.age, lead_type: form.leadType,
+        pipeline_id: form.pipelineId, stage_id: form.stageId,
+        face_amount: form.faceAmount, beneficiary: form.beneficiary,
+        beneficiary_relation: form.beneficiaryRelation, gender: form.gender,
+        notes: form.notes, priority: 'medium', tags: ['Lead', 'Manual'],
       }
       const res = await crmClient.createLead(lead)
       if (res && (res.id || res.lead)) {
@@ -839,124 +951,65 @@ function NewLeadModal({ onClose, actions }) {
           ...newLead,
           leadType: form.leadType,
           faceAmount: form.faceAmount,
+          pipeline_id: form.pipelineId, pipelineId: form.pipelineId,
+          stage_id: form.stageId, stageId: form.stageId,
           createdAt: new Date().toISOString(),
         })
       }
       onClose()
     } catch (err) {
       console.error('Failed to create lead:', err)
-    } finally {
-      setSaving(false)
-    }
+    } finally { setSaving(false) }
   }
 
-  const inputStyle = {
-    width: '100%', padding: '10px 14px', borderRadius: '8px',
-    border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
-    color: 'var(--theme-text-primary)', fontSize: '13px', outline: 'none',
-  }
-  const labelStyle = {
-    display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)',
-    marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px',
-  }
+  const inputStyle = { width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--theme-border)', background: 'var(--theme-bg)', color: 'var(--theme-text-primary)', fontSize: '13px', outline: 'none' }
+  const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'var(--theme-modal-overlay)', display: 'flex',
-      alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-    }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{
-        width: '520px', maxHeight: '85vh', overflow: 'auto',
-        background: 'var(--theme-surface)', borderRadius: '16px',
-        border: '1px solid var(--theme-border)', padding: '32px',
-      }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'var(--theme-modal-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '520px', maxHeight: '85vh', overflow: 'auto', background: 'var(--theme-surface)', borderRadius: '16px', border: '1px solid var(--theme-border)', padding: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>+ New Lead</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--theme-text-secondary)', fontSize: '20px', cursor: 'pointer' }}>✕</button>
         </div>
-
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-          <div>
-            <label style={labelStyle}>Full Name *</label>
-            <input style={inputStyle} placeholder="First Last" value={form.name} onChange={e => handleChange('name', e.target.value)} />
-          </div>
-          <div>
-            <label style={labelStyle}>Phone *</label>
-            <input style={inputStyle} placeholder="Phone number" value={form.phone} onChange={e => handleChange('phone', e.target.value)} />
-          </div>
-          <div>
-            <label style={labelStyle}>Email</label>
-            <input style={inputStyle} placeholder="Email" value={form.email} onChange={e => handleChange('email', e.target.value)} />
-          </div>
-          <div>
-            <label style={labelStyle}>State</label>
-            <input style={inputStyle} placeholder="State" value={form.state} onChange={e => handleChange('state', e.target.value)} />
-          </div>
-          <div>
-            <label style={labelStyle}>DOB</label>
-            <input style={inputStyle} placeholder="MM/DD/YYYY" value={form.dob} onChange={e => handleChange('dob', e.target.value)} />
-          </div>
-          <div>
-            <label style={labelStyle}>Age</label>
-            <input style={inputStyle} placeholder="Age" value={form.age} onChange={e => handleChange('age', e.target.value)} />
-          </div>
-          <div>
-            <label style={labelStyle}>Lead Type</label>
+          <div><label style={labelStyle}>Full Name *</label><input style={inputStyle} placeholder="First Last" value={form.name} onChange={e => handleChange('name', e.target.value)} /></div>
+          <div><label style={labelStyle}>Phone *</label><input style={inputStyle} placeholder="Phone number" value={form.phone} onChange={e => handleChange('phone', e.target.value)} /></div>
+          <div><label style={labelStyle}>Email</label><input style={inputStyle} placeholder="Email" value={form.email} onChange={e => handleChange('email', e.target.value)} /></div>
+          <div><label style={labelStyle}>State</label><input style={inputStyle} placeholder="State" value={form.state} onChange={e => handleChange('state', e.target.value)} /></div>
+          <div><label style={labelStyle}>DOB</label><input style={inputStyle} placeholder="MM/DD/YYYY" value={form.dob} onChange={e => handleChange('dob', e.target.value)} /></div>
+          <div><label style={labelStyle}>Lead Type</label>
             <select style={inputStyle} value={form.leadType} onChange={e => handleChange('leadType', e.target.value)}>
               {LEAD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
-          <div>
-            <label style={labelStyle}>Pipeline</label>
-            <select style={inputStyle} value={form.pipeline} onChange={e => handleChange('pipeline', e.target.value)}>
-              <option value="new">New</option>
-              <option value="aged">Aged</option>
+          <div><label style={labelStyle}>Pipeline</label>
+            <select style={inputStyle} value={form.pipelineId} onChange={e => handleChange('pipelineId', e.target.value)}>
+              {pipelines.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
-          <div>
-            <label style={labelStyle}>Coverage Amount</label>
-            <input style={inputStyle} placeholder="$10,000" value={form.faceAmount} onChange={e => handleChange('faceAmount', e.target.value)} />
+          <div><label style={labelStyle}>Stage</label>
+            <select style={inputStyle} value={form.stageId} onChange={e => handleChange('stageId', e.target.value)}>
+              {modalStages.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
           </div>
-          <div>
-            <label style={labelStyle}>Gender</label>
+          <div><label style={labelStyle}>Coverage</label><input style={inputStyle} placeholder="$10,000" value={form.faceAmount} onChange={e => handleChange('faceAmount', e.target.value)} /></div>
+          <div><label style={labelStyle}>Gender</label>
             <select style={inputStyle} value={form.gender} onChange={e => handleChange('gender', e.target.value)}>
-              <option value="">—</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
+              <option value="">—</option><option value="Male">Male</option><option value="Female">Female</option>
             </select>
           </div>
-          <div>
-            <label style={labelStyle}>Beneficiary</label>
-            <input style={inputStyle} placeholder="Beneficiary name" value={form.beneficiary} onChange={e => handleChange('beneficiary', e.target.value)} />
-          </div>
-          <div>
-            <label style={labelStyle}>Relationship</label>
-            <select style={inputStyle} value={form.beneficiaryRelation} onChange={e => handleChange('beneficiaryRelation', e.target.value)}>
-              <option value="">—</option>
-              <option value="Spouse">Spouse</option>
-              <option value="My Children">My Children</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div style={{ gridColumn: '1 / -1' }}>
-            <label style={labelStyle}>Notes</label>
+          <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Notes</label>
             <textarea style={{ ...inputStyle, minHeight: '60px', resize: 'vertical' }} placeholder="Notes..." value={form.notes} onChange={e => handleChange('notes', e.target.value)} />
           </div>
         </div>
-
         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '24px' }}>
-          <button onClick={onClose} style={{
-            padding: '10px 20px', borderRadius: '8px',
-            border: '1px solid var(--theme-border)', background: 'transparent',
-            color: 'var(--theme-text-secondary)', fontSize: '13px', cursor: 'pointer',
-          }}>Cancel</button>
+          <button onClick={onClose} style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid var(--theme-border)', background: 'transparent', color: 'var(--theme-text-secondary)', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
           <button onClick={handleSave} disabled={saving || (!form.name && !form.phone)} style={{
-            padding: '10px 20px', borderRadius: '8px',
-            border: '1px solid var(--theme-accent)',
+            padding: '10px 20px', borderRadius: '8px', border: '1px solid var(--theme-accent)',
             background: (form.name || form.phone) ? 'var(--theme-accent-muted)' : 'rgba(255,255,255,0.04)',
             color: (form.name || form.phone) ? 'var(--theme-accent)' : '#52525b',
             fontSize: '13px', fontWeight: 600, cursor: (form.name || form.phone) ? 'pointer' : 'default',
-            opacity: saving ? 0.6 : 1,
           }}>{saving ? 'Saving...' : 'Create Lead'}</button>
         </div>
       </div>
@@ -964,6 +1017,9 @@ function NewLeadModal({ onClose, actions }) {
   )
 }
 
+// ========================================
+// Utility functions
+// ========================================
 function formatPhone(phone) {
   if (!phone) return ''
   const digits = phone.replace(/\D/g, '')
@@ -974,7 +1030,6 @@ function formatPhone(phone) {
 
 function formatLeadDate(dateStr) {
   if (!dateStr) return ''
-  // Handle "MM/DD/YY HH:MM:SS AM/PM" format from GSheet
   if (dateStr.match(/^\d{2}\/\d{2}\/\d{2}\s/)) return dateStr
   try {
     const d = new Date(dateStr)

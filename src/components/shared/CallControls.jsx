@@ -12,31 +12,14 @@ function formatDuration(seconds) {
 }
 
 export default function CallControls({ contactName, contactNumber, onEnd }) {
-  const { callState, callDuration, isMuted, setIsMuted, activeCall } = usePhone()
+  const { callState, callDuration, isMuted, toggleMute, isOnHold, toggleHold, activeCall } = usePhone()
   const [showDtmf, setShowDtmf] = useState(false)
-  const [isOnHold, setIsOnHold] = useState(false)
 
   if (callState === 'idle') return null
 
-  const handleMute = () => {
-    if (activeCall) {
-      activeCall.mute(!isMuted)
-    }
-    setIsMuted(!isMuted)
-  }
+  const handleMute = () => toggleMute()
 
-  const handleHold = async () => {
-    try {
-      if (isOnHold) {
-        await twilioClient.unholdCall(activeCall?.parameters?.CallSid || activeCall?.sid)
-      } else {
-        await twilioClient.holdCall(activeCall?.parameters?.CallSid || activeCall?.sid)
-      }
-      setIsOnHold(!isOnHold)
-    } catch (err) {
-      console.error('Hold toggle failed:', err)
-    }
-  }
+  const handleHold = async () => toggleHold()
 
   const handleEnd = () => {
     setIsOnHold(false)

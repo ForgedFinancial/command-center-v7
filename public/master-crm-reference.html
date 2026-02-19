@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Forged Financial — Master CRM Reference</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="" />
+  <style>body{font-family:system-ui,sans-serif;max-width:900px;margin:0 auto;padding:20px;font-size:14px;line-height:1.6}table{border-collapse:collapse;width:100%;margin:10px 0}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#1a1a2e;color:white}tr:nth-child(even){background:#f9f9f9}h1{color:#1a1a2e;border-bottom:3px solid #f59e0b}h2{color:#1a1a2e;border-bottom:2px solid #e5e7eb;padding-bottom:5px}h3{color:#2d3748}h4{color:#4a5568}code{background:#f3f4f6;padding:2px 6px;border-radius:3px}pre{background:#1a1a2e;color:#e5e7eb;padding:15px;border-radius:8px;overflow-x:auto}hr{border:none;border-top:2px solid #f59e0b;margin:30px 0}@media print{body{font-size:11pt}h1{page-break-before:always}table{page-break-inside:avoid}}</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Forged Financial — Master CRM Reference</h1>
+</header>
+<h1 id="master-crm-reference-forged-financial">MASTER CRM REFERENCE —
+Forged Financial</h1>
+<h1
+id="the-complete-system-lifecycle-pipelines-metrics-kpis-strategy">The
+Complete System: Lifecycle, Pipelines, Metrics, KPIs, Strategy</h1>
+<h1 id="created-feb-19-2026">Created: Feb 19, 2026</h1>
+<hr />
+<h2 id="part-1-the-complete-lifecycle-map">PART 1: THE COMPLETE
+LIFECYCLE MAP</h2>
+<h3 id="the-mission">The Mission</h3>
+<p>Turn every lead into a paying, retained, long-term client. If they
+fall off at ANY point, systematically re-engage them until they’re back
+or documented as truly uninsurable. No lead forgotten. No policy lost
+without a fight. Every outcome tracked. Every dollar accounted for.</p>
+<h3 id="the-happy-path-best-case">The Happy Path (Best Case)</h3>
+<pre><code>LEAD ENTERS → LM (sell) → AP (submit) → PL (activate) → ACTIVE (retain forever)</code></pre>
+<h3 id="the-recovery-paths-when-things-go-wrong">The Recovery Paths
+(When Things Go Wrong)</h3>
+<pre><code>Lead goes cold ──────→ NURTURE (6mo) → RECYCLE (45d) → UNINSURABLE (12mo review)
+Carrier declines ────→ REWRITE → back to LM or → RECYCLE
+Payment fails ───────→ RE: EXCEPTION → ACTIVE RECOVERY → RESOLVED or TERMINATED
+Client wants cancel ─→ RE: EXCEPTION → retention script → save or TERMINATED
+Terminated policy ───→ REWRITE → WIN BACK cycle</code></pre>
+<h3 id="the-golden-rule">The Golden Rule</h3>
+<p><strong>Nothing dies permanently.</strong> Every exit has a re-entry
+path: - Cold leads → Nurture → Recycle → Uninsurable → 12-month health
+check → possible re-entry - Lost policies → Terminated → Rewrite →
+Recycle or back to LM - Even ZOMBIE leads (dead leads that come back)
+get instant hot-lead treatment</p>
+<h3 id="data-rules">Data Rules</h3>
+<ul>
+<li>Every stage sets a TAG — you always know where the lead is</li>
+<li>Every move is logged in the activity feed — full audit trail</li>
+<li>Required fields gate progression — no skipping steps</li>
+<li>Lead is DELETED from previous pipeline on transfer — clean, no
+remnants</li>
+<li>All deal data carries forward — nothing lost in transitions</li>
+<li>All SMS goes through Approval Gate unless agent opts into
+auto-send</li>
+</ul>
+<hr />
+<h2 id="part-2-every-pipeline-stage-trigger-action-condition">PART 2:
+EVERY PIPELINE, STAGE, TRIGGER, ACTION &amp; CONDITION</h2>
+<hr />
+<h3 id="pipeline-1-lm-lead-management">PIPELINE 1: LM | LEAD
+MANAGEMENT</h3>
+<p><strong>Purpose:</strong> Convert raw leads into closed sales
+<strong>Stages:</strong> 6 <strong>Timeline:</strong> 0 to ~39 days max
+before auto-nurture</p>
+<h4 id="stage-1-new-lead-0-3-days">STAGE 1: NEW LEAD (0-3 days)</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Lead enters system (Google Sheet import, webhook, manual entry,
+referral)</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Name + at least one contact method (phone or email)</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Create opportunity record • Auto-assign to agent (round-robin or
+manual) • Set TAG | New Lead | • Send speed-to-lead SMS (through
+approval gate): “Hi [Name], this is [Agent] with [Company]. I’ll be
+giving you a call shortly regarding your inquiry. Talk soon!” • Push
+notification + SMS to agent with lead summary</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS</strong></td>
+<td>• IF client replies → TAG | REPLY NEEDED |, notify agent, auto-move
+→ Contact • IF 3 days, no interaction → auto-move → Contact</td>
+</tr>
+<tr class="odd">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Call within 5 minutes • Document attempt in activity feed • IF
+interested → move to Engaged Interest • IF SSN provided → move to
+Qualified Interest • IF appointment set → move to Engaged Interest (or
+Qualified if SSN on file)</td>
+</tr>
+<tr class="even">
+<td><strong>DATA TRACKED</strong></td>
+<td>Lead source, entry timestamp, first contact timestamp, response
+time, attempt count</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-2-contact-0-4-days">STAGE 2: CONTACT (0-4 days)</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Auto-moved from New Lead (3 days) OR agent moves manually</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Was in New Lead stage</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Contact | • Monitor for client replies</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS</strong></td>
+<td>• IF client replied + agent hasn’t responded 24h → TAG | Overdue-24h
+|, SMS reminder to agent • Escalating: | Overdue-48h |, | Overdue-72h |
+• IF agent responds → remove | REPLY NEEDED | • IF 4 days, no contact +
+insufficient attempts → notification to agent • IF 4 days total, no
+contact → auto-move → Nurture (Pipeline 7) + farewell SMS to client</td>
+</tr>
+<tr class="odd">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Continue outreach at different times of day • Document every
+attempt • Contact + interest → Engaged Interest • Contact + SSN →
+Qualified Interest • Contact + appointment → Engaged Interest (or
+Qualified) • “Not interested” → Nurture (tagged with reason)</td>
+</tr>
+<tr class="even">
+<td><strong>DATA TRACKED</strong></td>
+<td>Attempt count, attempt times, client response timestamps, overdue
+tag count</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-3-engaged-interest-0-14-days">STAGE 3: ENGAGED INTEREST
+(0-14 days)</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Agent confirms client expressed interest</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Successful contact made + client showed interest</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Engaged Interest | • Send interest-gauge SMS (through
+approval gate)</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS</strong></td>
+<td>• IF 14 days, no interaction + no app started → auto-move → Nurture
++ dialer recycle</td>
+</tr>
+<tr class="odd">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• High-touch follow-up (calls, texts, relationship building) • SSN
+provided → Qualified Interest • Goes cold → Nurture • Appointment booked
+→ calendar event</td>
+</tr>
+<tr class="even">
+<td><strong>DATA TRACKED</strong></td>
+<td>Engagement type, follow-up frequency, time in stage</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-4-qualified-interest-0-7-days">STAGE 4: QUALIFIED INTEREST
+(0-7 days)</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Client provides Social Security Number</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>SSN field populated (REQUIRED)</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Qualified Interest |</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS</strong></td>
+<td>• IF 48h no activity → automated check-in SMS • IF 7 days, no
+interaction + no app → auto-move → Nurture + dialer recycle</td>
+</tr>
+<tr class="odd">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• PRIORITY prospect — aggressive follow-up • App started →
+Application Process • Silent/lost interest → Nurture</td>
+</tr>
+<tr class="even">
+<td><strong>DATA TRACKED</strong></td>
+<td>Time from engaged → qualified, SSN provided timestamp</td>
+</tr>
+</tbody>
+</table>
+<h4
+id="stage-5-application-process-0-11-days-resets-on-engagement">STAGE 5:
+APPLICATION PROCESS (0-11 days, resets on engagement)</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Agent starts application with client</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Carrier, Product, Price, Health Status (ALL REQUIRED)</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Application Process | • ANY client engagement resets ALL
+timers</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS</strong></td>
+<td>• IF 24h no activity → check-in SMS with carrier/product/price
+details • IF 11 days total no contact → auto-move → Nurture</td>
+</tr>
+<tr class="odd">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Fill all required fields • Walk client through application • App
+submitted → Closed Won • Client ghosts → Nurture</td>
+</tr>
+<tr class="even">
+<td><strong>DATA TRACKED</strong></td>
+<td>Carrier, product, price, health status, time in stage, engagement
+resets</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-6-closed-won">STAGE 6: CLOSED WON ✅</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Application submitted to carrier</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Carrier, Product, Price, Health Status, Coverage Amount (ALL
+REQUIRED)</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Closed | • 7-minute buffer for agent notes • Send
+“Closed | Submission Reminder” SMS to client (agent name, personal
+phone, work number, save both, automated alerts info) • 5 min after
+transfer: congratulations SMS with full details • Create opportunity in
+Pipeline 2 → Submitted • DELETE from Pipeline 1 (only after confirming
+data transfer)</td>
+</tr>
+<tr class="even">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Fill ALL required fields • Review accuracy • DONE with Lead
+Management</td>
+</tr>
+<tr class="odd">
+<td><strong>DATA TRACKED</strong></td>
+<td>Close date, premium, carrier, product, coverage amount, time from
+new lead → closed (velocity)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="pipeline-2-ap-approval-process">PIPELINE 2: AP | APPROVAL
+PROCESS</h3>
+<p><strong>Purpose:</strong> Track submission through carrier
+underwriting to decision <strong>Stages:</strong> 2
+<strong>Timeline:</strong> Carrier-dependent (days to weeks)</p>
+<h4 id="stage-1-submitted">STAGE 1: SUBMITTED</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Closed Won in Pipeline 1 creates opportunity here</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Data transferred from Closed Won</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Submitted |</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS</strong></td>
+<td>• IF client has TAG | Approved as Applied | → bypass directly to
+Pipeline 3 → Approved • IF email parser configured → auto-update on
+carrier emails</td>
+</tr>
+<tr class="odd">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Confirm submission with carrier • Manual status updates if no
+email parser • UW begins → move to Underwriting/Requirements</td>
+</tr>
+<tr class="even">
+<td><strong>DATA TRACKED</strong></td>
+<td>Submission date, carrier, submission method</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-2-underwriting-requirements">STAGE 2: UNDERWRITING /
+REQUIREMENTS</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Carrier begins underwriting review</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Agent confirms UW started</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | UW &amp; Requirements | • Create task: “Requirements
+review — same day” • Create recurring task: “Requirement chase — every
+72 hours”</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS</strong></td>
+<td>• IF email parser detects carrier update → notify agent • IF carrier
+approves → move to Pipeline 3 → Approved, DELETE from Pipeline 2 • IF
+carrier declines → move to Pipeline 5 → Rewrite, DELETE from Pipeline
+2</td>
+</tr>
+<tr class="odd">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Review requirements same day • Chase carrier every 72 hours •
+Provide any additional documentation</td>
+</tr>
+<tr class="even">
+<td><strong>DATA TRACKED</strong></td>
+<td>UW start date, requirements list, requirement completion dates,
+decision date, time in UW</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="pipeline-3-pl-policy-lifecycle">PIPELINE 3: PL | POLICY
+LIFECYCLE</h3>
+<p><strong>Purpose:</strong> Track approved policy from paper to active
+coverage <strong>Stages:</strong> 4 <strong>Timeline:</strong> Days to
+weeks depending on carrier + banking</p>
+<h4 id="stage-1-approved">STAGE 1: APPROVED</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Carrier approves application (from Pipeline 2) OR Approved as
+Applied bypass</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Carrier approval confirmed</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Approved | • SMS to client: approval congratulations +
+agent reaching out • Create task: delivery follow-up</td>
+</tr>
+<tr class="even">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Deliver policy (call/video/in-person) • Confirm banking info and
+draft date • Walk client through coverage details • Delivery complete →
+move to Draft Cleared</td>
+</tr>
+<tr class="odd">
+<td><strong>DATA TRACKED</strong></td>
+<td>Approval date, carrier, delivery method, delivery date</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-2-draft-cleared">STAGE 2: DRAFT CLEARED</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>First premium payment drafts successfully</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Agent confirms draft cleared with carrier/bank</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Draft Cleared | • SMS to client: first payment
+confirmed</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS</strong></td>
+<td>• IF draft FAILS → move to Pipeline 4 → New Exception</td>
+</tr>
+<tr class="odd">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Confirm first draft cleared with carrier • Move to Delivered</td>
+</tr>
+<tr class="even">
+<td><strong>DATA TRACKED</strong></td>
+<td>Draft date, draft amount, payment method, pass/fail</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-3-delivered">STAGE 3: DELIVERED</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Agent has delivered policy documents to client</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Policy delivered + draft cleared</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Delivered | • Field validations: draft date, payment
+method, policy #</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS</strong></td>
+<td>• IF draft date within 7 days → create pre-draft confirmation
+task</td>
+</tr>
+<tr class="odd">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Verify all fields complete and accurate • Pre-draft touch call if
+within 7 days • Everything checks out → move to In Force</td>
+</tr>
+<tr class="even">
+<td><strong>DATA TRACKED</strong></td>
+<td>Delivery date, delivery method, field completion %</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-4-in-force">STAGE 4: IN FORCE ✅</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Policy confirmed active with carrier</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Draft cleared + policy delivered + carrier confirms active</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | In Force | • Add to persistency cohort tracking • Start
+persistency monitoring • Move to Pipeline 6 → Month 1 • DELETE from
+Pipeline 3</td>
+</tr>
+<tr class="even">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Confirm policy is truly in force with carrier • DONE with Policy
+Lifecycle</td>
+</tr>
+<tr class="odd">
+<td><strong>DATA TRACKED</strong></td>
+<td>In Force date, carrier, premium, coverage amount, policy number
+(starts persistency clock)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="pipeline-4-re-retention-exceptions">PIPELINE 4: RE | RETENTION
+EXCEPTIONS</h3>
+<p><strong>Purpose:</strong> Save at-risk policies through systematic
+recovery <strong>Stages:</strong> 4 <strong>Timeline:</strong> Up to 30
+days before auto-termination</p>
+<h4 id="stage-1-new-exception-intake-triage">STAGE 1: NEW EXCEPTION
+(Intake &amp; Triage)</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Draft fails (from Pipeline 3), payment issue detected, lapse notice
+from carrier, client requests cancellation, or billing exception
+flagged</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Active policy with identified exception</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Create opportunity, auto-assign to writing agent • Set TAG | New
+Exception |, populate [Exception Type] field • SMS alert to agent
+immediately</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS</strong></td>
+<td>• IF 4 hours, no movement → second SMS alert to agent • IF 24 hours,
+no movement → TAG | Overdue |</td>
+</tr>
+<tr class="odd">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Review within 4 hours • Verify exception type and client info •
+Move to Active Recovery</td>
+</tr>
+<tr class="even">
+<td><strong>DATA TRACKED</strong></td>
+<td>Exception type, entry timestamp, source (which pipeline/trigger),
+agent response time</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-2-active-recovery-work-the-case">STAGE 2: ACTIVE RECOVERY
+(Work the Case)</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Agent moves from New Exception</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Exception reviewed and triaged</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Active Recovery | • Create task: “Call client today” •
+SMS to client about the issue</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS (Escalating Timers)</strong></td>
+<td>• 24h → TAG | Overdue-24h | • 48h → TAG | Overdue-48h | • 72h → TAG
+| Overdue-72h | + 🚨 MANAGER ALERT • 7 days → TAG | Client Risk | • 14
+days → TAG | URGENT | + 🚨 MANAGER ALERT • 30 days → auto-move →
+Terminated</td>
+</tr>
+<tr class="odd">
+<td><strong>CONDITIONAL ACTIONS (Special Cases)</strong></td>
+<td>• IF lapse risk identified → add TAG | Lapse Risk | (same escalation
+ladder) • IF 5+ contact attempts with no response → TAG | Unreachable |,
+send final voicemail + SMS → IF 7 more days no response → auto-move →
+Terminated • IF “want to cancel” → retention script → IF still no →
+Terminated • IF billing fixed + carrier confirms → move to Resolved</td>
+</tr>
+<tr class="even">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Call client same day • Fix payment issue / send update form /
+address retention concern • Document every action</td>
+</tr>
+<tr class="odd">
+<td><strong>DATA TRACKED</strong></td>
+<td>Contact attempts, escalation tags hit, exception type, time in
+stage, resolution actions taken</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-3-resolved-policy-saved">STAGE 3: RESOLVED ✅ (Policy
+Saved)</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Issue fixed and carrier confirms policy is active again</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Carrier confirmation of resolution</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Resolved | • Remove ALL escalation tags (Overdue, Client
+Risk, URGENT, Lapse Risk, Unreachable) • Set [Exception Outcome] field •
+SMS to agent: confirmation • SMS to client: confirmation • Return to
+Pipeline 3 (Policy Lifecycle) or Pipeline 6 (Inforce Clients) • DELETE
+from Pipeline 4</td>
+</tr>
+<tr class="even">
+<td><strong>DATA TRACKED</strong></td>
+<td>Resolution date, resolution type, time to resolve, exception
+outcome</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-4-terminated-policy-lost">STAGE 4: TERMINATED ❌ (Policy
+Lost)</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>30-day auto-termination, agent marks as lost, or unreachable
+exhausted</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Recovery failed</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Terminated | • Remove from all active automations •
+Duplicate opportunity to Pipeline 5 → Rewrite (Win Back cycle) • SMS
+notification to agent</td>
+</tr>
+<tr class="even">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Final disposition notes — WHY lost (REQUIRED, documented
+reason)</td>
+</tr>
+<tr class="odd">
+<td><strong>DATA TRACKED</strong></td>
+<td>Termination date, reason, time in recovery, attempts made,
+commission at risk</td>
+</tr>
+</tbody>
+</table>
+<p><strong>DAILY AUTOMATION:</strong> 8AM SMS to each agent with their
+RE pipeline counts (active cases, overdue count, escalation status)</p>
+<hr />
+<h3 id="pipeline-5-rewrite-rejected">PIPELINE 5: REWRITE | REJECTED</h3>
+<p><strong>Purpose:</strong> Recapture declined and terminated cases
+<strong>Stages:</strong> 3 <strong>Timeline:</strong> 7 days rewrite +
+45 days recycle + 12 months uninsurable review</p>
+<h4 id="stage-1-rewrite-0-7-days">STAGE 1: REWRITE (0-7 days)</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Carrier declines (from Pipeline 2) OR policy Terminated (from
+Pipeline 4)</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Decline reason or termination reason documented</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Rewrite | • Carry forward ALL previous deal data +
+decline/termination reason • Create review task</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS</strong></td>
+<td>• IF 7 days, no activity → auto-move → Recycle</td>
+</tr>
+<tr class="odd">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Review decline/termination reason • Viable rewrite → Pipeline 1 →
+Application Process (new carrier/product), DELETE from Pipeline 5 • Not
+viable now → move to Recycle • Truly uninsurable → move to
+Uninsurable</td>
+</tr>
+<tr class="even">
+<td><strong>DATA TRACKED</strong></td>
+<td>Original decline reason, rewrite viability, new carrier/product if
+rewritten</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-2-recycle-45-days">STAGE 2: RECYCLE (45 days)</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Agent defers rewrite, 7-day auto from Rewrite, OR Nurture exhausted
+(from Pipeline 7)</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Lead not viable for immediate rewrite but not uninsurable</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Recycle |</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS</strong></td>
+<td>• Day 1 → SMS to agent: re-contact this lead • Day 15 → second
+re-contact reminder • Day 30 → final attempt reminder • Day 45, no
+interest → auto-move → Uninsurable • IF client reaches out ANY time → 3
+alerts + TAG | ZOMBIE |</td>
+</tr>
+<tr class="odd">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Re-contact on each timer fire • Interested → Pipeline 1 at
+appropriate stage, DELETE from Pipeline 5 • ZOMBIE tag → treat as HOT
+lead, respond immediately</td>
+</tr>
+<tr class="even">
+<td><strong>DATA TRACKED</strong></td>
+<td>Re-contact attempts, timer responses, ZOMBIE conversions</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-3-uninsurable">STAGE 3: UNINSURABLE</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Recycle exhausted (45 days), or agent determines client is medically
+uninsurable</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>All re-engagement attempts failed OR medical determination</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Uninsurable | • Remove from ALL automations • Set
+12-month health check timer → creates task for agent</td>
+</tr>
+<tr class="even">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Document WHY: specific conditions, which carriers declined, what
+would need to change • 12-month review: IF improved → Recycle or
+Pipeline 1; IF still uninsurable → reset timer or close permanently</td>
+</tr>
+<tr class="odd">
+<td><strong>DATA TRACKED</strong></td>
+<td>Reason, carriers attempted, conditions documented, 12-month review
+outcomes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="pipeline-6-active-inforce-clients">PIPELINE 6: ACTIVE | INFORCE
+CLIENTS</h3>
+<p><strong>Purpose:</strong> Retain clients, build relationship,
+maximize lifetime value <strong>Stages:</strong> 5
+<strong>Timeline:</strong> Ongoing (annual cycle)</p>
+<h4 id="stage-1-month-1-welcome-anchoring-0-30-days">STAGE 1: MONTH 1 |
+WELCOME &amp; ANCHORING (0-30 days)</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Policy goes In Force (from Pipeline 3)</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Policy confirmed active</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Month 1 | • SMS about gift/card</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS</strong></td>
+<td>• IF positive response → [GIFT] pipeline + 21-day timer • IF no
+response 7 days → TAG | No Gift | • IF 30 days → auto-move → Month
+3</td>
+</tr>
+<tr class="odd">
+<td><strong>DATA TRACKED</strong></td>
+<td>Gift response, client sentiment, early engagement level</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-2-month-3-the-danger-zone-30-90-days">STAGE 2: MONTH 3 |
+THE DANGER ZONE (30-90 days)</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Auto from Month 1 at 30 days</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Completed Month 1 without exception</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Month 3 | • SMS: 3-month thank you</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS</strong></td>
+<td>• IF negative reply (cancel, too expensive) → Pipeline 4 → New
+Exception • IF 90 days → auto-move → Month 6</td>
+</tr>
+<tr class="odd">
+<td><strong>DATA TRACKED</strong></td>
+<td>Client response, exception trigger rate at Month 3</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-3-month-6-beneficiary-review-90-180-days">STAGE 3: MONTH 6
+| BENEFICIARY REVIEW (90-180 days)</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Auto from Month 3 at 90 days</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Survived Month 3</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Month 6 | • SMS: beneficiary update check</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS</strong></td>
+<td>• IF positive response → TAG | Ready For Referrals | • IF negative
+reply → Pipeline 4 → New Exception • IF 180 days → auto-move → Month
+12</td>
+</tr>
+<tr class="odd">
+<td><strong>DATA TRACKED</strong></td>
+<td>Beneficiary review status, referral readiness, client sentiment</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-4-month-12-annual-review-365-days">STAGE 4: MONTH 12 |
+ANNUAL REVIEW (365 days)</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Auto from Month 6 at 180 days</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Survived Month 6</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Month 12 | • SMS: anniversary + calendar link for 5-min
+review call</td>
+</tr>
+<tr class="even">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• MANUAL call (not just text) — this is personal • Review coverage,
+beneficiaries, life changes • Upsell opportunity (additional coverage,
+family members) • After review → reset to Month 1 for Year 2+</td>
+</tr>
+<tr class="odd">
+<td><strong>DATA TRACKED</strong></td>
+<td>Review completed (Y/N), coverage changes, upsell outcome, referrals
+received</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stage-5-client-contact-respond-to-client">STAGE 5: CLIENT
+CONTACT | RESPOND TO CLIENT</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Missed call or unread text detected from active client</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Client initiated contact</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Create opportunity in this stage • TAG | Client Contact Needed
+|</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS</strong></td>
+<td>• IF billing issue mentioned → Pipeline 4 → New Exception • IF
+cancel request → Pipeline 4 → New Exception</td>
+</tr>
+<tr class="odd">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Respond ASAP • General question → answer + return to appropriate
+month stage • Referral → handle + document • Remove tag once
+resolved</td>
+</tr>
+<tr class="even">
+<td><strong>DATA TRACKED</strong></td>
+<td>Response time, contact reason, resolution</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="pipeline-7-nurture-long-term">PIPELINE 7: NURTURE | LONG
+TERM</h3>
+<p><strong>Purpose:</strong> Warm drip on cold leads until ready to
+re-engage <strong>Stages:</strong> 1 <strong>Timeline:</strong> 6
+months</p>
+<h4 id="stage-1-nurture-start-6-months">STAGE 1: NURTURE START (6
+months)</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TRIGGER</strong></td>
+<td>Lead goes cold from Pipeline 1 (auto-move from Contact at 4 days,
+Engaged at 14 days, Qualified at 7 days, App Process at 11 days, OR
+agent manually moves)</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONS to enter</strong></td>
+<td>Lead was in Pipeline 1 but failed to progress</td>
+</tr>
+<tr class="odd">
+<td><strong>SYSTEM ACTIONS</strong></td>
+<td>• Set TAG | Nurture | • Preserve ALL existing tags from previous
+stages</td>
+</tr>
+<tr class="even">
+<td><strong>CONDITIONAL ACTIONS (SMS Drip Sequence)</strong></td>
+<td>• Day 7 → SMS (1): “Life gets busy, I’ll check back…” • Day 45 → SMS
+(2): “Carriers adjusted guidelines…” • Day 60 → SMS (3): “Thinking of
+you…” • Day 90 → SMS (4): “Still looking for coverage?” • Day 135 → SMS
+(5): mid-cycle check-in • Day 180 → SMS (6): “Still here if you need us”
+• IF positive reply to ANY SMS → Pipeline 1 → Engaged Interest, DELETE
+from Pipeline 7 • IF “stop” or “not interested” → TAG | Nurture Declined
+|, stop sequence • IF no reply after SMS (6) at Day 180 → auto-move →
+Pipeline 5 → Recycle</td>
+</tr>
+<tr class="odd">
+<td><strong>AGENT ACTIONS</strong></td>
+<td>• Reply personally to any client response • Can manually re-engage
+any time • LOW PRESSURE — no aggressive outreach</td>
+</tr>
+<tr class="even">
+<td><strong>DATA TRACKED</strong></td>
+<td>Which SMS triggered response, response rate per touchpoint,
+re-engagement source</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="part-3-metrics-were-tracking">PART 3: METRICS WE’RE
+TRACKING</h2>
+<h3 id="metric-categories">Metric Categories</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Category</th>
+<th>What It Answers</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Speed</strong></td>
+<td>How fast are we responding?</td>
+</tr>
+<tr class="even">
+<td><strong>Contact</strong></td>
+<td>Are we reaching people?</td>
+</tr>
+<tr class="odd">
+<td><strong>Conversion</strong></td>
+<td>Are we closing deals?</td>
+</tr>
+<tr class="even">
+<td><strong>Revenue</strong></td>
+<td>How much money are we making?</td>
+</tr>
+<tr class="odd">
+<td><strong>Approval</strong></td>
+<td>Are carriers accepting our business?</td>
+</tr>
+<tr class="even">
+<td><strong>Persistency</strong></td>
+<td>Are policies staying active?</td>
+</tr>
+<tr class="odd">
+<td><strong>Retention</strong></td>
+<td>Can we save at-risk policies?</td>
+</tr>
+<tr class="even">
+<td><strong>Recapture</strong></td>
+<td>Are we recovering lost leads?</td>
+</tr>
+<tr class="odd">
+<td><strong>Activity</strong></td>
+<td>Are agents putting in the work?</td>
+</tr>
+<tr class="even">
+<td><strong>Intelligence</strong></td>
+<td>Where should we focus?</td>
+</tr>
+</tbody>
+</table>
+<h3 id="complete-metric-list">Complete Metric List</h3>
+<table>
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 28%" />
+<col style="width: 32%" />
+<col style="width: 28%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Metric</th>
+<th>Formula</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Speed to Lead</td>
+<td>Avg(first_contact_timestamp - lead_entry_timestamp)</td>
+<td>P1 S1</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Response Time</td>
+<td>Avg(agent_reply_timestamp - client_message_timestamp)</td>
+<td>All pipelines</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Overdue Rate</td>
+<td>Count(leads with overdue tags) / Count(active leads)</td>
+<td>All pipelines</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Contact Rate</td>
+<td>Count(leads reaching S3+) / Count(leads entering S1)</td>
+<td>P1</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Attempts to Contact</td>
+<td>Avg(activity_entries per lead before first conversation)</td>
+<td>P1 S1-S2</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Engagement Rate</td>
+<td>Count(S3 entries) / Count(S1 entries)</td>
+<td>P1</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>Qualification Rate</td>
+<td>Count(S4 entries) / Count(S3 entries)</td>
+<td>P1</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>Close Rate</td>
+<td>Count(S6 entries) / Count(S1 entries)</td>
+<td>P1</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>App-to-Close Rate</td>
+<td>Count(S6 entries) / Count(S5 entries)</td>
+<td>P1</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>Pipeline Velocity</td>
+<td>Avg(closed_date - entry_date) in days</td>
+<td>P1</td>
+</tr>
+<tr class="odd">
+<td>11</td>
+<td>Avg Monthly Premium</td>
+<td>Avg(price) on Closed Won deals</td>
+<td>P1 S6</td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td>Avg Annual Premium</td>
+<td>Avg(price × 12) on Closed Won deals</td>
+<td>P1 S6</td>
+</tr>
+<tr class="odd">
+<td>13</td>
+<td>Total AP Written</td>
+<td>Sum(price × 12) for period</td>
+<td>P1 S6</td>
+</tr>
+<tr class="even">
+<td>14</td>
+<td>Revenue by Source</td>
+<td>Sum(AP) grouped by lead_source</td>
+<td>P1 S6</td>
+</tr>
+<tr class="odd">
+<td>15</td>
+<td>Revenue by Carrier</td>
+<td>Sum(AP) grouped by carrier</td>
+<td>P1 S6</td>
+</tr>
+<tr class="even">
+<td>16</td>
+<td>Lead Source ROI</td>
+<td>(AP × commission_rate) / (lead_count × cost_per_lead)</td>
+<td>P1 + config</td>
+</tr>
+<tr class="odd">
+<td>17</td>
+<td>Approval Rate</td>
+<td>Count(approved) / Count(submitted)</td>
+<td>P2 → P3</td>
+</tr>
+<tr class="even">
+<td>18</td>
+<td>Placement Rate</td>
+<td>Count(in_force) / Count(approved)</td>
+<td>P3</td>
+</tr>
+<tr class="odd">
+<td>19</td>
+<td>Avg UW Time</td>
+<td>Avg(decision_date - submission_date)</td>
+<td>P2</td>
+</tr>
+<tr class="even">
+<td>20</td>
+<td>Requirements Completion</td>
+<td>Count(resolved_without_decline) / Count(total_requirements)</td>
+<td>P2 S2</td>
+</tr>
+<tr class="odd">
+<td>21</td>
+<td>13-Month Persistency</td>
+<td>Count(policies active at 13 months) / Count(policies issued 13+
+months ago)</td>
+<td>P6</td>
+</tr>
+<tr class="even">
+<td>22</td>
+<td>Danger Zone Survival</td>
+<td>Count(survived Month 3) / Count(entered Month 1)</td>
+<td>P6 S1→S2</td>
+</tr>
+<tr class="odd">
+<td>23</td>
+<td>Exception Rate</td>
+<td>Count(P4 entries) / Count(active P6 clients)</td>
+<td>P4 / P6</td>
+</tr>
+<tr class="even">
+<td>24</td>
+<td>Save Rate</td>
+<td>Count(Resolved) / Count(Resolved + Terminated)</td>
+<td>P4</td>
+</tr>
+<tr class="odd">
+<td>25</td>
+<td>Avg Time to Resolve</td>
+<td>Avg(resolved_date - exception_date)</td>
+<td>P4</td>
+</tr>
+<tr class="even">
+<td>26</td>
+<td>Chargeback Risk</td>
+<td>Count(terminated within 12 months) × avg_commission</td>
+<td>P4</td>
+</tr>
+<tr class="odd">
+<td>27</td>
+<td>Recapture Rate</td>
+<td>Count(P7/P5 → P1 re-entries) / Count(P7 + P5 S2 entries)</td>
+<td>P7 + P5</td>
+</tr>
+<tr class="even">
+<td>28</td>
+<td>ZOMBIE Rate</td>
+<td>Count(ZOMBIE tags) / Count(P5 S2 entries)</td>
+<td>P5 S2</td>
+</tr>
+<tr class="odd">
+<td>29</td>
+<td>Win Back Revenue</td>
+<td>Sum(AP from recaptured leads)</td>
+<td>P1 (filtered)</td>
+</tr>
+<tr class="even">
+<td>30</td>
+<td>Nurture Response Rate</td>
+<td>Count(replies) / Count(SMS sent) per touchpoint</td>
+<td>P7</td>
+</tr>
+<tr class="odd">
+<td>31</td>
+<td>Daily Activity Score</td>
+<td>Weighted(calls + texts + leads_worked)</td>
+<td>Activity feed</td>
+</tr>
+<tr class="even">
+<td>32</td>
+<td>Calls Made</td>
+<td>Count(outbound_calls) per day</td>
+<td>Call logs</td>
+</tr>
+<tr class="odd">
+<td>33</td>
+<td>Talk Time</td>
+<td>Sum(call_duration) per day</td>
+<td>Call logs</td>
+</tr>
+<tr class="even">
+<td>34</td>
+<td>Leads Worked</td>
+<td>Count(distinct lead_ids with activity) per day</td>
+<td>Activity feed</td>
+</tr>
+<tr class="odd">
+<td>35</td>
+<td>Best Time to Call</td>
+<td>Contact_rate grouped by hour × day_of_week</td>
+<td>Call logs</td>
+</tr>
+<tr class="even">
+<td>36</td>
+<td>State Performance</td>
+<td>Close_rate + avg_AP grouped by state</td>
+<td>P1</td>
+</tr>
+<tr class="odd">
+<td>37</td>
+<td>Carrier Matrix</td>
+<td>Approval% + UW_days + persistency + avg_premium by carrier</td>
+<td>P2 + P3 + P6</td>
+</tr>
+<tr class="even">
+<td>38</td>
+<td>Funnel Drop-Off</td>
+<td>Stage-to-stage conversion rates</td>
+<td>P1</td>
+</tr>
+<tr class="odd">
+<td>39</td>
+<td>Revenue Forecast</td>
+<td>Active_leads × stage_close_rate × avg_premium</td>
+<td>P1</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="part-4-kpis-that-drive-each-metric">PART 4: KPIs THAT DRIVE EACH
+METRIC</h2>
+<p>Each metric has <strong>input KPIs</strong> — the specific behaviors
+and actions that an agent controls that directly impact the output
+metric. This is the “what do I actually DO to improve this number?”</p>
+<h3 id="speed-metrics">SPEED METRICS</h3>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 54%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Output Metric</th>
+<th>Input KPIs (What Drives It)</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Speed to Lead</strong></td>
+<td>• Time between notification received and first call attempt • Number
+of leads in queue when new lead arrives • Agent availability at time of
+lead entry</td>
+<td>First call &lt; 5 min</td>
+</tr>
+<tr class="even">
+<td><strong>Response Time</strong></td>
+<td>• How often agent checks for REPLY NEEDED tags • Agent’s current
+call/appointment load • Notification responsiveness</td>
+<td>Reply &lt; 30 min</td>
+</tr>
+<tr class="odd">
+<td><strong>Overdue Rate</strong></td>
+<td>• Daily pipeline review habit • Number of active cases per agent •
+Task completion rate</td>
+<td>&lt; 5% overdue</td>
+</tr>
+</tbody>
+</table>
+<h3 id="contact-metrics">CONTACT METRICS</h3>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 54%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Output Metric</th>
+<th>Input KPIs (What Drives It)</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Contact Rate</strong></td>
+<td>• Calls per day (volume) • Call timing (best time to call data) •
+Multi-channel approach (call + text + email) • Attempt persistence (5+
+attempts before giving up)</td>
+<td>&gt; 45% contacted</td>
+</tr>
+<tr class="even">
+<td><strong>Attempts to Contact</strong></td>
+<td>• Agent persistence • Time spacing between attempts • Channel
+variation (phone AM, text PM)</td>
+<td>3-5 avg attempts</td>
+</tr>
+<tr class="odd">
+<td><strong>Engagement Rate</strong></td>
+<td>• Pitch quality on first conversation • Rapport building skill •
+Lead source quality (better leads = higher engagement)</td>
+<td>&gt; 30% engaged</td>
+</tr>
+<tr class="even">
+<td><strong>Qualification Rate</strong></td>
+<td>• Trust building during engaged phase • Proper qualification
+questions • Objection handling on SSN request</td>
+<td>&gt; 55% qualified</td>
+</tr>
+</tbody>
+</table>
+<h3 id="conversion-metrics">CONVERSION METRICS</h3>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 54%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Output Metric</th>
+<th>Input KPIs (What Drives It)</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Close Rate</strong></td>
+<td>• Contact rate × engagement rate × qualification rate × app
+completion rate • Lead source quality • Agent skill level • Speed to
+lead (faster = higher close rate)</td>
+<td>&gt; 10%</td>
+</tr>
+<tr class="even">
+<td><strong>App-to-Close Rate</strong></td>
+<td>• Application process efficiency • Client hand-holding during app •
+Follow-up speed on missing info • Carrier product match accuracy</td>
+<td>&gt; 80%</td>
+</tr>
+<tr class="odd">
+<td><strong>Pipeline Velocity</strong></td>
+<td>• Speed at each stage transition • No leads sitting idle • Proactive
+follow-up cadence</td>
+<td>&lt; 14 days</td>
+</tr>
+</tbody>
+</table>
+<h3 id="revenue-metrics">REVENUE METRICS</h3>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 54%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Output Metric</th>
+<th>Input KPIs (What Drives It)</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Average Premium</strong></td>
+<td>• Client needs assessment quality • Product recommendation accuracy
+• Coverage amount discussions • Upsell during application</td>
+<td>Market-dependent</td>
+</tr>
+<tr class="even">
+<td><strong>Total AP Written</strong></td>
+<td>• Close rate × average premium × lead volume • Pipeline velocity
+(faster cycles = more deals per month)</td>
+<td>Growth month over month</td>
+</tr>
+<tr class="odd">
+<td><strong>Lead Source ROI</strong></td>
+<td>• Cost per lead by source • Close rate by source • Average premium
+by source • Volume available by source</td>
+<td>&gt; 3x return</td>
+</tr>
+</tbody>
+</table>
+<h3 id="approval-metrics">APPROVAL METRICS</h3>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 54%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Output Metric</th>
+<th>Input KPIs (What Drives It)</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Approval Rate</strong></td>
+<td>• Accurate health assessment during application • Correct carrier
+selection for client’s health • Complete application (no missing fields)
+• Proper product match</td>
+<td>&gt; 75%</td>
+</tr>
+<tr class="even">
+<td><strong>Placement Rate</strong></td>
+<td>• Quick policy delivery after approval • Proper banking setup •
+Client commitment confirmation • Pre-draft confirmation calls</td>
+<td>&gt; 90%</td>
+</tr>
+<tr class="odd">
+<td><strong>UW Time</strong></td>
+<td>• Complete applications (fewer requirements) • Same-day requirement
+responses • 72h requirement chase cadence • Carrier selection (some are
+faster)</td>
+<td>Carrier-dependent</td>
+</tr>
+</tbody>
+</table>
+<h3 id="persistency-metrics">PERSISTENCY METRICS</h3>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 54%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Output Metric</th>
+<th>Input KPIs (What Drives It)</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>13-Month Persistency</strong></td>
+<td>• Quality of initial sale (right product, right price) • Month 1
+anchoring (gift, welcome) • Month 3 danger zone outreach • Annual review
+completion • Exception resolution speed</td>
+<td>&gt; 85%</td>
+</tr>
+<tr class="even">
+<td><strong>Danger Zone Survival</strong></td>
+<td>• Month 1 relationship quality • Gift/welcome response • Early
+check-in calls • Proactive identification of at-risk clients</td>
+<td>&gt; 90%</td>
+</tr>
+<tr class="odd">
+<td><strong>Exception Rate</strong></td>
+<td>• Quality of original sale • Client payment method setup • Premium
+affordability assessment • Client relationship strength</td>
+<td>&lt; 10%</td>
+</tr>
+<tr class="even">
+<td><strong>Save Rate</strong></td>
+<td>• Speed of exception response (&lt; 4 hours) • Call-same-day
+discipline • Retention script effectiveness • Payment solution options
+offered • Carrier relationship for reinstatement</td>
+<td>&gt; 65%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="recapture-metrics">RECAPTURE METRICS</h3>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 54%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Output Metric</th>
+<th>Input KPIs (What Drives It)</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Recapture Rate</strong></td>
+<td>• Nurture SMS message quality • Re-contact timing • Agent
+responsiveness to nurture replies • ZOMBIE response speed</td>
+<td>&gt; 10%</td>
+</tr>
+<tr class="even">
+<td><strong>Win Back Revenue</strong></td>
+<td>• Recapture rate × close rate on second attempt × average premium •
+Rewrite viability assessment speed</td>
+<td>Growth metric</td>
+</tr>
+</tbody>
+</table>
+<h3 id="activity-metrics">ACTIVITY METRICS</h3>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 54%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Output Metric</th>
+<th>Input KPIs (What Drives It)</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Daily Activity Score</strong></td>
+<td>• Calls made • Texts sent • Leads worked • Time on phone • Pipeline
+review completed</td>
+<td>Configurable</td>
+</tr>
+<tr class="even">
+<td><strong>Calls Made</strong></td>
+<td>• Dialing discipline • Power dialer usage • Time management • Lead
+queue management</td>
+<td>80-100/day</td>
+</tr>
+<tr class="odd">
+<td><strong>Talk Time</strong></td>
+<td>• Call connection rate • Conversation length • Pitch quality (longer
+= more engaged) • Objection handling</td>
+<td>2-3 hrs/day</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="part-5-efficiency-strategy">PART 5: EFFICIENCY STRATEGY</h2>
+<h3 id="the-efficiency-philosophy">The Efficiency Philosophy</h3>
+<p><strong>Do more with the same time, not more time.</strong> Every
+minute an agent spends on something the system could automate is a
+minute not spent on the phone closing deals.</p>
+<h3 id="strategy-1-eliminate-manual-data-entry">Strategy 1: Eliminate
+Manual Data Entry</h3>
+<p><strong>Problem:</strong> Agents waste 30-60 min/day on CRM data
+entry <strong>Solution:</strong> - Auto-populate from lead source
+(GSheet, webhook) — no retyping - Call logs auto-captured from dialer -
+Stage transitions auto-tag and auto-timestamp - Required fields enforced
+at stage gates — fill once, carries forward - SMS templates pre-built —
+agent approves, not writes <strong>KPI Impact:</strong> +15-20% more
+leads worked per day</p>
+<h3 id="strategy-2-automate-the-follow-up-calendar">Strategy 2: Automate
+the Follow-Up Calendar</h3>
+<p><strong>Problem:</strong> Agents forget to follow up, or follow up at
+wrong times <strong>Solution:</strong> - Every stage has auto-timers
+that create tasks - Escalating tags make overdue items impossible to
+ignore - Best Time to Call heatmap tells agents WHEN to call - Calendar
+auto-creates follow-up events from disposition - Daily 8AM SMS with
+pipeline counts = morning briefing <strong>KPI Impact:</strong> Overdue
+rate drops to &lt; 5%, contact rate increases 10-15%</p>
+<h3 id="strategy-3-smart-prioritization">Strategy 3: Smart
+Prioritization</h3>
+<p><strong>Problem:</strong> Agent works leads in random order, misses
+hot prospects <strong>Solution:</strong> - NEW badge on unseen leads
+with auto-dismiss after engagement - ZOMBIE tag = instant priority
+override - REPLY NEEDED tag = respond before dialing new leads -
+Qualified Interest leads always show first (SSN = serious) - Pipeline
+cards show time-in-stage — oldest first - Escalation tags create visual
+urgency (yellow → orange → red) <strong>KPI Impact:</strong> Speed to
+lead &lt; 5 min, close rate increases from prioritized contact</p>
+<h3 id="strategy-4-reduce-pipeline-bloat">Strategy 4: Reduce Pipeline
+Bloat</h3>
+<p><strong>Problem:</strong> Dead leads clog the pipeline, making it
+hard to see real opportunities <strong>Solution:</strong> - Every stage
+has a maximum time limit with auto-move - Contact: 4 days max → Nurture
+- Engaged: 14 days max → Nurture - Qualified: 7 days max → Nurture -
+Application: 11 days max → Nurture - Exception Recovery: 30 days max →
+Terminated - Nurture: 6 months max → Recycle - Recycle: 45 days max →
+Uninsurable - Lead DELETED from previous pipeline on transfer — no
+ghosts <strong>KPI Impact:</strong> Pipeline reflects reality.
+Forecasting accuracy improves. Agent focus sharpens.</p>
+<h3 id="strategy-5-one-click-actions">Strategy 5: One-Click Actions</h3>
+<p><strong>Problem:</strong> Too many clicks to do common tasks
+<strong>Solution:</strong> - Click-to-call from any lead card -
+One-click disposition with auto-stage-move - Quick Schedule Call button
+creates calendar event from lead modal - Drag-and-drop between pipeline
+stages - Inline field editing on lead cards - SMS templates with
+one-click send (through approval gate) <strong>KPI Impact:</strong>
+20-30% reduction in time per lead interaction</p>
+<h3 id="strategy-6-batch-operations">Strategy 6: Batch Operations</h3>
+<p><strong>Problem:</strong> Agent has 50 leads to call, opens each one
+individually <strong>Solution:</strong> - Power dialer auto-loads next
+lead, auto-dials - Multi-line dialing (2-3 simultaneous) increases
+connection rate - AMD skips voicemails automatically - Voicemail drop =
+pre-recorded, one click - Post-call disposition auto-advances to next
+lead - Call scripts display alongside — no tab switching <strong>KPI
+Impact:</strong> 3-5x more calls per hour, 2x more talk time per day</p>
+<h3 id="strategy-7-proactive-retention">Strategy 7: Proactive
+Retention</h3>
+<p><strong>Problem:</strong> Agents only react to exceptions after they
+happen <strong>Solution:</strong> - Month 3 “Danger Zone” proactive
+outreach catches churn before it starts - Month 6 beneficiary review
+keeps client engaged - Month 12 annual review deepens relationship -
+Client Contact stage catches missed calls/texts immediately - Negative
+sentiment in any reply auto-triggers Pipeline 4 <strong>KPI
+Impact:</strong> Exception rate drops 15-25%, persistency increases to
+88%+</p>
+<hr />
+<h2 id="part-6-maximize-roi-strategy">PART 6: MAXIMIZE ROI STRATEGY</h2>
+<h3 id="roi-philosophy">ROI Philosophy</h3>
+<p><strong>Every dollar spent on leads should generate at least 3x
+return in commissionable premium.</strong> The system tracks this
+automatically so agents know exactly which lead sources are profitable
+and which are burning money.</p>
+<h3 id="strategy-1-lead-source-optimization">Strategy 1: Lead Source
+Optimization</h3>
+<p><strong>How the system enables it:</strong> - Every lead tagged with
+source on entry - Close rate calculated per source automatically -
+Average premium per source tracked - Cost per lead entered in settings
+(manual, one-time) - ROI auto-calculated: (Total AP from source ×
+commission %) / Total lead cost</p>
+<p><strong>Action Plan:</strong> - Monthly: Review Lead Source ROI table
+- Sources with ROI &gt; 5x → increase spend - Sources with ROI 3-5x →
+maintain - Sources with ROI 1-3x → optimize (are agents working them
+fast enough?) - Sources with ROI &lt; 1x → reduce or cut - Track lead
+quality (engagement rate) not just volume</p>
+<h3 id="strategy-2-carrier-optimization">Strategy 2: Carrier
+Optimization</h3>
+<p><strong>How the system enables it:</strong> - Carrier Performance
+Matrix: Approval % | UW Time | Persistency | Avg Premium - Shows which
+carriers approve more, process faster, and retain longer</p>
+<p><strong>Action Plan:</strong> - High approval + high persistency
+carriers → default recommendation - Fast UW carriers → use when client
+is eager and ready - High premium carriers → use when client can afford
+more - Low approval carriers → only when they’re the only option for a
+health condition - Track chargeback risk by carrier — some carriers have
+higher lapse rates</p>
+<h3 id="strategy-3-time-optimization">Strategy 3: Time Optimization</h3>
+<p><strong>How the system enables it:</strong> - Best Time to Call
+heatmap built from YOUR data - Pipeline Velocity tracking shows where
+deals slow down - Talk Time vs Idle Time ratio shows productive
+hours</p>
+<p><strong>Action Plan:</strong> - Dial during peak connection hours
+(heatmap) - Handle admin/follow-ups during low-connection hours - Target
+pipeline velocity &lt; 14 days — identify and fix the slowest stage -
+Aim for 60%+ of work time as talk time - Use power dialer during prime
+hours, manual for follow-ups</p>
+<h3 id="strategy-4-maximize-second-chance-revenue">Strategy 4: Maximize
+Second-Chance Revenue</h3>
+<p><strong>How the system enables it:</strong> - Nurture drip keeps cold
+leads warm for 6 months - Recycle provides structured 45-day
+re-engagement - ZOMBIE detection catches self-reactivating leads - Win
+Back Revenue metric shows how much AP comes from recycled leads</p>
+<p><strong>Action Plan:</strong> - Never delete a lead — Nurture or
+Recycle, never trash - Respond to ZOMBIE leads within 5 minutes (they
+came back for a reason) - Track which Nurture SMS message triggers the
+most responses — write more like that one - Target: 10%+ recapture rate
+= free revenue from leads already paid for - Track Win Back Revenue as %
+of total — should be 8-15% for mature books</p>
+<h3 id="strategy-5-reduce-chargebacks-protect-earned-revenue">Strategy
+5: Reduce Chargebacks (Protect Earned Revenue)</h3>
+<p><strong>How the system enables it:</strong> - 13-Month Persistency
+tracking per cohort - Danger Zone Survival rate identifies early churn
+risk - Exception Rate + Save Rate show retention effectiveness -
+Chargeback Risk metric shows commission dollars at risk</p>
+<p><strong>Action Plan:</strong> - Target 85%+ 13-month persistency
+(industry top tier) - Prioritize Month 1 anchoring — gift, welcome call,
+relationship building - Month 3 is do-or-die: proactive outreach BEFORE
+problems surface - Respond to exceptions within 4 hours (save rate drops
+20% after 24h) - Track which exception types are most common — fix the
+root cause - If exception rate &gt; 20% → review sales process (are
+clients buying coverage they can’t afford?)</p>
+<h3 id="strategy-6-scale-through-data">Strategy 6: Scale Through
+Data</h3>
+<p><strong>How the system enables it:</strong> - Funnel Drop-Off
+Analysis shows exactly where leads die - State Performance shows
+geographic opportunity - Revenue Forecast provides pipeline
+confidence</p>
+<p><strong>Action Plan:</strong> - Fix the biggest funnel drop-off first
+— biggest ROI improvement - Double down on top-performing states - Use
+Revenue Forecast to predict monthly income and plan lead purchases
+accordingly - Weekly: 30-min dashboard review to identify one thing to
+improve - Monthly: Full business review — all metrics, all strategies,
+all adjustments</p>
+<h3 id="the-roi-formula-per-agent">The ROI Formula (Per Agent)</h3>
+<pre><code>Monthly Revenue = (Leads/Month × Close Rate × Avg AP) - Lead Cost
+Monthly Revenue = (200 leads × 10% × $1,200 AP) - ($3,000 lead cost)
+Monthly Revenue = $24,000 - $3,000 = $21,000 in AP written
+
+With 85% persistency:
+Retained Annual Revenue = $21,000 × 12 months × 85% = ~$214,000 AP/year
+
+With commission at 80% first year:
+Annual Commission = ~$171,000</code></pre>
+<p><strong>Every 1% improvement in close rate = ~$2,400 more AP/month
+per agent</strong> <strong>Every 1% improvement in persistency = ~$2,500
+more retained AP/year per agent</strong></p>
+<p>That’s why these KPIs matter. That’s what the dashboard is
+protecting.</p>
+<hr />
+<h2 id="summary">SUMMARY</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Component</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Pipelines</td>
+<td>7</td>
+</tr>
+<tr class="even">
+<td>Total Stages</td>
+<td>24</td>
+</tr>
+<tr class="odd">
+<td>Automated Triggers</td>
+<td>40+</td>
+</tr>
+<tr class="even">
+<td>System Actions</td>
+<td>60+</td>
+</tr>
+<tr class="odd">
+<td>Conditional Actions</td>
+<td>45+</td>
+</tr>
+<tr class="even">
+<td>Tracked Metrics</td>
+<td>39</td>
+</tr>
+<tr class="odd">
+<td>Input KPIs</td>
+<td>50+</td>
+</tr>
+<tr class="even">
+<td>SMS Automations</td>
+<td>15+ (all through approval gate)</td>
+</tr>
+<tr class="odd">
+<td>Escalation Levels</td>
+<td>7 (in RE pipeline)</td>
+</tr>
+<tr class="even">
+<td>Time-Based Auto-Moves</td>
+<td>12</td>
+</tr>
+</tbody>
+</table>
+<p><strong>One system. Every lead accounted for. Every dollar tracked.
+Every agent accountable. Every outcome documented.</strong></p>
+</body>
+</html>

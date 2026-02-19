@@ -121,6 +121,46 @@ class CRMClient {
     return this.request(`/appointments/available?date=${date}`)
   }
 
+  // Pipelines
+  async getPipelines() {
+    return this.request('/pipelines')
+  }
+
+  async getStages(pipelineId) {
+    return this.request(`/pipelines/${pipelineId}/stages`)
+  }
+
+  async moveLead(leadId, toPipelineId, toStageId, fromPipelineId, fromStageId, reason) {
+    // Update the lead
+    const updateRes = await this.request(`/leads/${leadId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ pipeline_id: toPipelineId, stage_id: toStageId }),
+    })
+    // Log in pipeline history
+    await this.request('/pipeline-history', {
+      method: 'POST',
+      body: JSON.stringify({
+        lead_id: leadId,
+        from_pipeline_id: fromPipelineId || null,
+        from_stage_id: fromStageId || null,
+        to_pipeline_id: toPipelineId,
+        to_stage_id: toStageId,
+        reason: reason || null,
+      }),
+    }).catch(() => {}) // non-blocking
+    return updateRes
+  }
+
+  async getHistory(leadId) {
+    return this.request(`/pipeline-history?lead_id=${leadId}`)
+  }
+
+  async getPipelineHistory(query = {}) {
+    const params = new URLSearchParams(Object.entries(query).filter(([, v]) => v != null && v !== ''))
+    const qs = params.toString() ? `?${params}` : ''
+    return this.request(`/pipeline-history${qs}`)
+  }
+
   // Sync
   async sync() {
     return this.request('/sync', { method: 'POST' })

@@ -37,8 +37,8 @@ const twilioClient = {
   }),
 
   // ── Calls ──
-  makeCall: (to, contactId = null, leadName = null, leadState = null) => request('/api/twilio/call', {
-    method: 'POST', body: JSON.stringify({ to, contactId, leadName, leadState }),
+  makeCall: (to, contactId = null, leadName = null, leadState = null, from = null) => request('/api/twilio/call', {
+    method: 'POST', body: JSON.stringify({ to, from, contactId, leadName, leadState }),
   }),
   holdCall: (callSid) => request(`/api/twilio/call/${callSid}/hold`, { method: 'POST' }),
   unholdCall: (callSid) => request(`/api/twilio/call/${callSid}/unhold`, { method: 'POST' }),

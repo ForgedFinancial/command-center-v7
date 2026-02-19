@@ -3,8 +3,9 @@
 // Phase 1 Power Dialer Foundation
 // ========================================
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
+import { Device } from '@twilio/voice-sdk'
 import twilioClient from '../services/twilioClient'
-import { WORKER_PROXY_URL } from '../config/api'
+import { WORKER_PROXY_URL, getSyncHeaders } from '../config/api'
 
 const PhoneContext = createContext(null)
 
@@ -61,6 +62,96 @@ export function PhoneProvider({ children }) {
     return () => clearInterval(interval)
   }, [loadLines])
 
+  // ── Voice SDK Device Initialization ──
+  const initDevice = useCallback(async () => {
+    try {
+      const res = await fetch(`${WORKER_PROXY_URL}/api/twilio/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...getSyncHeaders() },
+        body: JSON.stringify({ identity: 'boss' }),
+      })
+      const data = await res.json()
+      if (!data.token) { console.warn('[PHONE] No token received'); return }
+
+      if (deviceRef.current) deviceRef.current.destroy()
+
+      const device = new Device(data.token, {
+        codecPreferences: ['opus', 'pcmu'],
+        enableRingingState: true,
+        logLevel: 1,
+      })
+
+      device.on('registered', () => console.log('[PHONE] Device registered — ready for calls'))
+      device.on('error', (err) => console.error('[PHONE] Device error:', err.message))
+
+      device.on('incoming', (call) => {
+        console.log('[PHONE] Incoming call from:', call.parameters.From)
+        setActiveCall(call)
+        setCallState('ringing')
+        setCallMeta({
+          leadId: null,
+          leadName: call.parameters.From || 'Unknown',
+          phone: call.parameters.From,
+          fromNumber: call.parameters.To,
+          fromDisplay: null,
+          callSid: call.parameters.CallSid,
+          startTime: null,
+        })
+
+        call.on('accept', () => {
+          setCallState('active')
+          setCallMeta(prev => ({ ...prev, startTime: Date.now() }))
+        })
+        call.on('disconnect', () => {
+          setCallState('ended')
+          setShowDisposition(true)
+        })
+        call.on('cancel', () => {
+          setCallState('idle')
+          setCallMeta(null)
+          setActiveCall(null)
+        })
+      })
+
+      device.on('tokenWillExpire', async () => {
+        console.log('[PHONE] Token expiring — refreshing...')
+        try {
+          const r = await fetch(`${WORKER_PROXY_URL}/api/twilio/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...getSyncHeaders() },
+            body: JSON.stringify({ identity: 'boss' }),
+          })
+          const d = await r.json()
+          if (d.token) device.updateToken(d.token)
+        } catch (e) { console.error('[PHONE] Token refresh failed:', e.message) }
+      })
+
+      await device.register()
+      deviceRef.current = device
+      console.log('[PHONE] Voice SDK Device initialized')
+    } catch (err) {
+      console.error('[PHONE] Device init failed:', err.message)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (twilioConfigured) initDevice()
+    return () => { if (deviceRef.current) deviceRef.current.destroy() }
+  }, [twilioConfigured, initDevice])
+
+  // Accept incoming call
+  const acceptCall = useCallback(() => {
+    if (activeCall?.accept) activeCall.accept()
+  }, [activeCall])
+
+  // Reject incoming call
+  const rejectCall = useCallback(() => {
+    if (activeCall?.reject) activeCall.reject()
+    setCallState('idle')
+    setCallMeta(null)
+    setActiveCall(null)
+  }, [activeCall])
+
   // Duration timer
   useEffect(() => {
     if (callState === 'active' && callMeta?.startTime) {
@@ -108,14 +199,15 @@ export function PhoneProvider({ children }) {
       } catch {}
     }
 
-    // Twilio WebRTC call
+    // Twilio WebRTC call via Voice SDK (browser audio)
+    const fromNumber = activeLine?.number || null
     setCallState('connecting')
     setCallMeta({
       leadId: lead.id || null,
       leadName: lead.name || 'Unknown',
       phone: lead.phone,
-      fromNumber: null,
-      fromDisplay: null,
+      fromNumber: fromNumber,
+      fromDisplay: activeLine?.label || null,
       callSid: null,
       startTime: null,
     })
@@ -124,25 +216,59 @@ export function PhoneProvider({ children }) {
     setIsMuted(false)
 
     try {
-      const data = await twilioClient.makeCall(lead.phone, lead.id, lead.name, lead.state)
+      if (!deviceRef.current) {
+        await initDevice()
+      }
 
-      setCallMeta(prev => ({
-        ...prev,
-        fromNumber: data.fromNumber,
-        fromDisplay: data.fromDisplay,
-        callSid: data.callSid,
-        startTime: Date.now(),
-      }))
-      setCallState('active')
+      if (deviceRef.current) {
+        // Use Voice SDK — audio goes through browser
+        const connectParams = {
+          To: lead.phone,
+          LeadState: lead.state || '',
+        }
+        if (fromNumber) connectParams.CallerIdNumber = fromNumber
 
-      return { method: 'twilio', callSid: data.callSid }
+        const call = await deviceRef.current.connect({ params: connectParams })
+
+        call.on('ringing', () => setCallState('ringing'))
+        call.on('accept', () => {
+          setCallState('active')
+          setCallMeta(prev => ({ ...prev, startTime: Date.now(), callSid: call.parameters?.CallSid }))
+        })
+        call.on('disconnect', () => {
+          setCallState('ended')
+          setShowDisposition(true)
+        })
+        call.on('error', (err) => {
+          console.error('[PHONE] Call error:', err.message)
+          setCallState('idle')
+          setCallMeta(null)
+        })
+
+        setActiveCall(call)
+        setCallMeta(prev => ({ ...prev, callSid: call.parameters?.CallSid }))
+
+        return { method: 'twilio-webrtc', callSid: call.parameters?.CallSid }
+      } else {
+        // Fallback: REST API (no browser audio — server-side only)
+        const data = await twilioClient.makeCall(lead.phone, lead.id, lead.name, lead.state, fromNumber)
+        setCallMeta(prev => ({
+          ...prev,
+          fromNumber: data.fromNumber,
+          fromDisplay: data.fromDisplay,
+          callSid: data.callSid,
+          startTime: Date.now(),
+        }))
+        setCallState('active')
+        return { method: 'twilio-rest', callSid: data.callSid }
+      }
     } catch (err) {
       console.error('[PHONE] Call failed:', err.message)
       setCallState('idle')
       setCallMeta(null)
       throw err
     }
-  }, [autoFailover, checkMacNode])
+  }, [autoFailover, checkMacNode, activeLine, initDevice])
 
   // End call
   const endCall = useCallback(async () => {
@@ -234,8 +360,9 @@ export function PhoneProvider({ children }) {
     autoFailover, setAutoFailover, isUsingTwilio,
     showDisposition, setShowDisposition,
     makeCall, endCall, toggleMute, toggleHold,
+    acceptCall, rejectCall,
     applyDisposition, dismissCall,
-    switchPrimaryLine, loadLines,
+    switchPrimaryLine, loadLines, initDevice,
     DISPOSITIONS,
   }
 
