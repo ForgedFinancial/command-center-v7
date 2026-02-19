@@ -22,6 +22,10 @@ function clampScale(v) {
 
 function applyZoom(pct) {
   document.documentElement.style.zoom = `${pct}%`
+  // Compensate so content still fills full viewport
+  const scale = 100 / pct * 100
+  document.documentElement.style.minWidth = `${scale}vw`
+  document.documentElement.style.minHeight = `${scale}vh`
 }
 
 // Global getter so Settings can read current scale

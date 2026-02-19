@@ -22,6 +22,9 @@ function InlineUIScale() {
     setScaleVal(c)
     localStorage.setItem('cc7-ui-scale', String(c))
     document.documentElement.style.zoom = `${c}%`
+    const scale = 100 / c * 100
+    document.documentElement.style.minWidth = `${scale}vw`
+    document.documentElement.style.minHeight = `${scale}vh`
     try { setUIScale(c) } catch {}
   }
   const presets = [75, 90, 100, 110, 125, 150]

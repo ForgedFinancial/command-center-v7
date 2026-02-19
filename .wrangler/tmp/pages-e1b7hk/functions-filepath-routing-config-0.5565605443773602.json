@@ -1,0 +1,13 @@
+{
+  "routes": [
+    {
+      "routePath": "/api/crm/:path*",
+      "mountPath": "/api/crm",
+      "method": "",
+      "module": [
+        "api/crm/[[path]].js:onRequest"
+      ]
+    }
+  ],
+  "baseURL": "/"
+}
