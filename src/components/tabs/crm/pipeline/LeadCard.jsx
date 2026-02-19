@@ -196,7 +196,7 @@ export default function LeadCard({ lead, color, cardFields, onDragStart, onClick
       </div>
 
       {/* Lead Type + Disposition Tags — same row, tags right-aligned under 🔄🗑️ */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '2px', marginBottom: '4px', paddingLeft: '20px', paddingRight: '2px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '2px', marginBottom: '4px', paddingLeft: '4px', paddingRight: '2px' }}>
         <div style={{ flex: '0 0 auto' }}>
           {(lead.leadType || lead.lead_type) && (
             <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', background: 'rgba(99,102,241,0.15)', color: '#818cf8' }}>{lead.leadType || lead.lead_type}</span>
