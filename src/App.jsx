@@ -7,6 +7,7 @@ import { PhoneProvider } from './context/PhoneContext'
 import FloatingCallBar from './components/shared/FloatingCallBar'
 import { IncomingCallBanner } from './components/tabs/crm/phone/RingingSystem'
 import CallScriptPanel from './components/tabs/crm/phone/CallScriptPanel'
+import DialerModal from './components/shared/DialerModal'
 
 function App() {
   const authenticated = sessionStorage.getItem('forged-os-session') === 'true'
@@ -23,6 +24,7 @@ function App() {
             <Shell />
             <FloatingCallBar />
             <IncomingCallBanner />
+            <DialerModal />
             <CallScriptPanel isVisible={true} />
           </CRMProvider>
         </TaskBoardProvider>
