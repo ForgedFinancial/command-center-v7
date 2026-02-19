@@ -9,8 +9,38 @@ import EmptyState from '../../../shared/EmptyState'
 import LeadDetailModal from './LeadDetailModal'
 import StageTransitionModal from './StageTransitionModal'
 import { validateTransition, checkOverdue, getUrgencyColor, formatTimeRemaining } from '../../../../services/pipelineLogic'
+import { useKeyboardShortcuts, KeyboardShortcutOverlay } from '../../../../hooks/useKeyboardShortcuts.jsx'
 
 import { LEAD_TYPES } from '../../../../config/leadTypes'
+
+// Shimmer skeleton for loading state
+function SkeletonCard() {
+  return (
+    <div style={{
+      padding: '12px', borderRadius: '8px', background: 'var(--theme-surface)',
+      border: '1px solid var(--theme-border-subtle)', marginBottom: '8px',
+      animation: 'cc7-shimmer 1.5s ease-in-out infinite',
+    }}>
+      <div style={{ height: '14px', width: '70%', borderRadius: '4px', background: 'rgba(255,255,255,0.06)', marginBottom: '8px' }} />
+      <div style={{ height: '10px', width: '50%', borderRadius: '4px', background: 'rgba(255,255,255,0.04)', marginBottom: '6px' }} />
+      <div style={{ height: '10px', width: '60%', borderRadius: '4px', background: 'rgba(255,255,255,0.04)' }} />
+    </div>
+  )
+}
+
+function SkeletonColumn() {
+  return (
+    <div style={{ minWidth: '260px', maxWidth: '260px', flexShrink: 0 }}>
+      <div style={{ padding: '12px 14px', borderRadius: '10px 10px 0 0', background: 'var(--theme-surface)' }}>
+        <div style={{ height: '12px', width: '60%', borderRadius: '4px', background: 'rgba(255,255,255,0.06)' }} />
+      </div>
+      <div style={{ padding: '8px', background: 'rgba(255,255,255,0.015)', borderRadius: '0 0 10px 10px' }}>
+        <SkeletonCard /><SkeletonCard /><SkeletonCard />
+      </div>
+      <style>{`@keyframes cc7-shimmer { 0%,100% { opacity: 1 } 50% { opacity: 0.5 } }`}</style>
+    </div>
+  )
+}
 
 // ========================================
 // Card Field Customization System
@@ -223,6 +253,7 @@ export default function PipelineView() {
     if (!confirm(`Delete ${leadName || 'this lead'}?`)) return
     actions.removeLead(leadId)
     crmClient.deleteLead(leadId).catch(() => {})
+    appActions.addToast({ id: Date.now(), type: 'success', message: `Deleted ${leadName || 'lead'}` })
   }
 
   // Phone action handlers
@@ -282,12 +313,84 @@ export default function PipelineView() {
 
   const currentPipeline = pipelines.find(p => p.id === currentPipelineId)
 
+  // Keyboard shortcuts
+  const { showHelp, setShowHelp } = useKeyboardShortcuts({
+    onSwitchPipeline: (idx) => { if (pipelines[idx]) selectPipeline(pipelines[idx].id) },
+    onNewLead: () => setShowNewLead(true),
+    onCloseModal: () => {
+      if (selectedLead) setSelectedLead(null)
+      else if (showNewLead) setShowNewLead(false)
+      else if (showUpload) setShowUpload(false)
+      else if (showTransferModal) setShowTransferModal(null)
+      else if (stageTransition) setStageTransition(null)
+    },
+    onFocusSearch: () => {
+      const el = document.querySelector('[data-search-input]')
+      if (el) el.focus()
+    },
+  })
+
+  // Batch operations
+  const [selectedLeadIds, setSelectedLeadIds] = useState(new Set())
+  const toggleLeadSelection = useCallback((leadId, e) => {
+    if (e) { e.stopPropagation(); e.preventDefault() }
+    setSelectedLeadIds(prev => {
+      const next = new Set(prev)
+      if (next.has(leadId)) next.delete(leadId)
+      else next.add(leadId)
+      return next
+    })
+  }, [])
+  const selectAllLeads = useCallback(() => {
+    setSelectedLeadIds(new Set(filteredLeads.map(l => l.id)))
+  }, [filteredLeads])
+  const deselectAllLeads = useCallback(() => setSelectedLeadIds(new Set()), [])
+
+  const handleBatchMoveStage = useCallback(async (targetStageId) => {
+    const ids = [...selectedLeadIds]
+    ids.forEach(id => actions.updateLead({ id, stage_id: targetStageId, stageId: targetStageId }))
+    for (const id of ids) {
+      const lead = state.leads.find(l => l.id === id)
+      if (lead) {
+        try { await crmClient.moveLead(id, currentPipelineId, targetStageId, lead.pipeline_id || lead.pipelineId, lead.stage_id || lead.stageId) } catch {}
+      }
+    }
+    setSelectedLeadIds(new Set())
+    appActions.addToast({ id: Date.now(), type: 'success', message: `Moved ${ids.length} leads` })
+  }, [selectedLeadIds, state.leads, currentPipelineId, actions, appActions])
+
+  const handleBatchDelete = useCallback(async () => {
+    const ids = [...selectedLeadIds]
+    if (!confirm(`Delete ${ids.length} leads?`)) return
+    actions.removeLeads ? actions.removeLeads(ids) : ids.forEach(id => actions.removeLead(id))
+    for (const id of ids) { crmClient.deleteLead(id).catch(() => {}) }
+    setSelectedLeadIds(new Set())
+    appActions.addToast({ id: Date.now(), type: 'success', message: `Deleted ${ids.length} leads` })
+  }, [selectedLeadIds, actions, appActions])
+
+  const handleBatchExport = useCallback(() => {
+    const ids = [...selectedLeadIds]
+    const leads = state.leads.filter(l => ids.includes(l.id))
+    const headers = ['Name', 'Phone', 'Email', 'State', 'Stage', 'Lead Type', 'Created']
+    const rows = leads.map(l => [l.name, l.phone, l.email, l.state, l.stage_id || l.stageId, l.leadType || l.lead_type, l.createdAt].map(v => `"${(v||'').toString().replace(/"/g, '""')}"`).join(','))
+    const csv = [headers.join(','), ...rows].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url; a.download = 'leads-export.csv'; a.click()
+    URL.revokeObjectURL(url)
+    appActions.addToast({ id: Date.now(), type: 'success', message: `Exported ${ids.length} leads` })
+  }, [selectedLeadIds, state.leads, appActions])
+
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--theme-text-secondary)' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '24px', marginBottom: '8px' }}>⏳</div>
-          <div style={{ fontSize: '13px' }}>Loading pipelines...</div>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ marginBottom: '12px' }}>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            {[1,2,3].map(i => <div key={i} style={{ width: '100px', height: '34px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', animation: 'cc7-shimmer 1.5s ease-in-out infinite' }} />)}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '12px', flex: 1, overflowX: 'auto' }}>
+          <SkeletonColumn /><SkeletonColumn /><SkeletonColumn /><SkeletonColumn />
         </div>
       </div>
     )
@@ -347,11 +450,35 @@ export default function PipelineView() {
         </div>
       </div>
 
+      {/* Batch Actions Bar */}
+      {selectedLeadIds.size > 0 && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px',
+          background: 'var(--theme-accent-muted)', border: '1px solid var(--theme-accent)',
+          borderRadius: '10px', marginBottom: '12px', animation: 'cc7-slideDown 0.15s ease-out',
+        }}>
+          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--theme-accent)' }}>
+            {selectedLeadIds.size} selected
+          </span>
+          <button onClick={selectAllLeads} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--theme-border)', background: 'var(--theme-surface)', color: 'var(--theme-text-secondary)', fontSize: '11px', cursor: 'pointer' }}>Select All</button>
+          <button onClick={deselectAllLeads} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--theme-border)', background: 'var(--theme-surface)', color: 'var(--theme-text-secondary)', fontSize: '11px', cursor: 'pointer' }}>Deselect All</button>
+          <div style={{ width: '1px', height: '20px', background: 'var(--theme-border)' }} />
+          <select onChange={e => { if (e.target.value) handleBatchMoveStage(e.target.value); e.target.value = '' }} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--theme-border)', background: 'var(--theme-surface)', color: 'var(--theme-text-secondary)', fontSize: '11px', cursor: 'pointer' }}>
+            <option value="">Move Stage…</option>
+            {stages.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
+          <button onClick={handleBatchExport} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--theme-border)', background: 'var(--theme-surface)', color: 'var(--theme-text-secondary)', fontSize: '11px', cursor: 'pointer' }}>📥 Export CSV</button>
+          <button onClick={handleBatchDelete} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)', color: '#ef4444', fontSize: '11px', cursor: 'pointer' }}>🗑️ Delete</button>
+          <style>{`@keyframes cc7-slideDown { from { opacity: 0; transform: translateY(-8px) } to { opacity: 1; transform: translateY(0) } }`}</style>
+        </div>
+      )}
+
       {/* Kanban */}
       {columns.length === 0 ? (
         <EmptyState icon="🔀" title="No Stages" message="This pipeline has no stages configured." />
       ) : (
-        <div style={{ display: 'flex', gap: '12px', flex: 1, overflowX: 'auto', paddingBottom: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', flex: 1, overflowX: 'auto', paddingBottom: '12px', animation: 'cc7-fadeIn 0.2s ease-out' }}>
+          <style>{`@keyframes cc7-fadeIn { from { opacity: 0; transform: translateY(4px) } to { opacity: 1; transform: translateY(0) } }`}</style>
           {columns.map(col => (
             <div
               key={col.stage}
@@ -394,6 +521,12 @@ export default function PipelineView() {
                 background: dragOverStage === col.stage ? `${col.color}08` : 'rgba(255,255,255,0.015)',
                 borderRadius: '0 0 10px 10px', transition: 'background 0.15s',
               }}>
+                {col.leads.length === 0 && (
+                  <div style={{ padding: '24px 12px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', marginBottom: '8px', opacity: 0.4 }}>📭</div>
+                    <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', opacity: 0.6 }}>No leads in this stage yet</div>
+                  </div>
+                )}
                 {col.leads.map(lead => (
                   <LeadCard
                     key={lead.id}
@@ -409,6 +542,12 @@ export default function PipelineView() {
                     onTransfer={(lead) => setShowTransferModal(lead)}
                     isNew={!seenLeads.has(lead.id)}
                     onMarkSeen={markSeen}
+                    isSelected={selectedLeadIds.has(lead.id)}
+                    onToggleSelect={toggleLeadSelection}
+                    stages={stages}
+                    currentPipelineId={currentPipelineId}
+                    actions={actions}
+                    appActions={appActions}
                   />
                 ))}
               </div>
@@ -443,6 +582,7 @@ export default function PipelineView() {
           onDelete={handleModalDelete}
         />
       )}
+      {showHelp && <KeyboardShortcutOverlay onClose={() => setShowHelp(false)} />}
       {stageTransition && (
         <StageTransitionModal
           lead={stageTransition.lead}
@@ -637,11 +777,37 @@ function renderCardField(key, lead) {
   }
 }
 
-function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onPhoneCall, onVideoCall, onMessage, onTransfer, isNew, onMarkSeen }) {
+function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onPhoneCall, onVideoCall, onMessage, onTransfer, isNew, onMarkSeen, isSelected, onToggleSelect, stages, currentPipelineId, actions, appActions }) {
   const hoverTimer = useRef(null)
   const [showNew, setShowNew] = useState(isNew)
+  const [quickNote, setQuickNote] = useState('')
+  const [showQuickNote, setShowQuickNote] = useState(false)
+  const [showDisposition, setShowDisposition] = useState(false)
 
   useEffect(() => { setShowNew(isNew) }, [isNew])
+
+  const handleQuickNote = (e) => {
+    e.stopPropagation()
+    if (!quickNote.trim()) return
+    const notes = lead.notes ? `${lead.notes}\n[${new Date().toLocaleString()}] ${quickNote}` : `[${new Date().toLocaleString()}] ${quickNote}`
+    actions?.updateLead({ id: lead.id, notes })
+    crmClient.updateLead(lead.id, { notes }).catch(() => {})
+    setQuickNote('')
+    setShowQuickNote(false)
+    appActions?.addToast({ id: Date.now(), type: 'success', message: `Note added to ${lead.name}` })
+  }
+
+  const handleQuickDisposition = async (e, stageId) => {
+    e.stopPropagation()
+    const fromStageId = lead.stage_id || lead.stageId
+    if (stageId === fromStageId) return
+    actions?.updateLead({ id: lead.id, stage_id: stageId, stageId: stageId })
+    try {
+      await crmClient.moveLead(lead.id, currentPipelineId, stageId, lead.pipeline_id || lead.pipelineId, fromStageId)
+      appActions?.addToast({ id: Date.now(), type: 'success', message: `${lead.name} moved` })
+    } catch { actions?.updateLead({ id: lead.id, stage_id: fromStageId, stageId: fromStageId }) }
+    setShowDisposition(false)
+  }
 
   const handleHoverStart = () => {
     if (!showNew) return
@@ -677,6 +843,15 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
       onMouseOver={(e) => { e.currentTarget.style.borderColor = `${color}40` }}
       onMouseOut={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}
     >
+      {/* Batch checkbox */}
+      <input
+        type="checkbox"
+        checked={!!isSelected}
+        onChange={(e) => onToggleSelect(lead.id, e)}
+        onClick={e => e.stopPropagation()}
+        style={{ position: 'absolute', top: '8px', left: '8px', cursor: 'pointer', accentColor: 'var(--theme-accent)', zIndex: 3 }}
+      />
+
       {/* NEW badge */}
       {showNew && (
         <span style={{
@@ -712,7 +887,7 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
       </div>
 
       {/* Name + AP */}
-      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--theme-text-primary)', marginBottom: '4px', paddingRight: '52px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--theme-text-primary)', marginBottom: '4px', paddingRight: '52px', paddingLeft: '20px', display: 'flex', alignItems: 'center', gap: '6px' }}>
         {lead.name || 'Unknown'}
         {Number(lead.premium) > 0 && (
           <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--theme-success)' }}>
@@ -730,11 +905,51 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
       </div>
 
       {/* Action Buttons */}
-      {lead.phone && (
-        <div style={{ display: 'flex', gap: '4px', marginTop: '8px', borderTop: '1px solid var(--theme-border-subtle)', paddingTop: '8px' }}>
+      <div style={{ display: 'flex', gap: '4px', marginTop: '8px', borderTop: '1px solid var(--theme-border-subtle)', paddingTop: '8px', flexWrap: 'wrap' }}>
+        {lead.phone && <>
           <button onClick={(e) => onPhoneCall(lead, e)} title="Phone call" style={{ ...actionBtnStyle, color: 'var(--theme-success)' }}>📞</button>
           <button onClick={(e) => onVideoCall(lead, e)} title="Video call" style={{ ...actionBtnStyle, color: 'var(--theme-accent)' }}>📹</button>
           <button onClick={(e) => onMessage(lead, e)} title="Send message" style={{ ...actionBtnStyle, color: '#a855f7' }}>💬</button>
+        </>}
+        <button onClick={(e) => { e.stopPropagation(); setShowQuickNote(v => !v); setShowDisposition(false) }} title="Quick note" style={{ ...actionBtnStyle, color: '#f59e0b' }}>✏️</button>
+        <button onClick={(e) => { e.stopPropagation(); setShowDisposition(v => !v); setShowQuickNote(false) }} title="Quick disposition" style={{ ...actionBtnStyle, color: '#3b82f6' }}>🔄</button>
+      </div>
+
+      {/* Quick Note Inline */}
+      {showQuickNote && (
+        <div onClick={e => e.stopPropagation()} style={{ marginTop: '6px', display: 'flex', gap: '4px' }}>
+          <input
+            value={quickNote}
+            onChange={e => setQuickNote(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleQuickNote(e)}
+            placeholder="Add note..."
+            autoFocus
+            style={{
+              flex: 1, padding: '4px 8px', fontSize: '11px', borderRadius: '4px',
+              border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
+              color: 'var(--theme-text-primary)', outline: 'none',
+            }}
+          />
+          <button onClick={handleQuickNote} style={{ ...actionBtnStyle, color: 'var(--theme-success)', fontSize: '10px', padding: '3px 6px' }}>✓</button>
+        </div>
+      )}
+
+      {/* Quick Disposition Inline */}
+      {showDisposition && (
+        <div onClick={e => e.stopPropagation()} style={{ marginTop: '6px' }}>
+          <select
+            onChange={(e) => handleQuickDisposition(e, e.target.value)}
+            defaultValue=""
+            autoFocus
+            style={{
+              width: '100%', padding: '4px 8px', fontSize: '11px', borderRadius: '4px',
+              border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
+              color: 'var(--theme-text-primary)', outline: 'none', cursor: 'pointer',
+            }}
+          >
+            <option value="" disabled>Move to stage…</option>
+            {(stages || []).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
         </div>
       )}
     </div>

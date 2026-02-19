@@ -12,7 +12,7 @@ const initialState = {
   // Calendar
   calendar: { events: [], view: 'month', currentDate: new Date().toISOString(), providers: [], settings: {} },
   // UI
-  activeView: (typeof localStorage !== 'undefined' && localStorage.getItem('cc7-crm-view')) || 'dashboard',
+  activeView: (typeof localStorage !== 'undefined' && localStorage.getItem('cc7-crm-view')) || 'pipeline',
   pipelineMode: 'new',
   filters: {
     search: '', stages: [], leadTypes: [], tags: [],

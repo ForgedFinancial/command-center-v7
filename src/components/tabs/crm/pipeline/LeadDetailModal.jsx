@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import crmClient from '../../../../api/crmClient'
 import { WORKER_PROXY_URL, getSyncHeaders } from '../../../../config/api'
 import { LEAD_TYPES } from '../../../../config/leadTypes'
@@ -39,8 +39,32 @@ function Field({ label, children }) {
   )
 }
 
-function Input({ value, onChange, ...props }) {
-  return <input style={inputStyle} value={value || ''} onChange={e => onChange(e.target.value)} {...props} />
+function Input({ value, onChange, onAutoSave, ...props }) {
+  const [focused, setFocused] = useState(false)
+  return (
+    <div style={{ position: 'relative' }}>
+      <input
+        style={{
+          ...inputStyle,
+          borderColor: focused ? 'var(--theme-accent)' : 'var(--theme-border)',
+          transition: 'border-color 0.15s, box-shadow 0.15s',
+          boxShadow: focused ? '0 0 0 2px rgba(0,212,255,0.1)' : 'none',
+        }}
+        value={value || ''}
+        onChange={e => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => { setFocused(false); onAutoSave?.() }}
+        onKeyDown={e => { if (e.key === 'Enter') { e.target.blur() } }}
+        {...props}
+      />
+      {!focused && (
+        <span style={{
+          position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
+          fontSize: '10px', opacity: 0, transition: 'opacity 0.15s', pointerEvents: 'none',
+        }} className="pencil-hint">✏️</span>
+      )}
+    </div>
+  )
 }
 
 function Select({ value, onChange, options }) {
@@ -79,6 +103,33 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
         .finally(() => setActivityLoading(false))
     }
   }, [lead?.id, tab])
+
+  // Auto-save debounced
+  const saveTimerRef = useRef(null)
+  const autoSave = useCallback(() => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    saveTimerRef.current = setTimeout(async () => {
+      try {
+        const { id, ...data } = form
+        const camelToSnake = {
+          leadType: 'lead_type', faceAmount: 'face_amount', policyNumber: 'policy_number',
+          draftDate: 'draft_date', paymentMethod: 'payment_method', bankName: 'bank_name',
+          beneficiaryRelation: 'beneficiary_relation', beneficiary2Relation: 'beneficiary2_relation',
+          lastContact: 'last_contact', nextFollowup: 'next_followup', customFields: 'custom_fields',
+          followUp: 'next_followup',
+        }
+        const snakeData = {}
+        for (const [k, v] of Object.entries(data)) {
+          if (v === undefined) continue
+          snakeData[camelToSnake[k] || k] = v
+        }
+        await crmClient.updateLead(lead.id, snakeData)
+        onUpdate({ ...form, id: lead.id })
+      } catch {}
+    }, 500)
+  }, [form, lead?.id, onUpdate])
+
+  useEffect(() => () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current) }, [])
 
   if (!lead) return null
 
@@ -128,9 +179,8 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       setShowSchedule(false)
-      alert(`📅 Scheduled: Call ${leadName} on ${schedDate} at ${schedTime} (10-min reminder set)`)
     } catch (err) {
-      alert(`Failed to schedule: ${err.message}`)
+      console.error('Schedule failed:', err)
     } finally { setScheduling(false) }
   }
 
@@ -160,6 +210,9 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
         background: 'var(--theme-surface)', borderRadius: '16px',
         border: '1px solid var(--theme-border)', padding: '0',
       }}>
+        <style>{`
+          div:hover > .pencil-hint { opacity: 0.5 !important; }
+        `}</style>
         {/* Header */}
         <div style={{ padding: '24px 28px 16px', borderBottom: '1px solid var(--theme-border-subtle)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -205,24 +258,24 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
           {tab === 'contact' && (
             <>
               <div style={rowStyle}>
-                <Field label="Client Name"><Input value={form.name} onChange={set('name')} /></Field>
-                <Field label="Phone"><Input value={form.phone} onChange={set('phone')} /></Field>
+                <Field label="Client Name"><Input value={form.name} onChange={set('name')} onAutoSave={autoSave} /></Field>
+                <Field label="Phone"><Input value={form.phone} onChange={set('phone')} onAutoSave={autoSave} /></Field>
               </div>
               <div style={rowStyle}>
-                <Field label="Email"><Input value={form.email} onChange={set('email')} type="email" /></Field>
-                <Field label="Lead Type"><Select value={form.leadType} onChange={set('leadType')} options={[['', '— Select —'], ...LEAD_TYPES.map(t => [t, t])]} /></Field>
+                <Field label="Email"><Input value={form.email} onChange={set('email')} type="email" onAutoSave={autoSave} /></Field>
+                <Field label="Lead Type"><Select value={form.leadType} onChange={v => { set('leadType')(v); setTimeout(autoSave, 100) }} options={[['', '— Select —'], ...LEAD_TYPES.map(t => [t, t])]} /></Field>
               </div>
               <div style={rowStyle}>
-                <Field label="Stage"><Select value={form.stage} onChange={set('stage')} options={[['', '— Select —'], ...(stages || []).map(s => [s.id, s.name])]} /></Field>
-                <Field label="Priority"><Select value={form.priority} onChange={set('priority')} options={[['Normal', 'Normal'], ['High', 'High'], ['Urgent', 'Urgent']]} /></Field>
+                <Field label="Stage"><Select value={form.stage} onChange={v => { set('stage')(v); setTimeout(autoSave, 100) }} options={[['', '— Select —'], ...(stages || []).map(s => [s.id, s.name])]} /></Field>
+                <Field label="Priority"><Select value={form.priority} onChange={v => { set('priority')(v); setTimeout(autoSave, 100) }} options={[['Normal', 'Normal'], ['High', 'High'], ['Urgent', 'Urgent']]} /></Field>
               </div>
               <div style={rowStyle}>
-                <Field label="Value ($)"><Input value={form.value} onChange={set('value')} type="number" /></Field>
-                <Field label="State"><Input value={form.state} onChange={set('state')} maxLength={2} /></Field>
+                <Field label="Value ($)"><Input value={form.value} onChange={set('value')} type="number" onAutoSave={autoSave} /></Field>
+                <Field label="State"><Input value={form.state} onChange={set('state')} maxLength={2} onAutoSave={autoSave} /></Field>
               </div>
               <div style={rowStyle}>
-                <Field label="Tags"><Input value={form.tags} onChange={set('tags')} placeholder="warm, referral" /></Field>
-                <Field label="Follow-up Date"><Input value={form.followUp} onChange={set('followUp')} type="date" /></Field>
+                <Field label="Tags"><Input value={form.tags} onChange={set('tags')} placeholder="warm, referral" onAutoSave={autoSave} /></Field>
+                <Field label="Follow-up Date"><Input value={form.followUp} onChange={set('followUp')} type="date" onAutoSave={autoSave} /></Field>
               </div>
             </>
           )}
@@ -230,19 +283,19 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
           {tab === 'policy' && (
             <>
               <div style={rowStyle}>
-                <Field label="Carrier"><Input value={form.carrier} onChange={set('carrier')} /></Field>
-                <Field label="Premium ($/mo)"><Input value={form.premium} onChange={set('premium')} type="number" /></Field>
+                <Field label="Carrier"><Input value={form.carrier} onChange={set('carrier')} onAutoSave={autoSave} /></Field>
+                <Field label="Premium ($/mo)"><Input value={form.premium} onChange={set('premium')} type="number" onAutoSave={autoSave} /></Field>
               </div>
               <div style={rowStyle}>
-                <Field label="Policy Number"><Input value={form.policyNumber} onChange={set('policyNumber')} /></Field>
-                <Field label="Face Amount ($)"><Input value={form.faceAmount} onChange={set('faceAmount')} type="number" /></Field>
+                <Field label="Policy Number"><Input value={form.policyNumber} onChange={set('policyNumber')} onAutoSave={autoSave} /></Field>
+                <Field label="Face Amount ($)"><Input value={form.faceAmount} onChange={set('faceAmount')} type="number" onAutoSave={autoSave} /></Field>
               </div>
               <div style={rowStyle}>
-                <Field label="Draft Date"><Input value={form.draftDate} onChange={set('draftDate')} type="date" /></Field>
-                <Field label="Payment Method"><Select value={form.paymentMethod} onChange={set('paymentMethod')} options={PAYMENT_METHODS.map(m => [m, m || '— Select —'])} /></Field>
+                <Field label="Draft Date"><Input value={form.draftDate} onChange={set('draftDate')} type="date" onAutoSave={autoSave} /></Field>
+                <Field label="Payment Method"><Select value={form.paymentMethod} onChange={v => { set('paymentMethod')(v); setTimeout(autoSave, 100) }} options={PAYMENT_METHODS.map(m => [m, m || '— Select —'])} /></Field>
               </div>
               <Field label="Notes">
-                <textarea style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} value={form.notes || ''} onChange={e => set('notes')(e.target.value)} />
+                <textarea style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} value={form.notes || ''} onChange={e => set('notes')(e.target.value)} onBlur={autoSave} />
               </Field>
             </>
           )}
@@ -251,21 +304,21 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
             <>
               <h4 style={{ margin: '0 0 12px', fontSize: '13px', color: 'var(--theme-text-secondary)' }}>Beneficiary Information</h4>
               <div style={rowStyle}>
-                <Field label="Primary Beneficiary"><Input value={form.beneficiary} onChange={set('beneficiary')} /></Field>
-                <Field label="Relationship"><Select value={form.beneficiaryRelation} onChange={set('beneficiaryRelation')} options={RELATIONSHIPS.map(r => [r, r || '— Select —'])} /></Field>
+                <Field label="Primary Beneficiary"><Input value={form.beneficiary} onChange={set('beneficiary')} onAutoSave={autoSave} /></Field>
+                <Field label="Relationship"><Select value={form.beneficiaryRelation} onChange={v => { set('beneficiaryRelation')(v); setTimeout(autoSave, 100) }} options={RELATIONSHIPS.map(r => [r, r || '— Select —'])} /></Field>
               </div>
               <div style={rowStyle}>
-                <Field label="Secondary Beneficiary"><Input value={form.beneficiary2} onChange={set('beneficiary2')} /></Field>
-                <Field label="Relationship"><Select value={form.beneficiary2Relation} onChange={set('beneficiary2Relation')} options={RELATIONSHIPS.map(r => [r, r || '— Select —'])} /></Field>
+                <Field label="Secondary Beneficiary"><Input value={form.beneficiary2} onChange={set('beneficiary2')} onAutoSave={autoSave} /></Field>
+                <Field label="Relationship"><Select value={form.beneficiary2Relation} onChange={v => { set('beneficiary2Relation')(v); setTimeout(autoSave, 100) }} options={RELATIONSHIPS.map(r => [r, r || '— Select —'])} /></Field>
               </div>
               <h4 style={{ margin: '20px 0 12px', fontSize: '13px', color: 'var(--theme-text-secondary)' }}>Personal Details</h4>
               <div style={rowStyle}>
-                <Field label="Date of Birth"><Input value={form.dob} onChange={set('dob')} type="date" /></Field>
-                <Field label="SSN (Last 4)"><Input value={form.ssn} onChange={set('ssn')} maxLength={4} placeholder="****" /></Field>
+                <Field label="Date of Birth"><Input value={form.dob} onChange={set('dob')} type="date" onAutoSave={autoSave} /></Field>
+                <Field label="SSN (Last 4)"><Input value={form.ssn} onChange={set('ssn')} maxLength={4} placeholder="****" onAutoSave={autoSave} /></Field>
               </div>
               <div style={rowStyle}>
-                <Field label="Bank Name"><Input value={form.bankName} onChange={set('bankName')} /></Field>
-                <Field label="Routing # (Last 4)"><Input value={form.routing} onChange={set('routing')} maxLength={4} placeholder="****" /></Field>
+                <Field label="Bank Name"><Input value={form.bankName} onChange={set('bankName')} onAutoSave={autoSave} /></Field>
+                <Field label="Routing # (Last 4)"><Input value={form.routing} onChange={set('routing')} maxLength={4} placeholder="****" onAutoSave={autoSave} /></Field>
               </div>
             </>
           )}

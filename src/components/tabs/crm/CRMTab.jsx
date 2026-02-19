@@ -17,6 +17,7 @@ import AutomationView from './automation/AutomationView'
 import IntelligenceView from './intelligence/IntelligenceView'
 import ManagerView from './dashboard/ManagerView'
 import EmptyState from '../../shared/EmptyState'
+import HelpView from './HelpView'
 
 // Normalize snake_case API fields to camelCase for UI components
 function normalizeLead(lead) {
@@ -135,7 +136,9 @@ export default function CRMTab() {
     case CRM_VIEWS.CALENDAR:
     case 'calendar':
       return <CalendarView />
+    case 'help':
+      return <HelpView />
     default:
-      return <DashboardView />
+      return <PipelineView />
   }
 }

@@ -48,6 +48,7 @@ const CRM_SIDEBAR = [
   { id: 'intelligence', icon: '🧠', label: 'Intelligence' },
   { id: 'manager', icon: '👔', label: 'Manager' },
   { id: 'settings', icon: '⚙️', label: 'Settings' },
+  { id: 'help', icon: '❓', label: 'Help' },
 ]
 
 // Map sidebar item clicks to view changes
