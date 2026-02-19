@@ -357,6 +357,9 @@ function ThemePicker() {
     { key: 'dark', label: 'DARK', ids: THEME_ORDER.dark },
     { key: 'rich', label: 'RICH', ids: THEME_ORDER.rich },
     { key: 'light', label: 'LIGHT', ids: THEME_ORDER.light },
+    { key: 'luxury', label: 'LUXURY', ids: THEME_ORDER.luxury },
+    { key: 'unique', label: 'UNIQUE', ids: THEME_ORDER.unique },
+    { key: 'dano', label: 'DANO COLLECTION', ids: THEME_ORDER.dano },
   ]
 
   return (
@@ -475,7 +478,7 @@ function ThemeSwatch({ id, def, isActive, onSelect }) {
             width: '16px', height: '16px', borderRadius: '50%',
             background: c.accent, display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <span style={{ fontSize: '10px', color: def.category === 'light' ? '#fff' : c.bg, lineHeight: 1 }}>✓</span>
+            <span style={{ fontSize: '10px', color: (def.category === 'light' || def.isLightTheme) ? '#fff' : c.bg, lineHeight: 1 }}>✓</span>
           </div>
         )}
       </div>

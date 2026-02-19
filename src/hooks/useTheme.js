@@ -13,7 +13,6 @@ const MIGRATION_MAP = {
   'black': 'phantom',
   'gun-metal': 'titanium',
   'silver': 'arctic',
-  'black-gold': 'noir-gold',
 }
 
 // Complete theme definitions for the picker UI
@@ -158,6 +157,164 @@ export const THEME_DEFINITIONS = {
       textSecondary: '#475569',
     },
   },
+  // === Gold/Black/White Luxury Collection ===
+  'black-gold': {
+    name: 'Black Gold',
+    emoji: '🏆',
+    category: 'luxury',
+    vibe: 'Dark Luxury',
+    colors: {
+      bg: '#0a0a0a',
+      surface: '#161616',
+      sidebar: '#080808',
+      accent: '#d4a843',
+      textPrimary: '#f0e6d3',
+      textSecondary: '#bfb39e',
+    },
+  },
+  'white-gold': {
+    name: 'White Gold',
+    emoji: '✨',
+    category: 'luxury',
+    isLightTheme: true,
+    vibe: 'Boardroom Elegance',
+    colors: {
+      bg: '#faf8f5',
+      surface: '#ffffff',
+      sidebar: '#f5f2ec',
+      accent: '#b8922e',
+      textPrimary: '#1a1714',
+      textSecondary: '#4a4540',
+    },
+  },
+  'gilt-edge': {
+    name: 'Gilt Edge',
+    emoji: '🥂',
+    category: 'luxury',
+    vibe: 'Rose Gold Power',
+    colors: {
+      bg: '#14120f',
+      surface: '#201d19',
+      sidebar: '#100e0b',
+      accent: '#c9886e',
+      textPrimary: '#ede4d8',
+      textSecondary: '#b8ad9e',
+    },
+  },
+  sovereign: {
+    name: 'Sovereign',
+    emoji: '♛',
+    category: 'luxury',
+    vibe: 'Platinum Empire',
+    colors: {
+      bg: '#050505',
+      surface: '#121212',
+      sidebar: '#030303',
+      accent: '#c8b07a',
+      textPrimary: '#e8e8e8',
+      textSecondary: '#a8a8a8',
+    },
+  },
+  // === Unexpected & Unique ===
+  'neon-noir': {
+    name: 'Neon Noir',
+    emoji: '⚡',
+    category: 'unique',
+    vibe: 'Cyberpunk Terminal',
+    colors: {
+      bg: '#0a0a0f',
+      surface: '#12121e',
+      sidebar: '#08080e',
+      accent: '#00e5ff',
+      textPrimary: '#e0f0ff',
+      textSecondary: '#8eafc8',
+    },
+  },
+  sakura: {
+    name: 'Sakura',
+    emoji: '🌸',
+    category: 'unique',
+    vibe: 'Cherry Blossom',
+    colors: {
+      bg: '#120f14',
+      surface: '#1e1a22',
+      sidebar: '#0e0c10',
+      accent: '#e8729a',
+      textPrimary: '#f0e4ee',
+      textSecondary: '#b8a0b4',
+    },
+  },
+  ultraviolet: {
+    name: 'Ultraviolet',
+    emoji: '🔮',
+    category: 'unique',
+    vibe: 'Deep Space Purple',
+    colors: {
+      bg: '#0c0814',
+      surface: '#161226',
+      sidebar: '#0a0610',
+      accent: '#a855f7',
+      textPrimary: '#e4daf5',
+      textSecondary: '#a898c4',
+    },
+  },
+  // === The Dano Collection ===
+  'lake-shore': {
+    name: 'Lake Shore',
+    emoji: '🏙️',
+    category: 'dano',
+    vibe: 'Chicago Winter',
+    colors: {
+      bg: '#0a0e14',
+      surface: '#141c28',
+      sidebar: '#080c12',
+      accent: '#5ba4d9',
+      textPrimary: '#dce6f0',
+      textSecondary: '#8ea4be',
+    },
+  },
+  'after-hours': {
+    name: 'After Hours',
+    emoji: '🌙',
+    category: 'dano',
+    vibe: '2AM Grind',
+    colors: {
+      bg: '#0c0a08',
+      surface: '#1a1714',
+      sidebar: '#0a0808',
+      accent: '#e8a832',
+      textPrimary: '#e8e0d4',
+      textSecondary: '#b0a490',
+    },
+  },
+  'south-side': {
+    name: 'South Side',
+    emoji: '🔴',
+    category: 'dano',
+    vibe: 'Industrial Grit',
+    colors: {
+      bg: '#121212',
+      surface: '#1e1e1e',
+      sidebar: '#0e0e0e',
+      accent: '#d43030',
+      textPrimary: '#e0e0e0',
+      textSecondary: '#a0a0a0',
+    },
+  },
+  blueprint: {
+    name: 'Blueprint',
+    emoji: '📐',
+    category: 'dano',
+    vibe: 'Builder\'s Grid',
+    colors: {
+      bg: '#0a0c14',
+      surface: '#121828',
+      sidebar: '#080a10',
+      accent: '#3b82f6',
+      textPrimary: '#d8e4f0',
+      textSecondary: '#8098b8',
+    },
+  },
 }
 
 // Theme ordering for picker display
@@ -165,12 +322,18 @@ export const THEME_ORDER = {
   dark: ['obsidian', 'phantom', 'noir-gold', 'titanium'],
   rich: ['deep-ocean', 'aurora', 'evergreen', 'midnight-ember'],
   light: ['sandstorm', 'arctic'],
+  luxury: ['black-gold', 'white-gold', 'gilt-edge', 'sovereign'],
+  unique: ['neon-noir', 'sakura', 'ultraviolet'],
+  dano: ['lake-shore', 'after-hours', 'south-side', 'blueprint'],
 }
 
 export const ALL_THEME_IDS = [
   ...THEME_ORDER.dark,
   ...THEME_ORDER.rich,
   ...THEME_ORDER.light,
+  ...THEME_ORDER.luxury,
+  ...THEME_ORDER.unique,
+  ...THEME_ORDER.dano,
 ]
 
 function migrateThemeId(id) {
@@ -215,8 +378,8 @@ export function useTheme() {
     return {
       id: themeId,
       ...def,
-      isDark: def.category !== 'light',
-      isLight: def.category === 'light',
+      isDark: def.category !== 'light' && !def.isLightTheme,
+      isLight: def.category === 'light' || !!def.isLightTheme,
     }
   }, [themeId])
 
