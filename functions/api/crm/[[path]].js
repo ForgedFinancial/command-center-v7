@@ -3,14 +3,9 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 
 // worker.js
 var ALLOWED_ORIGINS = [
-  "https://yncrm.pages.dev",
-  "https://yn-crm.pages.dev",
-  "https://command-center-v7.pages.dev",
   "https://cc.forgedfinancial.us",
-  "http://localhost:3000",
-  "http://localhost:8788",
+  "https://command-center-v7.pages.dev",
   "http://localhost:5173",
-  "file://"
 ];
 function getCorsHeaders(request) {
   const origin = request.headers.get("Origin") || "";
