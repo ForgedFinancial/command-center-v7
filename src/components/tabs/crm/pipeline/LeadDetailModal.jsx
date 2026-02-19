@@ -63,10 +63,22 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
   const [schedDate, setSchedDate] = useState(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` })
   const [schedTime, setSchedTime] = useState('10:00')
   const [scheduling, setScheduling] = useState(false)
+  const [activityItems, setActivityItems] = useState([])
+  const [activityLoading, setActivityLoading] = useState(false)
 
   useEffect(() => {
     if (lead) setForm({ ...lead })
   }, [lead])
+
+  useEffect(() => {
+    if (lead?.id && tab === 'activity') {
+      setActivityLoading(true)
+      crmClient.getLeadActivity(lead.id)
+        .then(res => setActivityItems(res.activity || res.data || []))
+        .catch(() => setActivityItems([]))
+        .finally(() => setActivityLoading(false))
+    }
+  }, [lead?.id, tab])
 
   if (!lead) return null
 
@@ -347,9 +359,27 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
                   background: 'var(--theme-accent-muted)', color: 'var(--theme-accent)', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
                 }}>Add</button>
               </div>
-              <div style={{ fontSize: '13px', color: 'var(--theme-text-secondary)', whiteSpace: 'pre-wrap' }}>
-                {form.notes || <span style={{ color: 'var(--theme-text-secondary)' }}>No notes yet.</span>}
-              </div>
+              {activityLoading ? (
+                <div style={{ fontSize: '13px', color: 'var(--theme-text-secondary)' }}>Loading activity...</div>
+              ) : activityItems.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {activityItems.map((item, i) => (
+                    <div key={i} style={{ padding: '8px 12px', borderRadius: '8px', background: 'var(--theme-bg-tertiary)', fontSize: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--theme-text-primary)' }}>
+                          {item.type === 'stage_change' ? '🔀' : item.type === 'call' ? '📞' : item.type === 'note' ? '📝' : '📌'} {item.type?.replace(/_/g, ' ')}
+                        </span>
+                        <span style={{ color: 'var(--theme-text-secondary)' }}>{item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</span>
+                      </div>
+                      <div style={{ color: 'var(--theme-text-secondary)' }}>{item.description || item.details || item.content || ''}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ fontSize: '13px', color: 'var(--theme-text-secondary)', whiteSpace: 'pre-wrap' }}>
+                  {form.notes || 'No activity yet.'}
+                </div>
+              )}
             </>
           )}
         </div>

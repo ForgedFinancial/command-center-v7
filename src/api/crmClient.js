@@ -193,6 +193,146 @@ class CRMClient {
     return this.request(`/pipeline-history${qs}`)
   }
 
+  // Lead bulk ops
+  async bulkMoveLeads(ids, stageId) {
+    return this.request('/leads/bulk-move', { method: 'POST', body: JSON.stringify({ ids, stage_id: stageId }) })
+  }
+
+  async bulkTransferLeads(ids, pipelineId, stageId) {
+    return this.request('/leads/bulk-transfer', { method: 'POST', body: JSON.stringify({ ids, pipeline_id: pipelineId, stage_id: stageId }) })
+  }
+
+  async transferLead(leadId, toPipelineId, toStageId) {
+    return this.moveLead(leadId, toPipelineId, toStageId)
+  }
+
+  // Activity feed
+  async getLeadActivity(leadId) {
+    return this.request(`/leads/${leadId}/activity`)
+  }
+
+  // Tags
+  async getTags() {
+    return this.request('/tags')
+  }
+
+  async addTag(leadId, tag) {
+    return this.request(`/leads/${leadId}/tags`, { method: 'POST', body: JSON.stringify({ tag }) })
+  }
+
+  async removeTag(leadId, tag) {
+    return this.request(`/leads/${leadId}/tags`, { method: 'DELETE', body: JSON.stringify({ tag }) })
+  }
+
+  // Metric settings
+  async getMetricSettings() {
+    return this.request('/metric-settings')
+  }
+
+  async updateMetricSetting(id, data) {
+    return this.request(`/metric-settings/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+  }
+
+  async bulkUpdateMetrics(metrics) {
+    return this.request('/metric-settings/bulk', { method: 'PUT', body: JSON.stringify({ metrics }) })
+  }
+
+  // SMS templates
+  async getTemplates() {
+    return this.request('/sms-templates')
+  }
+
+  async updateTemplate(id, data) {
+    return this.request(`/sms-templates/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+  }
+
+  async resetTemplate(id) {
+    return this.request(`/sms-templates/${id}/reset`, { method: 'POST' })
+  }
+
+  // Timer configs
+  async getTimerConfigs() {
+    return this.request('/timer-configs')
+  }
+
+  async updateTimerConfig(id, data) {
+    return this.request(`/timer-configs/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+  }
+
+  // Notification preferences
+  async getNotificationPrefs() {
+    return this.request('/notification-prefs')
+  }
+
+  async updateNotificationPrefs(data) {
+    return this.request('/notification-prefs', { method: 'PUT', body: JSON.stringify(data) })
+  }
+
+  // Dashboard
+  async getDashboardData(query = {}) {
+    const params = new URLSearchParams(Object.entries(query).filter(([, v]) => v != null && v !== ''))
+    const qs = params.toString() ? `?${params}` : ''
+    return this.request(`/dashboard${qs}`)
+  }
+
+  // Approval queue
+  async getApprovalQueue(query = {}) {
+    const params = new URLSearchParams(Object.entries(query).filter(([, v]) => v != null && v !== ''))
+    const qs = params.toString() ? `?${params}` : ''
+    return this.request(`/approval-queue${qs}`)
+  }
+
+  async approveMessage(id) {
+    return this.request(`/approval-queue/${id}/approve`, { method: 'POST' })
+  }
+
+  async declineMessage(id) {
+    return this.request(`/approval-queue/${id}/decline`, { method: 'POST' })
+  }
+
+  // Call recordings
+  async listRecordings(query = {}) {
+    const params = new URLSearchParams(Object.entries(query).filter(([, v]) => v != null && v !== ''))
+    const qs = params.toString() ? `?${params}` : ''
+    return this.request(`/recordings${qs}`)
+  }
+
+  async getRecording(id) {
+    return this.request(`/recordings/${id}`)
+  }
+
+  // Voicemail drops
+  async listDrops() {
+    return this.request('/voicemail-drops')
+  }
+
+  async createDrop(data) {
+    return this.request('/voicemail-drops', { method: 'POST', body: JSON.stringify(data) })
+  }
+
+  async deleteDrop(id) {
+    return this.request(`/voicemail-drops/${id}`, { method: 'DELETE' })
+  }
+
+  // Voicemails
+  async listVoicemails(query = {}) {
+    const params = new URLSearchParams(Object.entries(query).filter(([, v]) => v != null && v !== ''))
+    const qs = params.toString() ? `?${params}` : ''
+    return this.request(`/voicemails${qs}`)
+  }
+
+  async getVoicemail(id) {
+    return this.request(`/voicemails/${id}`)
+  }
+
+  async markVoicemailHandled(id) {
+    return this.request(`/voicemails/${id}/handled`, { method: 'POST' })
+  }
+
+  async deleteVoicemail(id) {
+    return this.request(`/voicemails/${id}`, { method: 'DELETE' })
+  }
+
   // Sync
   async sync() {
     return this.request('/sync', { method: 'POST' })
