@@ -7,6 +7,8 @@ import { WORKER_PROXY_URL } from '../../../../config/api'
 import PipelineSwitcher, { usePipelines } from './PipelineSwitcher'
 import EmptyState from '../../../shared/EmptyState'
 import LeadDetailModal from './LeadDetailModal'
+import StageTransitionModal from './StageTransitionModal'
+import { validateTransition, checkOverdue, getUrgencyColor, formatTimeRemaining } from '../../../../services/pipelineLogic'
 
 import { LEAD_TYPES } from '../../../../config/leadTypes'
 
@@ -67,6 +69,7 @@ export default function PipelineView() {
   const [showNewLead, setShowNewLead] = useState(false)
   const [showCardSettings, setShowCardSettings] = useState(false)
   const [showTransferModal, setShowTransferModal] = useState(null) // lead to transfer
+  const [stageTransition, setStageTransition] = useState(null) // { lead, fromStage, toStage }
   const [cardFields, setCardFields] = useState(loadCardFields)
   const dragLeadId = useRef(null)
 
@@ -136,17 +139,44 @@ export default function PipelineView() {
     const currentStageId = lead.stage_id || lead.stageId
     if (currentStageId === targetStageId) return
 
-    // Optimistic update
-    actions.updateLead({ id: leadId, stage_id: targetStageId, stageId: targetStageId })
+    const fromStage = stages.find(s => s.id === currentStageId)
+    const toStage = stages.find(s => s.id === targetStageId)
+
+    // Validate required fields
+    const validation = validateTransition(lead, toStage)
+    if (!validation.valid) {
+      // Show transition modal for required fields
+      setStageTransition({ lead, fromStage, toStage })
+      return
+    }
+
+    // Direct move (no required fields gate)
+    await executeStageMove(lead, currentStageId, targetStageId)
+  }
+
+  const executeStageMove = async (lead, fromStageId, toStageId, fieldUpdates) => {
+    const leadId = lead.id
+    const updateData = { id: leadId, stage_id: toStageId, stageId: toStageId, ...fieldUpdates }
+    actions.updateLead(updateData)
     try {
+      if (fieldUpdates && Object.keys(fieldUpdates).length > 0) {
+        await crmClient.updateLead(leadId, fieldUpdates)
+      }
       await crmClient.moveLead(
-        leadId, currentPipelineId, targetStageId,
-        lead.pipeline_id || lead.pipelineId, currentStageId
+        leadId, currentPipelineId, toStageId,
+        lead.pipeline_id || lead.pipelineId, fromStageId
       )
     } catch (err) {
       console.error('Failed to update stage:', err)
-      actions.updateLead({ id: leadId, stage_id: currentStageId, stageId: currentStageId })
+      actions.updateLead({ id: leadId, stage_id: fromStageId, stageId: fromStageId })
     }
+  }
+
+  const handleTransitionConfirm = async (payload) => {
+    const lead = stageTransition.lead
+    const fromStageId = lead.stage_id || lead.stageId
+    setStageTransition(null)
+    await executeStageMove(lead, fromStageId, payload.to_stage_id, payload.fieldUpdates)
   }
 
   // Cross-pipeline transfer
@@ -406,9 +436,21 @@ export default function PipelineView() {
       {selectedLead && (
         <LeadDetailModal
           lead={selectedLead}
+          pipeline={currentPipeline}
+          stages={stages}
           onClose={() => setSelectedLead(null)}
           onUpdate={handleModalUpdate}
           onDelete={handleModalDelete}
+        />
+      )}
+      {stageTransition && (
+        <StageTransitionModal
+          lead={stageTransition.lead}
+          fromStage={stageTransition.fromStage}
+          toStage={stageTransition.toStage}
+          pipeline={currentPipeline}
+          onConfirm={handleTransitionConfirm}
+          onCancel={() => setStageTransition(null)}
         />
       )}
     </div>

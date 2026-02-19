@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import crmClient from '../../../../api/crmClient'
 import { WORKER_PROXY_URL, getSyncHeaders } from '../../../../config/api'
 import { LEAD_TYPES } from '../../../../config/leadTypes'
+import PipelineHistoryPanel from './PipelineHistoryPanel'
+import { getCrossPipelineTransitions, checkOverdue, parseTags, isEscalationTag, formatTimeRemaining, getUrgencyColor, getNurtureDripStatus, getRecycleStatus, getEscalationStatus } from '../../../../services/pipelineLogic'
 
 const TABS = [
   { key: 'contact', icon: '📋', label: 'Contact' },
   { key: 'policy', icon: '📄', label: 'Policy' },
   { key: 'beneficiary', icon: '📦', label: 'Beneficiary' },
-  { key: 'progress', icon: '📈', label: 'Progress' },
+  { key: 'pipeline', icon: '🔀', label: 'Pipeline' },
   { key: 'activity', icon: '💬', label: 'Activity' },
 ]
 
@@ -57,7 +59,7 @@ function Select({ value, onChange, options }) {
   )
 }
 
-export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
+export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpdate, onDelete }) {
   const [tab, setTab] = useState('contact')
   const [form, setForm] = useState({})
   const [saving, setSaving] = useState(false)
@@ -262,26 +264,83 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
             </>
           )}
 
-          {tab === 'progress' && (
+          {tab === 'pipeline' && (
             <div style={{ color: 'var(--theme-text-secondary)', fontSize: '13px' }}>
-              <h4 style={{ margin: '0 0 12px', color: 'var(--theme-text-secondary)' }}>Stage Timeline</h4>
-              {STAGE_OPTIONS.map(([val, label]) => {
-                const isCurrent = form.stage === val
-                const isPast = STAGE_OPTIONS.findIndex(s => s[0] === form.stage) >= STAGE_OPTIONS.findIndex(s => s[0] === val)
-                return (
-                  <div key={val} style={{
-                    display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0',
-                    borderLeft: `2px solid ${isPast ? 'var(--theme-accent)' : 'var(--theme-border)'}`, paddingLeft: '16px', marginLeft: '8px',
+              {/* Current pipeline/stage context */}
+              <div style={{
+                padding: '12px', borderRadius: '8px', background: 'var(--theme-bg)',
+                marginBottom: '16px',
+              }}>
+                <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', color: 'var(--theme-text-secondary)' }}>
+                  Current Position
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--theme-text-primary)', fontWeight: 600 }}>
+                    {pipeline?.name || 'Pipeline'}
+                  </span>
+                  <span style={{ color: 'var(--theme-text-secondary)' }}>›</span>
+                  <span style={{
+                    padding: '2px 8px', borderRadius: '4px', fontSize: '11px',
+                    background: 'var(--theme-accent-muted)', color: 'var(--theme-accent)', fontWeight: 600,
                   }}>
-                    <div style={{
-                      width: 10, height: 10, borderRadius: '50%', marginLeft: '-22px',
-                      background: isCurrent ? 'var(--theme-accent)' : isPast ? 'var(--theme-accent-muted)' : 'var(--theme-surface)',
-                    }} />
-                    <span style={{ color: isCurrent ? 'var(--theme-accent)' : isPast ? 'var(--theme-text-secondary)' : 'var(--theme-text-secondary)', fontWeight: isCurrent ? 600 : 400 }}>{label}</span>
-                    {isCurrent && <span style={{ fontSize: '10px', color: 'var(--theme-accent)' }}>← Current</span>}
+                    {stages?.find(s => s.id === (form.stage_id || form.stageId))?.name || form.stage || 'Unknown'}
+                  </span>
+                </div>
+                {/* Tags */}
+                {(() => {
+                  const tags = parseTags(form.tags)
+                  if (tags.length === 0) return null
+                  return (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
+                      {tags.map(tag => (
+                        <span key={tag} style={{
+                          padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 500,
+                          background: isEscalationTag(tag) ? 'rgba(239,68,68,0.1)' : 'rgba(0,212,255,0.08)',
+                          color: isEscalationTag(tag) ? '#ef4444' : '#00d4ff',
+                        }}>| {tag} |</span>
+                      ))}
+                    </div>
+                  )
+                })()}
+              </div>
+
+              {/* Stage progression */}
+              {stages && stages.length > 0 && (
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', color: 'var(--theme-text-secondary)' }}>
+                    Stage Progression
                   </div>
-                )
-              })}
+                  {stages.map((stg, idx) => {
+                    const currentStageId = form.stage_id || form.stageId
+                    const currentIdx = stages.findIndex(s => s.id === currentStageId)
+                    const isCurrent = stg.id === currentStageId
+                    const isPast = idx < currentIdx
+                    return (
+                      <div key={stg.id} style={{
+                        display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 0',
+                        borderLeft: `2px solid ${isPast || isCurrent ? 'var(--theme-accent)' : 'var(--theme-border)'}`,
+                        paddingLeft: '16px', marginLeft: '8px',
+                      }}>
+                        <div style={{
+                          width: 10, height: 10, borderRadius: '50%', marginLeft: '-22px', flexShrink: 0,
+                          background: isCurrent ? 'var(--theme-accent)' : isPast ? 'var(--theme-accent-muted)' : 'var(--theme-surface)',
+                          border: isCurrent ? 'none' : '1px solid var(--theme-border)',
+                        }} />
+                        <span style={{
+                          color: isCurrent ? 'var(--theme-accent)' : isPast ? 'var(--theme-text-secondary)' : '#52525b',
+                          fontWeight: isCurrent ? 600 : 400, fontSize: '12px',
+                        }}>{stg.name}</span>
+                        {isCurrent && <span style={{ fontSize: '10px', color: 'var(--theme-accent)' }}>← Current</span>}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* Pipeline history */}
+              <div style={{ borderTop: '1px solid var(--theme-border-subtle)', paddingTop: '12px' }}>
+                <PipelineHistoryPanel leadId={lead.id} />
+              </div>
             </div>
           )}
 
