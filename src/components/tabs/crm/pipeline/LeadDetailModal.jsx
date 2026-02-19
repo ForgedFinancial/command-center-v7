@@ -13,11 +13,6 @@ const TABS = [
   { key: 'activity', icon: '💬', label: 'Activity' },
 ]
 
-const STAGE_OPTIONS = [
-  ['new_lead', 'New Lead'], ['contact', 'Contacted'], ['engaged', 'Engaged'],
-  ['qualified', 'Qualified'], ['proposal', 'Proposal'], ['sold', 'Won'],
-]
-
 const RELATIONSHIPS = ['', 'Spouse', 'Child', 'My Children', 'Parent', 'Sibling', 'Estate', 'Trust', 'Friend', 'Other']
 const PAYMENT_METHODS = ['', 'Bank Draft', 'Credit Card', 'Check', 'Money Order']
 
@@ -206,9 +201,8 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
                 <Field label="Lead Type"><Select value={form.leadType} onChange={set('leadType')} options={[['', '— Select —'], ...LEAD_TYPES.map(t => [t, t])]} /></Field>
               </div>
               <div style={rowStyle}>
-                <Field label="Stage"><Select value={form.stage} onChange={set('stage')} options={STAGE_OPTIONS} /></Field>
+                <Field label="Stage"><Select value={form.stage} onChange={set('stage')} options={[['', '— Select —'], ...(stages || []).map(s => [s.id, s.name])]} /></Field>
                 <Field label="Priority"><Select value={form.priority} onChange={set('priority')} options={[['Normal', 'Normal'], ['High', 'High'], ['Urgent', 'Urgent']]} /></Field>
-                <Field label="Pipeline"><Select value={form.pipeline} onChange={set('pipeline')} options={[['new', 'New Leads'], ['aged', 'Aged Leads']]} /></Field>
               </div>
               <div style={rowStyle}>
                 <Field label="Value ($)"><Input value={form.value} onChange={set('value')} type="number" /></Field>
