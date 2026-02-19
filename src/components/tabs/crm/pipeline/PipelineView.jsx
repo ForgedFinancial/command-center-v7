@@ -157,7 +157,8 @@ export default function PipelineView() {
 
   const executeStageMove = async (lead, fromStageId, toStageId, fieldUpdates) => {
     const leadId = lead.id
-    const updateData = { id: leadId, stage_id: toStageId, stageId: toStageId, ...fieldUpdates }
+    const now = new Date().toISOString()
+    const updateData = { id: leadId, stage_id: toStageId, stageId: toStageId, updated_at: now, updatedAt: now, ...fieldUpdates }
     actions.updateLead(updateData)
     try {
       if (fieldUpdates && Object.keys(fieldUpdates).length > 0) {
