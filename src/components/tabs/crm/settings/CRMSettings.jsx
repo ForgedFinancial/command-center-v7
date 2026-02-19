@@ -121,7 +121,7 @@ export default function CRMSettings() {
       </div>
 
       {/* Content */}
-      {section === 'appearance' && <><UIScaleControl /><ThemePicker /></>}
+      {section === 'appearance' && <><SafeUIScale /><ThemePicker /></>}
       {section === 'pipelines' && <PipelineManager onPipelinesChanged={fetchPipelines} />}
       {section === 'stages' && <StageManager pipelines={pipelines} />}
       {section === 'sms' && <SMSTemplateEditor />}
@@ -526,6 +526,14 @@ function ThemeSwatch({ id, def, isActive, onSelect }) {
       </div>
     </button>
   )
+}
+
+function SafeUIScale() {
+  try {
+    return <UIScaleControl />
+  } catch (e) {
+    return <div style={{ ...cardStyle, padding: '16px', color: 'var(--theme-error)' }}>Display Scale failed to load: {e.message}</div>
+  }
 }
 
 function UIScaleControl() {
