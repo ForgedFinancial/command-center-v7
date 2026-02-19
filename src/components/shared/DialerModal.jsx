@@ -36,6 +36,19 @@ export default function DialerModal() {
   })
   const [activeTab, setActiveTab] = useState('dialpad') // dialpad | recent | lines
 
+  // Scale state — scroll wheel resizing
+  const [scale, setScale] = useState(() => {
+    try { return parseFloat(localStorage.getItem('cc7-dialer-scale')) || 1.0 } catch { return 1.0 }
+  })
+  const onWheel = useCallback((e) => {
+    e.preventDefault()
+    setScale(prev => {
+      const next = Math.round(Math.min(2.0, Math.max(0.6, prev + (e.deltaY < 0 ? 0.05 : -0.05))) * 100) / 100
+      localStorage.setItem('cc7-dialer-scale', String(next))
+      return next
+    })
+  }, [])
+
   // Drag state — shared across all three states (closed button, minimized, expanded)
   const [pos, setPos] = useState(() => {
     try {
@@ -109,9 +122,11 @@ export default function DialerModal() {
       <div
         data-drag-handle="true"
         onMouseDown={onMouseDown}
+        onWheel={onWheel}
         onClick={() => { if (!didDrag.current) { setIsOpen(true); setIsMinimized(false) } }}
         style={{
           position: 'fixed', left: pos.x, top: pos.y, zIndex: 9998,
+          transform: `scale(${scale})`, transformOrigin: 'center center',
           width: '56px', height: '56px', borderRadius: '50%',
           background: isInCall ? 'linear-gradient(135deg, #4ade80, #22c55e)' : 'linear-gradient(135deg, #3b82f6, #2563eb)',
           border: 'none', color: '#fff', fontSize: '24px',
@@ -141,8 +156,10 @@ export default function DialerModal() {
     return (
       <div
         onMouseDown={onMouseDown}
+        onWheel={onWheel}
         style={{
           position: 'fixed', left: pos.x, top: pos.y, zIndex: 9999,
+          transform: `scale(${scale})`, transformOrigin: 'center center',
           width: '280px', height: '48px', borderRadius: '12px',
           background: 'rgba(24,24,27,0.95)', backdropFilter: 'blur(16px)',
           border: `1px solid ${isInCall ? 'rgba(74,222,128,0.4)' : 'rgba(59,130,246,0.3)'}`,
@@ -171,8 +188,10 @@ export default function DialerModal() {
   return (
     <div
       ref={dragRef}
+      onWheel={onWheel}
       style={{
         position: 'fixed', left: pos.x, top: pos.y, zIndex: 9999,
+        transform: `scale(${scale})`, transformOrigin: 'center center',
         width: '360px', borderRadius: '16px',
         background: 'rgba(15,15,20,0.97)', backdropFilter: 'blur(20px)',
         border: `1px solid ${isInCall ? 'rgba(74,222,128,0.3)' : 'rgba(59,130,246,0.2)'}`,

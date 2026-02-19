@@ -442,8 +442,8 @@ export default function PipelineView() {
               onDrop={onDrop}
               cardFields={cardFields}
               onDragStart={onDragStart}
-              onCardClick={(lead) => { setSelectedLead(lead); markSeen(lead.id) }}
-              onDelete={handleDeleteLead}
+              onLeadClick={(lead) => { setSelectedLead(lead); markSeen(lead.id) }}
+              onDeleteLead={handleDeleteLead}
               onPhoneCall={handlePhoneCall}
               onVideoCall={handleVideoCall}
               onMessage={handleMessage}

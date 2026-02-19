@@ -3,7 +3,7 @@
 // 56px fixed-bottom bar during active calls
 // Transforms to disposition prompt after call ends
 // ========================================
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { usePhone } from '../../context/PhoneContext'
 
 function formatDuration(seconds) {
@@ -35,6 +35,19 @@ export default function FloatingCallBar() {
     DISPOSITIONS,
   } = usePhone()
 
+  // Scale state — scroll wheel resizing
+  const [scale, setScale] = useState(() => {
+    try { return parseFloat(localStorage.getItem('cc7-callbar-scale')) || 1.0 } catch { return 1.0 }
+  })
+  const onWheel = useCallback((e) => {
+    e.preventDefault()
+    setScale(prev => {
+      const next = Math.round(Math.min(2.0, Math.max(0.6, prev + (e.deltaY < 0 ? 0.05 : -0.05))) * 100) / 100
+      localStorage.setItem('cc7-callbar-scale', String(next))
+      return next
+    })
+  }, [])
+
   const [dispoNotes, setDispoNotes] = useState('')
   const [autoSkipSeconds, setAutoSkipSeconds] = useState(30)
   const autoSkipRef = useRef(null)
@@ -63,8 +76,9 @@ export default function FloatingCallBar() {
   // ── Disposition View ──
   if (showDisposition) {
     return (
-      <div style={{
+      <div onWheel={onWheel} style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
+        transform: `scale(${scale})`, transformOrigin: 'center bottom',
         background: 'linear-gradient(180deg, rgba(24,24,27,0.98) 0%, rgba(9,9,11,0.99) 100%)',
         backdropFilter: 'blur(12px)',
         borderTop: '1px solid rgba(74,222,128,0.3)',
@@ -143,8 +157,9 @@ export default function FloatingCallBar() {
   const isEnded = callState === 'ended'
 
   return (
-    <div style={{
+    <div onWheel={onWheel} style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
+      transform: `scale(${scale})`, transformOrigin: 'center bottom',
       height: '56px',
       background: 'rgba(24,24,27,0.95)',
       backdropFilter: 'blur(12px)',
