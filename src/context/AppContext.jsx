@@ -12,6 +12,9 @@ const initialState = {
   activeTab: (typeof localStorage !== 'undefined' && localStorage.getItem('cc7-active-tab')) || TABS.TASK_BOARD,
   theme: DEFAULT_THEME,
 
+  // User role — default to owner (single-user system, DANO is the owner)
+  userRole: 'owner',
+
   // Connection Status
   isConnected: false,
   lastSync: null,

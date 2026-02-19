@@ -258,6 +258,20 @@ export const THEME_DEFINITIONS = {
       textSecondary: '#a898c4',
     },
   },
+  matrix: {
+    name: 'Matrix',
+    emoji: '💚',
+    category: 'unique',
+    vibe: 'Hacker Terminal',
+    colors: {
+      bg: '#0a0f0a',
+      surface: '#111e11',
+      sidebar: '#080d08',
+      accent: '#00ff41',
+      textPrimary: '#d0f0d0',
+      textSecondary: '#6fbf6f',
+    },
+  },
   // === The Dano Collection ===
   'lake-shore': {
     name: 'Lake Shore',
@@ -323,7 +337,7 @@ export const THEME_ORDER = {
   rich: ['deep-ocean', 'aurora', 'evergreen', 'midnight-ember'],
   light: ['sandstorm', 'arctic'],
   luxury: ['black-gold', 'white-gold', 'gilt-edge', 'sovereign'],
-  unique: ['neon-noir', 'sakura', 'ultraviolet'],
+  unique: ['neon-noir', 'sakura', 'ultraviolet', 'matrix'],
   dano: ['lake-shore', 'after-hours', 'south-side', 'blueprint'],
 }
 

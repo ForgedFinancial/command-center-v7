@@ -486,6 +486,13 @@ export function getMetricsByCategory(metrics) {
 // Format metric value for display
 export function formatMetricValue(value, unit) {
   if (value === null || value === undefined) return '—'
+  // Handle object values (e.g. stageDistribution)
+  if (typeof value === 'object' && value !== null) {
+    return Object.entries(value)
+      .filter(([, v]) => v > 0)
+      .map(([k, v]) => `${k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}: ${v}`)
+      .join(', ') || '—'
+  }
   switch (unit) {
     case '$': return `$${Number(value).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
     case '%': return `${value}%`
