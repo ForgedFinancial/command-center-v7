@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { getUIScale, setUIScale } from '../../../../App'
 import { WORKER_PROXY_URL, ENDPOINTS } from '../../../../config/api'
 import { useThemeContext } from '../../../../context/ThemeContext'
 import { THEME_DEFINITIONS, THEME_ORDER } from '../../../../hooks/useTheme'
@@ -120,7 +121,7 @@ export default function CRMSettings() {
       </div>
 
       {/* Content */}
-      {section === 'appearance' && <ThemePicker />}
+      {section === 'appearance' && <><ThemePicker /><UIScaleControl /></>}
       {section === 'pipelines' && <PipelineManager onPipelinesChanged={fetchPipelines} />}
       {section === 'stages' && <StageManager pipelines={pipelines} />}
       {section === 'sms' && <SMSTemplateEditor />}
@@ -524,6 +525,68 @@ function ThemeSwatch({ id, def, isActive, onSelect }) {
         </div>
       </div>
     </button>
+  )
+}
+
+function UIScaleControl() {
+  const [scale, setScale] = useState(getUIScale)
+
+  useEffect(() => {
+    const handler = (e) => setScale(e.detail)
+    window.addEventListener('cc7-ui-scale-change', handler)
+    return () => window.removeEventListener('cc7-ui-scale-change', handler)
+  }, [])
+
+  const handleChange = (e) => {
+    const v = parseInt(e.target.value, 10)
+    setScale(v)
+    setUIScale(v)
+  }
+
+  // Counter-scale this control so it stays fixed size
+  const counterZoom = 100 / scale
+
+  return (
+    <div style={{ ...cardStyle, zoom: `${counterZoom}%` }}>
+      <h3 style={sectionTitle}>🔍 UI Scale</h3>
+      <p style={{ margin: '0 0 16px', fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
+        Adjust the size of the entire interface. Use <kbd style={{ padding: '1px 5px', borderRadius: '4px', background: 'var(--theme-bg)', border: '1px solid var(--theme-border)', fontSize: '11px' }}>Ctrl</kbd> + <kbd style={{ padding: '1px 5px', borderRadius: '4px', background: 'var(--theme-bg)', border: '1px solid var(--theme-border)', fontSize: '11px' }}>+</kbd> / <kbd style={{ padding: '1px 5px', borderRadius: '4px', background: 'var(--theme-bg)', border: '1px solid var(--theme-border)', fontSize: '11px' }}>-</kbd> / <kbd style={{ padding: '1px 5px', borderRadius: '4px', background: 'var(--theme-bg)', border: '1px solid var(--theme-border)', fontSize: '11px' }}>0</kbd> anytime.
+      </p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', minWidth: '28px' }}>75%</span>
+        <input
+          type="range"
+          min={75}
+          max={150}
+          step={5}
+          value={scale}
+          onChange={handleChange}
+          style={{
+            flex: 1, accentColor: 'var(--theme-accent)', cursor: 'pointer', height: '6px',
+          }}
+        />
+        <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', minWidth: '32px' }}>150%</span>
+        <div style={{
+          padding: '6px 12px', borderRadius: '8px', minWidth: '48px', textAlign: 'center',
+          background: 'var(--theme-accent-muted)', border: '1px solid var(--theme-accent)',
+          color: 'var(--theme-accent)', fontSize: '13px', fontWeight: 700,
+        }}>
+          {scale}%
+        </div>
+        {scale !== 100 && (
+          <button
+            onClick={() => { setScale(100); setUIScale(100) }}
+            style={{
+              padding: '6px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer',
+              border: '1px solid var(--theme-border)', background: 'transparent',
+              color: 'var(--theme-text-secondary)',
+            }}
+          >
+            Reset
+          </button>
+        )}
+      </div>
+    </div>
   )
 }
 
