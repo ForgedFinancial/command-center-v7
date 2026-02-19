@@ -12,6 +12,7 @@ import FollowUpQueue from './contacts/FollowUpQueue'
 import PhoneView from '../task-board/phone/PhoneView'
 import MessagesView from '../task-board/messages/MessagesView'
 import CalendarView from '../task-board/calendar/CalendarView'
+import AutomationView from './automation/AutomationView'
 import EmptyState from '../../shared/EmptyState'
 
 // Normalize snake_case API fields to camelCase for UI components
@@ -114,6 +115,9 @@ export default function CRMTab() {
     case CRM_VIEWS.FOLLOW_UP:
     case 'follow-up':
       return <FollowUpQueue />
+    case CRM_VIEWS.AUTOMATIONS:
+    case 'automations':
+      return <AutomationView />
     case CRM_VIEWS.SETTINGS:
     case 'settings':
       return <CRMSettings />

@@ -44,6 +44,7 @@ const CRM_SIDEBAR = [
   { id: 'calendar', icon: '📅', label: 'Calendar' },
   { id: 'phone', icon: '📞', label: 'Phone' },
   { id: 'messages', icon: '💬', label: 'Messages' },
+  { id: 'automations', icon: '⚡', label: 'Automations' },
   { id: 'settings', icon: '⚙️', label: 'Settings' },
 ]
 
