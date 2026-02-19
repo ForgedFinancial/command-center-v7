@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
-import { WORKER_PROXY_URL } from '../../../../config/api'
+import { WORKER_PROXY_URL, getSyncHeaders } from '../../../../config/api'
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const VIEWS = ['Month', 'Week', 'Day']
@@ -136,7 +136,7 @@ export default function CalendarView() {
         // Update existing event
         const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/events/${encodeURIComponent(editingEvent.uid)}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0' },
+          headers: getSyncHeaders(),
           body: JSON.stringify(payload),
         })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -144,7 +144,7 @@ export default function CalendarView() {
         // Create new event
         const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/events`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0' },
+          headers: getSyncHeaders(),
           body: JSON.stringify(payload),
         })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -166,7 +166,7 @@ export default function CalendarView() {
     try {
       const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/events/${encodeURIComponent(editingEvent.uid)}`, {
         method: 'DELETE',
-        headers: { 'x-api-key': '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0' },
+        headers: getSyncHeaders(),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       setShowModal(false)

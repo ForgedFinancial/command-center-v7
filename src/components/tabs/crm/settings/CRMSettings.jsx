@@ -11,7 +11,7 @@ const STAGE_CONFIG = [
   { stage: 'contact', label: 'Contacted', color: '#a855f7', note: '3-day follow-up' },
   { stage: 'engaged', label: 'Qualified', color: 'var(--theme-accent)', note: 'Manual review' },
   { stage: 'qualified', label: 'Proposal Sent', color: 'var(--theme-phone)', note: '7-day expiry' },
-  { stage: 'application', label: 'Negotiation', color: '#f97316', note: 'Alert on stale' },
+  { stage: 'proposal', label: 'Proposal', color: '#f97316', note: 'Alert on stale' },
   { stage: 'sold', label: 'Won', color: 'var(--theme-success)', note: 'Triggers onboarding' },
 ]
 

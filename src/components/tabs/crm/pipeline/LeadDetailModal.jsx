@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import crmClient from '../../../../api/crmClient'
-import { WORKER_PROXY_URL } from '../../../../config/api'
+import { WORKER_PROXY_URL, getSyncHeaders } from '../../../../config/api'
 
 const TABS = [
   { key: 'contact', icon: '📋', label: 'Contact' },
@@ -108,7 +108,7 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
       const end = new Date(start.getTime() + 30 * 60000) // 30 min appointment
       const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/events`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0' },
+        headers: getSyncHeaders(),
         body: JSON.stringify({
           title: `Call: ${leadName}`,
           start: start.toISOString(), end: end.toISOString(),

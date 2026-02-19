@@ -9,7 +9,7 @@ const STAGE_COLORS = {
   contact: '#a855f7',
   engaged: 'var(--theme-accent)',
   qualified: '#f59e0b',
-  application: '#f97316',
+  proposal: '#f97316',
   sold: '#4ade80',
 }
 
@@ -18,7 +18,7 @@ const STAGE_LABELS = {
   contact: 'Contacted',
   engaged: 'Qualified',
   qualified: 'Proposal Sent',
-  application: 'Negotiation',
+  proposal: 'Proposal',
   sold: 'Won',
 }
 
