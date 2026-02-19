@@ -196,6 +196,7 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
     const notes = form.notes ? `${form.notes}\n[${new Date().toLocaleString()}] ${newNote}` : `[${new Date().toLocaleString()}] ${newNote}`
     setForm(f => ({ ...f, notes }))
     setNewNote('')
+    crmClient.updateLead(lead.id, { notes }).catch(err => console.error('[LEAD] Note save failed:', err))
   }
 
   const initials = (form.name || '??').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
