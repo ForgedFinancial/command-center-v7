@@ -799,8 +799,8 @@ function renderCardField(key, lead) {
       if (!lead.notes) return null
       return <div key={key} style={fieldStyle}>📝 {lead.notes.length > 50 ? lead.notes.slice(0, 50) + '…' : lead.notes}</div>
     case 'createdAt':
-      if (!lead.createdAt) return null
-      return <div key={key} style={{ fontSize: '10px', color: 'var(--theme-phone)', marginBottom: '2px', fontWeight: 500 }}>🕐 {formatLeadDate(lead.createdAt)}</div>
+      if (!lead.createdAt && !lead.created_at) return null
+      return <div key={key} style={{ fontSize: '10px', color: 'var(--theme-phone)', marginBottom: '2px', fontWeight: 500 }}>🕐 {formatLeadDate(lead.createdAt || lead.created_at)}</div>
     default:
       // Handle custom fields (cf_*)
       if (key.startsWith('cf_')) {
