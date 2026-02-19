@@ -126,8 +126,40 @@ class CRMClient {
     return this.request('/pipelines')
   }
 
+  async createPipeline(data) {
+    return this.request('/pipelines', { method: 'POST', body: JSON.stringify(data) })
+  }
+
+  async updatePipeline(id, data) {
+    return this.request(`/pipelines/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+  }
+
+  async deletePipeline(id) {
+    return this.request(`/pipelines/${id}`, { method: 'DELETE' })
+  }
+
+  async reorderPipelines(orderedIds) {
+    return this.request('/pipelines/reorder', { method: 'PUT', body: JSON.stringify({ order: orderedIds }) })
+  }
+
   async getStages(pipelineId) {
     return this.request(`/pipelines/${pipelineId}/stages`)
+  }
+
+  async createStage(pipelineId, data) {
+    return this.request(`/pipelines/${pipelineId}/stages`, { method: 'POST', body: JSON.stringify(data) })
+  }
+
+  async updateStage(stageId, data) {
+    return this.request(`/stages/${stageId}`, { method: 'PUT', body: JSON.stringify(data) })
+  }
+
+  async deleteStage(stageId) {
+    return this.request(`/stages/${stageId}`, { method: 'DELETE' })
+  }
+
+  async reorderStages(pipelineId, orderedIds) {
+    return this.request(`/pipelines/${pipelineId}/stages/reorder`, { method: 'PUT', body: JSON.stringify({ order: orderedIds }) })
   }
 
   async moveLead(leadId, toPipelineId, toStageId, fromPipelineId, fromStageId, reason) {

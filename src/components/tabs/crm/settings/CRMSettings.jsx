@@ -3,16 +3,13 @@ import { WORKER_PROXY_URL, ENDPOINTS } from '../../../../config/api'
 import { useThemeContext } from '../../../../context/ThemeContext'
 import { THEME_DEFINITIONS, THEME_ORDER } from '../../../../hooks/useTheme'
 import PhoneLinesSection from './PhoneLinesSection'
+import PipelineManager from './PipelineManager'
+import StageManager from './StageManager'
 import { LEAD_TYPES } from '../../../../config/leadTypes'
-
-const STAGE_CONFIG = [
-  { stage: 'new_lead', label: 'New Leads', color: 'var(--theme-accent)', note: 'Auto-assign enabled' },
-  { stage: 'contact', label: 'Contacted', color: '#a855f7', note: '3-day follow-up' },
-  { stage: 'engaged', label: 'Qualified', color: 'var(--theme-accent)', note: 'Manual review' },
-  { stage: 'qualified', label: 'Proposal Sent', color: 'var(--theme-phone)', note: '7-day expiry' },
-  { stage: 'proposal', label: 'Proposal', color: '#f97316', note: 'Alert on stale' },
-  { stage: 'sold', label: 'Won', color: 'var(--theme-success)', note: 'Triggers onboarding' },
-]
+import crmClient from '../../../../api/crmClient'
+import SMSTemplateEditor from '../automation/SMSTemplateEditor'
+import TimerConfig from '../automation/TimerConfig'
+import NotificationPrefs from '../automation/NotificationPrefs'
 
 const cardStyle = {
   padding: '24px',
@@ -75,115 +72,88 @@ function getAuthHeaders() {
   }
 }
 
+const SETTINGS_SECTIONS = [
+  { id: 'appearance', label: '🎨 Appearance', icon: '🎨' },
+  { id: 'pipelines', label: '🔧 Pipelines', icon: '🔧' },
+  { id: 'stages', label: '📊 Stages', icon: '📊' },
+  { id: 'sms', label: '💬 SMS Templates', icon: '💬' },
+  { id: 'timers', label: '⏱ Timers', icon: '⏱' },
+  { id: 'notifications', label: '🔔 Notifications', icon: '🔔' },
+  { id: 'metrics', label: '📈 Metrics', icon: '📈' },
+  { id: 'sources', label: '📊 Lead Sources', icon: '📊' },
+  { id: 'phone', label: '📞 Phone Lines', icon: '📞' },
+]
+
 export default function CRMSettings() {
+  const [section, setSection] = useState('appearance')
+  const [pipelines, setPipelines] = useState([])
+
+  const fetchPipelines = useCallback(async () => {
+    try {
+      const res = await crmClient.getPipelines()
+      setPipelines(res.pipelines || res.data || res || [])
+    } catch {}
+  }, [])
+
+  useEffect(() => { fetchPipelines() }, [fetchPipelines])
+
   return (
     <div>
       <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>CRM Settings</h2>
-      <p style={{ margin: '0 0 24px', fontSize: '13px', color: 'var(--theme-text-secondary)' }}>Configure your CRM preferences</p>
+      <p style={{ margin: '0 0 20px', fontSize: '13px', color: 'var(--theme-text-secondary)' }}>Configure your CRM preferences</p>
 
-      <div style={{ display: 'flex', gap: '24px' }}>
-        <div style={{ flex: 1 }}>
-          {/* Phone Lines */}
-          <PhoneLinesSection />
+      {/* Section tabs */}
+      <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', marginBottom: '24px', paddingBottom: '4px', scrollbarWidth: 'thin' }}>
+        {SETTINGS_SECTIONS.map(s => (
+          <button
+            key={s.id}
+            onClick={() => setSection(s.id)}
+            style={{
+              padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: section === s.id ? 600 : 400,
+              border: `1px solid ${section === s.id ? 'var(--theme-accent)' : 'var(--theme-border)'}`,
+              background: section === s.id ? 'var(--theme-accent-muted)' : 'transparent',
+              color: section === s.id ? 'var(--theme-accent)' : 'var(--theme-text-secondary)',
+              cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+            }}
+          >{s.label}</button>
+        ))}
+      </div>
 
-          {/* Appearance / Theme */}
-          <ThemePicker />
-
-          {/* Pipeline Stages */}
+      {/* Content */}
+      {section === 'appearance' && <ThemePicker />}
+      {section === 'pipelines' && <PipelineManager onPipelinesChanged={fetchPipelines} />}
+      {section === 'stages' && <StageManager pipelines={pipelines} />}
+      {section === 'sms' && <SMSTemplateEditor />}
+      {section === 'timers' && <TimerConfig />}
+      {section === 'notifications' && (
+        <>
+          <NotificationPrefs />
           <div style={cardStyle}>
-            <h3 style={sectionTitle}>Pipeline Stages</h3>
-            {STAGE_CONFIG.map(s => (
-              <div key={s.stage} style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '10px 16px',
-                borderRadius: '8px',
-                background: 'var(--theme-bg)',
-                marginBottom: '6px',
-              }}>
-                <span style={{
-                  width: '8px', height: '8px', borderRadius: '50%',
-                  background: s.color, marginRight: '12px', flexShrink: 0,
-                }} />
-                <span style={{ flex: 1, fontSize: '13px', color: 'var(--theme-text-primary)' }}>{s.label}</span>
-                <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginRight: '12px' }}>{s.note}</span>
-                <span style={{ fontSize: '14px', color: 'var(--theme-text-secondary)', cursor: 'pointer' }}>⚙️</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Lead Sources — Google Sheets Integration */}
-          <LeadSourcesSection />
-
-          {/* Notifications */}
-          <div style={cardStyle}>
-            <h3 style={sectionTitle}>Notifications</h3>
+            <h3 style={sectionTitle}>Quick Toggles</h3>
             <NotificationToggle label="New lead alerts" defaultOn />
             <NotificationToggle label="Deal stage changes" defaultOn />
             <NotificationToggle label="Stale deal warnings" defaultOn />
             <NotificationToggle label="Weekly pipeline digest" defaultOn={false} />
             <NotificationToggle label="Send task updates to Telegram" defaultOn storageKey="telegramNotifications" />
           </div>
-
-          {/* Dashboard Metric Toggles */}
-          <div style={cardStyle}>
-            <h3 style={sectionTitle}>📊 Dashboard Metrics</h3>
-            <p style={{ margin: '0 0 12px', fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
-              Toggle which metrics appear on your dashboard.
-            </p>
-            <NotificationToggle label="Show AP (Annual Premium)" defaultOn storageKey="metric_ap" />
-            <NotificationToggle label="Show Policy Count" defaultOn storageKey="metric_policies" />
-            <NotificationToggle label="Show Contact Rate" defaultOn storageKey="metric_contactRate" />
-            <NotificationToggle label="Show Pipeline Value" defaultOn storageKey="metric_pipelineValue" />
-            <NotificationToggle label="Show Conversion Rate" defaultOn storageKey="metric_conversionRate" />
-            <NotificationToggle label="Show Revenue Forecast" defaultOn storageKey="metric_forecast" />
-          </div>
-
-          {/* Auto-Send Toggles */}
-          <div style={cardStyle}>
-            <h3 style={sectionTitle}>🤖 Auto-Send</h3>
-            <p style={{ margin: '0 0 12px', fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
-              Manage automated message sending for follow-ups and nurture sequences.
-            </p>
-            <NotificationToggle label="Auto-send welcome SMS on new lead" defaultOn={false} storageKey="autosend_welcome" />
-            <NotificationToggle label="Auto-send follow-up after 3 days" defaultOn={false} storageKey="autosend_followup3" />
-            <NotificationToggle label="Auto-send stale lead re-engagement" defaultOn={false} storageKey="autosend_reengage" />
-            <NotificationToggle label="Auto-send appointment reminders" defaultOn storageKey="autosend_apptReminder" />
-          </div>
-
-          {/* Active Automations Overview */}
-          <div style={cardStyle}>
-            <h3 style={sectionTitle}>⚡ Active Automations</h3>
-            <p style={{ margin: '0 0 12px', fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
-              Overview of all active workflow automations.
-            </p>
-            {[
-              { name: 'New Lead Assignment', trigger: 'On lead creation', status: 'active' },
-              { name: 'Follow-Up Scheduler', trigger: '3-day no-contact', status: 'active' },
-              { name: 'Stale Deal Alert', trigger: '14-day no-activity', status: 'active' },
-              { name: 'Appointment Reminder', trigger: '1 hour before appt', status: 'active' },
-              { name: 'Won Deal Onboarding', trigger: 'Stage → Won', status: 'paused' },
-            ].map(wf => (
-              <div key={wf.name} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '10px 14px', borderRadius: '8px', background: 'var(--theme-bg)', marginBottom: '6px',
-              }}>
-                <div>
-                  <div style={{ fontSize: '13px', color: 'var(--theme-text-primary)', fontWeight: 500 }}>{wf.name}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>{wf.trigger}</div>
-                </div>
-                <span style={{
-                  fontSize: '10px', padding: '2px 8px', borderRadius: '10px', fontWeight: 500,
-                  background: wf.status === 'active' ? 'rgba(74,222,128,0.15)' : 'rgba(245,158,11,0.15)',
-                  color: wf.status === 'active' ? '#4ade80' : '#f59e0b',
-                }}>
-                  {wf.status}
-                </span>
-              </div>
-            ))}
-          </div>
+        </>
+      )}
+      {section === 'metrics' && (
+        <div style={cardStyle}>
+          <h3 style={sectionTitle}>📊 Dashboard Metrics</h3>
+          <p style={{ margin: '0 0 12px', fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
+            Toggle which metrics appear on your dashboard.
+          </p>
+          <NotificationToggle label="Show AP (Annual Premium)" defaultOn storageKey="metric_ap" />
+          <NotificationToggle label="Show Policy Count" defaultOn storageKey="metric_policies" />
+          <NotificationToggle label="Show Contact Rate" defaultOn storageKey="metric_contactRate" />
+          <NotificationToggle label="Show Pipeline Value" defaultOn storageKey="metric_pipelineValue" />
+          <NotificationToggle label="Show Conversion Rate" defaultOn storageKey="metric_conversionRate" />
+          <NotificationToggle label="Show Revenue Forecast" defaultOn storageKey="metric_forecast" />
         </div>
-      </div>
+      )}
+      {section === 'sources' && <LeadSourcesSection />}
+      {section === 'phone' && <PhoneLinesSection />}
     </div>
   )
 }
