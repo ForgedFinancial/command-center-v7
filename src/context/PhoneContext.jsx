@@ -42,6 +42,11 @@ export function PhoneProvider({ children }) {
   const [autoFailover, setAutoFailover] = useState(true)
   const [showDisposition, setShowDisposition] = useState(false)
 
+  // Phase 2: Multi-Line & AMD
+  const [multiLineMode, setMultiLineMode] = useState(false)
+  const [activeCalls, setActiveCalls] = useState([]) // Array of concurrent calls
+  const [amdEnabled, setAmdEnabled] = useState(true)
+
   const timerRef = useRef(null)
   const deviceRef = useRef(null)
 
@@ -178,6 +183,120 @@ export function PhoneProvider({ children }) {
     }
   }, [])
 
+  // Make multiple simultaneous calls (2-3 leads)
+  const makeMultiLineCalls = useCallback(async (leads, { forceTwilio = false } = {}) => {
+    if (!leads || leads.length === 0) return
+
+    // Limit to 3 simultaneous calls max
+    const callLeads = leads.slice(0, 3)
+    
+    setCallState('connecting')
+    setActiveCalls([])
+    setCallMeta({
+      leadId: null,
+      leadName: `Multi-line (${callLeads.length} numbers)`,
+      phone: callLeads.map(l => l.phone).join(', '),
+      fromNumber: activeLine?.number || null,
+      fromDisplay: activeLine?.label || null,
+      callSid: null,
+      startTime: null,
+    })
+
+    try {
+      const callPromises = callLeads.map(async (lead, index) => {
+        const fromNumber = activeLine?.number || null
+        
+        if (deviceRef.current) {
+          const connectParams = {
+            To: lead.phone,
+            LeadState: lead.state || '',
+            MachineDetection: amdEnabled ? 'DetectMessageEnd' : 'off',
+          }
+          if (fromNumber) connectParams.CallerIdNumber = fromNumber
+
+          const call = await deviceRef.current.connect({ params: connectParams })
+          
+          const callData = {
+            id: `multi-${Date.now()}-${index}`,
+            call: call,
+            lead: lead,
+            status: 'connecting',
+            connected: false,
+          }
+
+          call.on('ringing', () => {
+            setActiveCalls(prev => prev.map(c => 
+              c.id === callData.id ? { ...c, status: 'ringing' } : c
+            ))
+          })
+
+          call.on('accept', () => {
+            // First call to answer gets priority
+            setActiveCalls(prev => {
+              const updated = prev.map(c => 
+                c.id === callData.id ? { ...c, status: 'connected', connected: true } : c
+              )
+              
+              // If this is the first to connect, disconnect others
+              const connectedCalls = updated.filter(c => c.connected)
+              if (connectedCalls.length === 1) {
+                updated.forEach(c => {
+                  if (!c.connected && c.call.disconnect) {
+                    c.call.disconnect()
+                  }
+                })
+                
+                // Set this as the primary call
+                setCallState('active')
+                setCallMeta(prev => ({
+                  ...prev,
+                  leadId: lead.id,
+                  leadName: lead.name || 'Unknown',
+                  phone: lead.phone,
+                  callSid: call.parameters?.CallSid,
+                  startTime: Date.now(),
+                }))
+                setActiveCall(call)
+              }
+              
+              return updated
+            })
+          })
+
+          call.on('disconnect', () => {
+            setActiveCalls(prev => {
+              const updated = prev.filter(c => c.id !== callData.id)
+              if (updated.length === 0) {
+                setCallState('ended')
+                setShowDisposition(true)
+              }
+              return updated
+            })
+          })
+
+          call.on('error', (err) => {
+            console.error(`[PHONE] Multi-line call ${index} error:`, err.message)
+            setActiveCalls(prev => prev.filter(c => c.id !== callData.id))
+          })
+
+          return callData
+        }
+        return null
+      })
+
+      const calls = (await Promise.all(callPromises)).filter(Boolean)
+      setActiveCalls(calls)
+
+      return { method: 'twilio-multiline', calls: calls.length }
+    } catch (err) {
+      console.error('[PHONE] Multi-line calls failed:', err.message)
+      setCallState('idle')
+      setCallMeta(null)
+      setActiveCalls([])
+      throw err
+    }
+  }, [amdEnabled, activeLine, deviceRef])
+
   // Make call — iPhone primary, Twilio fallback
   const makeCall = useCallback(async (lead, { forceTwilio = false } = {}) => {
     if (!lead?.phone) return
@@ -225,6 +344,7 @@ export function PhoneProvider({ children }) {
         const connectParams = {
           To: lead.phone,
           LeadState: lead.state || '',
+          MachineDetection: amdEnabled ? 'DetectMessageEnd' : 'off',
         }
         if (fromNumber) connectParams.CallerIdNumber = fromNumber
 
@@ -359,7 +479,11 @@ export function PhoneProvider({ children }) {
     isMuted, setIsMuted, isOnHold,
     autoFailover, setAutoFailover, isUsingTwilio,
     showDisposition, setShowDisposition,
-    makeCall, endCall, toggleMute, toggleHold,
+    // Phase 2: Multi-Line & AMD
+    multiLineMode, setMultiLineMode,
+    activeCalls, setActiveCalls,
+    amdEnabled, setAmdEnabled,
+    makeCall, makeMultiLineCalls, endCall, toggleMute, toggleHold,
     acceptCall, rejectCall,
     applyDisposition, dismissCall,
     switchPrimaryLine, loadLines, initDevice,

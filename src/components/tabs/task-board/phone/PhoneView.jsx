@@ -214,13 +214,7 @@ export default function PhoneView() {
           </div>
         )}
         {activeTab === 'Settings' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '600px' }}>
-            <AudioDeviceSelector />
-            <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)' }} />
-            <RingSettings />
-            <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)' }} />
-            <PhoneNumberHealth />
-          </div>
+          <SettingsTab />
         )}
       </div>
     </div>
@@ -233,6 +227,94 @@ function StatusDot({ color, label }) {
       <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color }} />
       {label}
     </span>
+  )
+}
+
+function SettingsTab() {
+  const { multiLineMode, setMultiLineMode, amdEnabled, setAmdEnabled } = usePhone()
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '600px' }}>
+      {/* Phase 2: Multi-Line Power Dialing Settings */}
+      <div>
+        <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 600, color: '#e4e4e7' }}>
+          Power Dialing Settings
+        </h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {/* Multi-Line Mode Toggle */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 500, color: '#e4e4e7' }}>Multi-Line Dialing</div>
+              <div style={{ fontSize: '11px', color: '#71717a' }}>Dial 2-3 leads simultaneously, first to answer connects</div>
+            </div>
+            <button
+              onClick={() => setMultiLineMode(!multiLineMode)}
+              style={{
+                position: 'relative',
+                width: '48px',
+                height: '24px',
+                borderRadius: '12px',
+                border: 'none',
+                background: multiLineMode ? '#4ade80' : 'rgba(255,255,255,0.1)',
+                cursor: 'pointer',
+                transition: 'background 200ms ease',
+              }}
+            >
+              <div style={{
+                position: 'absolute',
+                top: '2px',
+                left: multiLineMode ? '26px' : '2px',
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                background: '#fff',
+                transition: 'left 200ms ease',
+              }} />
+            </button>
+          </div>
+
+          {/* AMD Toggle */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 500, color: '#e4e4e7' }}>Answering Machine Detection</div>
+              <div style={{ fontSize: '11px', color: '#71717a' }}>Automatically detect and handle voicemail systems</div>
+            </div>
+            <button
+              onClick={() => setAmdEnabled(!amdEnabled)}
+              style={{
+                position: 'relative',
+                width: '48px',
+                height: '24px',
+                borderRadius: '12px',
+                border: 'none',
+                background: amdEnabled ? '#4ade80' : 'rgba(255,255,255,0.1)',
+                cursor: 'pointer',
+                transition: 'background 200ms ease',
+              }}
+            >
+              <div style={{
+                position: 'absolute',
+                top: '2px',
+                left: amdEnabled ? '26px' : '2px',
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                background: '#fff',
+                transition: 'left 200ms ease',
+              }} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+      
+      <AudioDeviceSelector />
+      <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+      <RingSettings />
+      <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+      <PhoneNumberHealth />
+    </div>
   )
 }
 

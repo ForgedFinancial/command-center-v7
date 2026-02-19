@@ -30,6 +30,8 @@ export default function FloatingCallBar() {
     isMuted, isOnHold,
     endCall, toggleMute, toggleHold,
     showDisposition, applyDisposition, dismissCall,
+    // Phase 2: Multi-Line support
+    multiLineMode, activeCalls,
     DISPOSITIONS,
   } = usePhone()
 
@@ -165,12 +167,37 @@ export default function FloatingCallBar() {
 
         <div style={{ minWidth: 0 }}>
           <div style={{ color: '#e4e4e7', fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {callMeta?.leadName || 'Unknown'} · {formatPhone(callMeta?.phone)}
+            {callMeta?.leadName || 'Unknown'}
+            {multiLineMode && activeCalls.length > 0 ? ` (${activeCalls.length} lines)` : ''} · {formatPhone(callMeta?.phone)}
           </div>
           <div style={{ color: '#71717a', fontSize: '11px' }}>
-            {isConnecting ? 'Connecting...' : isOnHold ? '⏸ On Hold' : isActive ? 'Connected' : 'Call Ended'}
+            {isConnecting ? (
+              multiLineMode ? `Dialing ${activeCalls.length} numbers...` : 'Connecting...'
+            ) : isOnHold ? '⏸ On Hold' : isActive ? 'Connected' : 'Call Ended'}
             {callMeta?.fromDisplay ? ` · via ${callMeta.fromDisplay}` : ''}
           </div>
+          {/* Multi-line status indicators */}
+          {multiLineMode && activeCalls.length > 0 && (
+            <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+              {activeCalls.map((call, idx) => (
+                <div
+                  key={call.id}
+                  style={{
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    fontSize: '9px',
+                    fontWeight: 600,
+                    background: call.connected ? 'rgba(74,222,128,0.2)' : 
+                               call.status === 'ringing' ? 'rgba(245,158,11,0.2)' : 'rgba(113,113,122,0.2)',
+                    color: call.connected ? '#4ade80' : 
+                           call.status === 'ringing' ? '#f59e0b' : '#71717a',
+                  }}
+                >
+                  Line {idx + 1}: {call.status}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

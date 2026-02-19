@@ -72,6 +72,26 @@ const ALL_CARD_FIELDS = [
   { key: 'createdAt', label: 'Date/Time Requested', icon: '🕐' },
 ]
 
+// Discover custom fields from leads for card field options
+function discoverCustomCardFields(leads) {
+  const keys = new Set()
+  leads.forEach(l => {
+    const cf = l.customFields || l.custom_fields
+    if (!cf) return
+    try {
+      const parsed = typeof cf === 'string' ? JSON.parse(cf) : cf
+      Object.keys(parsed).forEach(k => keys.add(k))
+    } catch {}
+  })
+  return Array.from(keys).map(key => ({
+    key: `cf_${key.replace(/\s+/g, '_').toLowerCase()}`,
+    label: key,
+    icon: '📋',
+    isCustom: true,
+    customKey: key,
+  }))
+}
+
 function loadCardFields() {
   try {
     const saved = JSON.parse(localStorage.getItem('cc7-card-fields'))
@@ -102,6 +122,9 @@ export default function PipelineView() {
   const [showTransferModal, setShowTransferModal] = useState(null) // lead to transfer
   const [stageTransition, setStageTransition] = useState(null) // { lead, fromStage, toStage }
   const [cardFields, setCardFields] = useState(loadCardFields)
+  // Discover custom fields from leads for card field picker
+  const customCardFields = useMemo(() => discoverCustomCardFields(state.leads), [state.leads])
+  const allCardFieldOptions = useMemo(() => [...ALL_CARD_FIELDS, ...customCardFields], [customCardFields])
   const dragLeadId = useRef(null)
 
   // Pipeline management
@@ -565,6 +588,7 @@ export default function PipelineView() {
       {showNewLead && <NewLeadModal onClose={() => setShowNewLead(false)} actions={actions} pipelines={pipelines} stages={stages} currentPipelineId={currentPipelineId} />}
       {showCardSettings && <CardFieldSettings
         fields={cardFields}
+        allFields={allCardFieldOptions}
         onSave={(f) => { setCardFields(f); saveCardFields(f); setShowCardSettings(false) }}
         onClose={() => setShowCardSettings(false)}
       />}
@@ -778,6 +802,18 @@ function renderCardField(key, lead) {
       if (!lead.createdAt) return null
       return <div key={key} style={{ fontSize: '10px', color: 'var(--theme-phone)', marginBottom: '2px', fontWeight: 500 }}>🕐 {formatLeadDate(lead.createdAt)}</div>
     default:
+      // Handle custom fields (cf_*)
+      if (key.startsWith('cf_')) {
+        const cf = lead.customFields || lead.custom_fields
+        if (!cf) return null
+        try {
+          const parsed = typeof cf === 'string' ? JSON.parse(cf) : cf
+          // Find the matching custom key
+          const customKey = Object.keys(parsed).find(k => `cf_${k.replace(/\s+/g, '_').toLowerCase()}` === key)
+          if (!customKey || !parsed[customKey]) return null
+          return <div key={key} style={fieldStyle}>📋 <span style={{ color: 'var(--theme-phone)', fontWeight: 500 }}>{customKey}:</span> {parsed[customKey]}</div>
+        } catch { return null }
+      }
       return null
   }
 }
@@ -964,7 +1000,8 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
 // ========================================
 // Card Field Settings Modal
 // ========================================
-function CardFieldSettings({ fields, onSave, onClose }) {
+function CardFieldSettings({ fields, allFields, onSave, onClose }) {
+  const ALL_FIELDS = allFields || ALL_CARD_FIELDS
   const [selected, setSelected] = useState([...fields])
   const isSelected = (key) => selected.includes(key)
   const toggle = (key) => {
@@ -988,7 +1025,7 @@ function CardFieldSettings({ fields, onSave, onClose }) {
           <div style={{ marginBottom: '16px' }}>
             <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active ({selected.length}/{MAX_CUSTOM_FIELDS})</div>
             {selected.map((key, idx) => {
-              const field = ALL_CARD_FIELDS.find(f => f.key === key)
+              const field = ALL_FIELDS.find(f => f.key === key)
               if (!field) return null
               return (
                 <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: 'var(--theme-accent-muted)', border: '1px solid var(--theme-accent)', borderRadius: '8px', marginBottom: '4px' }}>
@@ -1003,7 +1040,7 @@ function CardFieldSettings({ fields, onSave, onClose }) {
           </div>
         )}
         <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Available</div>
-        {ALL_CARD_FIELDS.filter(f => !isSelected(f.key)).map(field => (
+        {ALL_FIELDS.filter(f => !isSelected(f.key)).map(field => (
           <div key={field.key} onClick={() => toggle(field.key)} style={{
             display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px',
             background: 'var(--theme-bg)', border: '1px solid var(--theme-border-subtle)',
