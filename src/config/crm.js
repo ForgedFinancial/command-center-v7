@@ -25,7 +25,9 @@ export const CRM_STAGE_CONFIG = {
   sold:         { label: 'Won',                color: '#4ade80', bg: 'rgba(74,222,128,0.12)' },
 }
 
-export const LEAD_TYPES = ['FEX', 'WHOLE', 'TERM', 'IUL', 'ANNUITY', 'TRUCKER', 'MP', 'VETERANS']
+// LEAD_TYPES moved to config/leadTypes.js — single source of truth
+// Re-export for backward compat
+export { LEAD_TYPES } from './leadTypes.js'
 
 export const EVENT_TYPES = {
   APPOINTMENT: 'appointment',

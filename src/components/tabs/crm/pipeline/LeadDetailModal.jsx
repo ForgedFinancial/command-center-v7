@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import crmClient from '../../../../api/crmClient'
 import { WORKER_PROXY_URL, getSyncHeaders } from '../../../../config/api'
+import { LEAD_TYPES } from '../../../../config/leadTypes'
 
 const TABS = [
   { key: 'contact', icon: '📋', label: 'Contact' },
@@ -15,7 +16,6 @@ const STAGE_OPTIONS = [
   ['qualified', 'Qualified'], ['proposal', 'Proposal'], ['sold', 'Won'],
 ]
 
-const LEAD_TYPES = ['FEX', 'IUL', 'TRUCKER', 'TERM', 'WHOLE', 'ANNUITY', 'MORTGAGE PROTECTION', 'VETERANS']
 const RELATIONSHIPS = ['', 'Spouse', 'Child', 'My Children', 'Parent', 'Sibling', 'Estate', 'Trust', 'Friend', 'Other']
 const PAYMENT_METHODS = ['', 'Bank Draft', 'Credit Card', 'Check', 'Money Order']
 

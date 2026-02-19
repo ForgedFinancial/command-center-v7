@@ -8,6 +8,7 @@ import ContactActivityTimeline from './ContactActivityTimeline'
 import PipelineModeToggle, { filterByPipelineMode } from '../PipelineModeToggle'
 import DataSourceToggle from '../../../shared/DataSourceToggle'
 import { useDataSource } from '../../../../hooks/useDataSource'
+import { LEAD_TYPES } from '../../../../config/leadTypes'
 
 function formatPhone(phone) {
   if (!phone) return ''
@@ -16,8 +17,6 @@ function formatPhone(phone) {
   if (digits.length === 10) return `1-${digits.slice(0,3)}-${digits.slice(3,6)}-${digits.slice(6)}`
   return phone
 }
-
-const LEAD_TYPES = ['FEX', 'VETERANS', 'MORTGAGE PROTECTION', 'TRUCKERS', 'IUL']
 
 const TAG_COLORS = {
   'VIP Client': { color: 'var(--theme-success)', bg: 'rgba(74,222,128,0.15)' },

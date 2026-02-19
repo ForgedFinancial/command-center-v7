@@ -3,8 +3,7 @@ import { WORKER_PROXY_URL, ENDPOINTS } from '../../../../config/api'
 import { useThemeContext } from '../../../../context/ThemeContext'
 import { THEME_DEFINITIONS, THEME_ORDER } from '../../../../hooks/useTheme'
 import PhoneLinesSection from './PhoneLinesSection'
-
-const LEAD_TYPES = ['FEX', 'VETERANS', 'MORTGAGE PROTECTION', 'TRUCKERS', 'IUL']
+import { LEAD_TYPES } from '../../../../config/leadTypes'
 
 const STAGE_CONFIG = [
   { stage: 'new_lead', label: 'New Leads', color: 'var(--theme-accent)', note: 'Auto-assign enabled' },
