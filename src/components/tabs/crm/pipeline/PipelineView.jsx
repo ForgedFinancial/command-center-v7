@@ -971,23 +971,23 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
         )}
       </div>
 
-      {/* Dynamic fields */}
-      {cardFields.map(key => renderCardField(key, lead))}
-
-      {/* Disposition Tags */}
+      {/* Disposition Tags — prominent display */}
       {leadTags.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', marginTop: '4px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px', marginBottom: '4px', paddingLeft: '20px' }}>
           {leadTags.map(tagId => {
             const tag = getTagById(tagId)
-            if (!tag) return <span key={tagId} style={{ fontSize: '9px', padding: '1px 5px', borderRadius: '4px', background: 'rgba(255,255,255,0.08)', color: '#a1a1aa' }}>{tagId}</span>
+            if (!tag) return <span key={tagId} style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '6px', fontWeight: 700, background: 'rgba(255,255,255,0.08)', color: '#a1a1aa' }}>{tagId}</span>
             return (
-              <span key={tagId} style={{ fontSize: '9px', fontWeight: 600, padding: '1px 5px', borderRadius: '4px', background: tag.bg, color: tag.color }}>
+              <span key={tagId} style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: tag.bg, color: tag.color }}>
                 {tag.label}
               </span>
             )
           })}
         </div>
       )}
+
+      {/* Dynamic fields */}
+      {cardFields.map(key => renderCardField(key, lead))}
 
       {/* Time ago */}
       <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', marginTop: '2px' }}>
