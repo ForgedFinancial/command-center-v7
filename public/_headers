@@ -3,4 +3,4 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://forged-sync.danielruh.workers.dev https://*.pages.dev; img-src 'self' data:
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://forged-sync.danielruh.workers.dev https://*.pages.dev https://sdk.twilio.com wss://voice-js.roaming.twilio.com wss://*.twilio.com; img-src 'self' data:; media-src 'self' https://sdk.twilio.com blob:
