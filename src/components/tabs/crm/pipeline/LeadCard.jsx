@@ -108,8 +108,8 @@ export default function LeadCard({ lead, color, cardFields, onDragStart, onClick
       const timeStr = `${h12}:${mi} ${ampm}`
       appActions?.addToast({ id: Date.now(), type: 'success', message: `📅 Scheduled: ${lead.name || 'Unknown'} on ${dateStr} at ${timeStr}` })
       // Auto-add "Appointment Booked" tag
-      if (!leadTags.includes('appointment_booked')) {
-        toggleTag('appointment_booked', null)
+      if (!leadTags.includes('appt_booked')) {
+        toggleTag('appt_booked', null)
       }
       setShowScheduler(false)
     } catch (err) {
@@ -208,7 +208,7 @@ export default function LeadCard({ lead, color, cardFields, onDragStart, onClick
               const tag = getTagById(tagId)
               if (!tag) return <span key={tagId} style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '5px', fontWeight: 700, background: 'rgba(255,255,255,0.08)', color: '#a1a1aa' }}>{tagId}</span>
               return (
-                <span key={tagId} style={{ fontSize: '10px', fontWeight: 700, padding: '2px 6px', borderRadius: '5px', background: tag.bg, color: tag.color }}>{tag.label}</span>
+                <span key={tagId} style={{ fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '4px', background: tag.bg, color: tag.color, whiteSpace: 'nowrap' }}>{tag.label}</span>
               )
             })}
           </div>

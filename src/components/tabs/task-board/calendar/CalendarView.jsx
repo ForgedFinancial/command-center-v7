@@ -39,7 +39,7 @@ export default function CalendarView() {
     setSyncing(true)
     setSyncError(false)
     try {
-      const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/events`)
+      const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/events`, { headers: getSyncHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
       setEvents(Array.isArray(data) ? data : data.events || [])
@@ -54,7 +54,7 @@ export default function CalendarView() {
 
   const fetchCalendars = useCallback(async () => {
     try {
-      const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/calendars`)
+      const res = await fetch(`${WORKER_PROXY_URL}/api/calendar/calendars`, { headers: getSyncHeaders() })
       if (res.ok) {
         const data = await res.json()
         if (data.calendars?.length) setCalendars(data.calendars)
