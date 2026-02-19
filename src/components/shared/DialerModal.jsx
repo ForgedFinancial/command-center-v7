@@ -36,15 +36,23 @@ export default function DialerModal() {
   })
   const [activeTab, setActiveTab] = useState('dialpad') // dialpad | recent | lines
 
-  // Drag state
-  const [pos, setPos] = useState({ x: window.innerWidth - 420, y: 80 })
+  // Drag state — shared across all three states (closed button, minimized, expanded)
+  const [pos, setPos] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('cc7-dialer-pos'))
+      if (saved && typeof saved.x === 'number' && typeof saved.y === 'number') return saved
+    } catch {}
+    return { x: window.innerWidth - 76, y: window.innerHeight - 76 }
+  })
   const dragRef = useRef(null)
   const dragOffset = useRef({ x: 0, y: 0 })
   const isDragging = useRef(false)
+  const didDrag = useRef(false)
 
   const onMouseDown = useCallback((e) => {
-    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return
+    if (e.target.closest('button:not([data-drag-handle])') || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return
     isDragging.current = true
+    didDrag.current = false
     dragOffset.current = { x: e.clientX - pos.x, y: e.clientY - pos.y }
     document.body.style.userSelect = 'none'
   }, [pos])
@@ -52,13 +60,18 @@ export default function DialerModal() {
   useEffect(() => {
     const onMove = (e) => {
       if (!isDragging.current) return
-      const x = Math.max(0, Math.min(window.innerWidth - 380, e.clientX - dragOffset.current.x))
-      const y = Math.max(0, Math.min(window.innerHeight - 100, e.clientY - dragOffset.current.y))
+      didDrag.current = true
+      const x = Math.max(0, Math.min(window.innerWidth - 56, e.clientX - dragOffset.current.x))
+      const y = Math.max(0, Math.min(window.innerHeight - 56, e.clientY - dragOffset.current.y))
       setPos({ x, y })
     }
     const onUp = () => {
-      isDragging.current = false
-      document.body.style.userSelect = ''
+      if (isDragging.current) {
+        isDragging.current = false
+        document.body.style.userSelect = ''
+        // Persist position
+        setPos(p => { localStorage.setItem('cc7-dialer-pos', JSON.stringify(p)); return p })
+      }
     }
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
@@ -90,24 +103,26 @@ export default function DialerModal() {
 
   const isInCall = callState !== 'idle'
 
-  // ── Floating Toggle Button (always visible) ──
+  // ── Floating Toggle Button (always visible, draggable) ──
   if (!isOpen) {
     return (
-      <button
-        onClick={() => { setIsOpen(true); setIsMinimized(false) }}
+      <div
+        data-drag-handle="true"
+        onMouseDown={onMouseDown}
+        onClick={() => { if (!didDrag.current) { setIsOpen(true); setIsMinimized(false) } }}
         style={{
-          position: 'fixed', bottom: '20px', right: '20px', zIndex: 9998,
+          position: 'fixed', left: pos.x, top: pos.y, zIndex: 9998,
           width: '56px', height: '56px', borderRadius: '50%',
           background: isInCall ? 'linear-gradient(135deg, #4ade80, #22c55e)' : 'linear-gradient(135deg, #3b82f6, #2563eb)',
           border: 'none', color: '#fff', fontSize: '24px',
-          cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+          cursor: 'grab', boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           animation: isInCall ? 'dialerPulse 2s ease-in-out infinite' : 'none',
-          transition: 'transform 150ms ease',
+          transition: isDragging.current ? 'none' : 'transform 150ms ease',
         }}
-        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
+        onMouseOver={e => { if (!isDragging.current) e.currentTarget.style.transform = 'scale(1.1)' }}
         onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-        title="Open Dialer"
+        title="Open Dialer (drag to move)"
       >
         📞
         {isInCall && (
@@ -117,7 +132,7 @@ export default function DialerModal() {
             background: '#4ade80', border: '2px solid #0a0e1a',
           }} />
         )}
-      </button>
+      </div>
     )
   }
 

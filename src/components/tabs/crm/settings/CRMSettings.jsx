@@ -121,7 +121,7 @@ export default function CRMSettings() {
       </div>
 
       {/* Content */}
-      {section === 'appearance' && <><ThemePicker /><UIScaleControl /></>}
+      {section === 'appearance' && <><UIScaleControl /><ThemePicker /></>}
       {section === 'pipelines' && <PipelineManager onPipelinesChanged={fetchPipelines} />}
       {section === 'stages' && <StageManager pipelines={pipelines} />}
       {section === 'sms' && <SMSTemplateEditor />}
@@ -543,17 +543,18 @@ function UIScaleControl() {
     setUIScale(v)
   }
 
-  // Counter-scale this control so it stays fixed size
+  const applyPreset = (v) => { setScale(v); setUIScale(v) }
+
+  const presets = [75, 90, 100, 110, 125, 150]
   const counterZoom = 100 / scale
 
   return (
-    <div style={{ ...cardStyle, zoom: `${counterZoom}%` }}>
-      <h3 style={sectionTitle}>🔍 UI Scale</h3>
-      <p style={{ margin: '0 0 16px', fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
-        Adjust the size of the entire interface. Use <kbd style={{ padding: '1px 5px', borderRadius: '4px', background: 'var(--theme-bg)', border: '1px solid var(--theme-border)', fontSize: '11px' }}>Ctrl</kbd> + <kbd style={{ padding: '1px 5px', borderRadius: '4px', background: 'var(--theme-bg)', border: '1px solid var(--theme-border)', fontSize: '11px' }}>+</kbd> / <kbd style={{ padding: '1px 5px', borderRadius: '4px', background: 'var(--theme-bg)', border: '1px solid var(--theme-border)', fontSize: '11px' }}>-</kbd> / <kbd style={{ padding: '1px 5px', borderRadius: '4px', background: 'var(--theme-bg)', border: '1px solid var(--theme-border)', fontSize: '11px' }}>0</kbd> anytime.
-      </p>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', minWidth: '28px' }}>75%</span>
+    <div style={{ ...cardStyle, padding: '24px', zoom: `${counterZoom}%` }}>
+      <h3 style={sectionTitle}>🔍 Display Scale</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '16px' }}>
+        <span style={{ fontSize: '24px', fontWeight: 700, color: 'var(--theme-accent)', minWidth: '64px' }}>
+          {scale}%
+        </span>
         <input
           type="range"
           min={75}
@@ -562,29 +563,26 @@ function UIScaleControl() {
           value={scale}
           onChange={handleChange}
           style={{
-            flex: 1, accentColor: 'var(--theme-accent)', cursor: 'pointer', height: '6px',
+            minWidth: '300px', flex: 1, accentColor: 'var(--theme-accent)', cursor: 'pointer', height: '6px',
           }}
         />
-        <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', minWidth: '32px' }}>150%</span>
-        <div style={{
-          padding: '6px 12px', borderRadius: '8px', minWidth: '48px', textAlign: 'center',
-          background: 'var(--theme-accent-muted)', border: '1px solid var(--theme-accent)',
-          color: 'var(--theme-accent)', fontSize: '13px', fontWeight: 700,
-        }}>
-          {scale}%
-        </div>
-        {scale !== 100 && (
+      </div>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        {presets.map(p => (
           <button
-            onClick={() => { setScale(100); setUIScale(100) }}
+            key={p}
+            onClick={() => applyPreset(p)}
             style={{
-              padding: '6px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer',
-              border: '1px solid var(--theme-border)', background: 'transparent',
-              color: 'var(--theme-text-secondary)',
+              padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+              border: `1px solid ${scale === p ? 'var(--theme-accent)' : 'var(--theme-border)'}`,
+              background: scale === p ? 'var(--theme-accent)' : 'transparent',
+              color: scale === p ? '#fff' : 'var(--theme-text-secondary)',
+              transition: 'all 0.15s ease',
             }}
           >
-            Reset
+            {p}%
           </button>
-        )}
+        ))}
       </div>
     </div>
   )
