@@ -107,6 +107,10 @@ export default function LeadCard({ lead, color, cardFields, onDragStart, onClick
       const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h
       const timeStr = `${h12}:${mi} ${ampm}`
       appActions?.addToast({ id: Date.now(), type: 'success', message: `📅 Scheduled: ${lead.name || 'Unknown'} on ${dateStr} at ${timeStr}` })
+      // Auto-add "Appointment Booked" tag
+      if (!leadTags.includes('appointment_booked')) {
+        toggleTag('appointment_booked', null)
+      }
       setShowScheduler(false)
     } catch (err) {
       appActions?.addToast({ id: Date.now(), type: 'error', message: `Failed to schedule: ${err.message}` })
@@ -253,7 +257,7 @@ export default function LeadCard({ lead, color, cardFields, onDragStart, onClick
           <button onClick={(e) => onMessage(lead, e)} title="Send message" style={{ ...actionBtnStyle, color: '#a855f7' }}>💬</button>
         </>}
         <button onClick={(e) => { e.stopPropagation(); setShowQuickNote(v => !v) }} title="Quick note" style={{ ...actionBtnStyle, color: '#f59e0b' }}>✏️</button>
-        <button onClick={handleOpenScheduler} title="Schedule call" style={{ ...actionBtnStyle, color: '#3b82f6', opacity: scheduling ? 0.5 : 1 }}>{scheduling ? '⏳' : '📅'}</button>
+        <button onClick={handleOpenScheduler} title="Schedule Appointment" style={{ ...actionBtnStyle, color: '#3b82f6', opacity: scheduling ? 0.5 : 1 }}>{scheduling ? '⏳' : '📅'}</button>
       </div>
 
       {/* Quick Note Inline */}
@@ -276,7 +280,7 @@ export default function LeadCard({ lead, color, cardFields, onDragStart, onClick
         </div>
       )}
 
-      {/* Schedule Call Inline */}
+      {/* Schedule Appointment Inline */}
       {showScheduler && (
         <div onClick={e => e.stopPropagation()} style={{ marginTop: '6px', display: 'flex', gap: '4px', alignItems: 'center' }}>
           <input

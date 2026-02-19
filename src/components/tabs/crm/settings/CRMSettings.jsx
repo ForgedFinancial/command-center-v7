@@ -12,6 +12,40 @@ import SMSTemplateEditor from '../automation/SMSTemplateEditor'
 import TimerConfig from '../automation/TimerConfig'
 import NotificationPrefs from '../automation/NotificationPrefs'
 
+function InlineUIScale() {
+  const [scale, setScaleVal] = useState(() => {
+    const s = parseInt(localStorage.getItem('cc7-ui-scale'), 10)
+    return isNaN(s) ? 100 : Math.max(75, Math.min(150, s))
+  })
+  const apply = (v) => {
+    const c = Math.max(75, Math.min(150, v))
+    setScaleVal(c)
+    localStorage.setItem('cc7-ui-scale', String(c))
+    document.documentElement.style.zoom = `${c}%`
+    try { setUIScale(c) } catch {}
+  }
+  const presets = [75, 90, 100, 110, 125, 150]
+  return (
+    <div style={{ background: 'var(--theme-surface)', borderRadius: '12px', border: '1px solid var(--theme-border)', padding: '24px', marginBottom: '24px' }}>
+      <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--theme-text-primary)', marginBottom: '16px' }}>🔍 Display Scale</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '16px' }}>
+        <span style={{ fontSize: '24px', fontWeight: 700, color: 'var(--theme-accent)', minWidth: '64px' }}>{scale}%</span>
+        <input type="range" min={75} max={150} step={5} value={scale} onChange={e => apply(parseInt(e.target.value, 10))}
+          style={{ minWidth: '300px', flex: 1, accentColor: 'var(--theme-accent)', cursor: 'pointer', height: '6px' }} />
+      </div>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        {presets.map(p => (
+          <button key={p} onClick={() => apply(p)} style={{
+            padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
+            background: scale === p ? 'var(--theme-accent)' : 'var(--theme-bg)', color: scale === p ? '#fff' : 'var(--theme-text-secondary)',
+            border: `1px solid ${scale === p ? 'var(--theme-accent)' : 'var(--theme-border)'}`,
+          }}>{p}%</button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 const cardStyle = {
   padding: '24px',
   borderRadius: '12px',
@@ -121,7 +155,10 @@ export default function CRMSettings() {
       </div>
 
       {/* Content */}
-      {section === 'appearance' && <><SafeUIScale /><ThemePicker /></>}
+      {section === 'appearance' && <>
+        <InlineUIScale />
+        <ThemePicker />
+      </>}
       {section === 'pipelines' && <PipelineManager onPipelinesChanged={fetchPipelines} />}
       {section === 'stages' && <StageManager pipelines={pipelines} />}
       {section === 'sms' && <SMSTemplateEditor />}

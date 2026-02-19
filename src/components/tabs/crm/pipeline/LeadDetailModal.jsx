@@ -458,7 +458,7 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
               padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--theme-accent)',
               background: showSchedule ? 'var(--theme-accent-muted)' : 'var(--theme-accent-muted)', color: 'var(--theme-accent)',
               fontSize: '12px', fontWeight: 600, cursor: 'pointer',
-            }}>📅 Schedule Call</button>
+            }}>📅 Schedule Appointment</button>
           </div>
           {showSchedule && (
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
