@@ -101,7 +101,7 @@ export function useSyncServer() {
         })
       }
     }
-  }, [actions, state.sessions, state.tokens, state.costs, state.cronJobs, state.activityLog, state.overnightLog, state.agents])
+  }, [actions])
 
   // Initial sync on mount
   useEffect(() => {

@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useApp } from '../../context/AppContext'
 import { syncClient } from '../../api/syncClient'
-import { syncClient as healthSyncClient } from '../../api/syncClient'
 
 // ========================================
 // FEATURE: HealthPanel
@@ -9,19 +8,6 @@ import { syncClient as healthSyncClient } from '../../api/syncClient'
 // Session 2: Slide-out health dashboard
 // Glass-panel aesthetic, mission control vibes
 // ========================================
-
-// Global console error capture
-const capturedErrors = []
-const originalConsoleError = console.error
-console.error = (...args) => {
-  capturedErrors.push({
-    timestamp: Date.now(),
-    message: args.map(a => typeof a === 'string' ? a : (a?.message || String(a))).join(' '),
-    type: args[0]?.name || (typeof args[0] === 'string' ? args[0].split(':')[0] : 'Error'),
-  })
-  if (capturedErrors.length > 50) capturedErrors.shift()
-  originalConsoleError.apply(console, args)
-}
 
 const STATUS = { green: 'green', yellow: 'yellow', red: 'red' }
 
@@ -106,7 +92,7 @@ function useHealthChecks(isOpen) {
     const selectedAgent = state?.workspaceAgent || state?.selectedAgent
     if (selectedAgent) {
       try {
-        const wsData = await healthSyncClient.getWorkspace(selectedAgent)
+        const wsData = await syncClient.getWorkspace(selectedAgent)
         const files = wsData?.files || []
         if (files.length >= 4) {
           results.push({ name: 'Workspace Files', status: STATUS.green, message: `${files.length} files found for ${selectedAgent}` })
@@ -148,6 +134,26 @@ export default function HealthPanel({ isOpen, onClose }) {
   const { checks, loading, runChecks } = useHealthChecks(isOpen)
   const [animating, setAnimating] = useState(false)
   const [visible, setVisible] = useState(false)
+  
+  // Component-level console error capture with cleanup
+  const [capturedErrors, setCapturedErrors] = useState([])
+  
+  useEffect(() => {
+    const originalConsoleError = console.error
+    console.error = (...args) => {
+      const newError = {
+        timestamp: Date.now(),
+        message: args.map(a => typeof a === 'string' ? a : (a?.message || String(a))).join(' '),
+        type: args[0]?.name || (typeof args[0] === 'string' ? args[0].split(':')[0] : 'Error'),
+      }
+      setCapturedErrors(prev => {
+        const updated = [...prev, newError]
+        return updated.length > 50 ? updated.slice(-50) : updated
+      })
+      originalConsoleError.apply(console, args)
+    }
+    return () => { console.error = originalConsoleError }
+  }, [])
 
   // Animate in/out
   useEffect(() => {
