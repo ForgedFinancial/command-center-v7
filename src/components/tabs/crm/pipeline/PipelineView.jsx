@@ -12,6 +12,7 @@ import { validateTransition, checkOverdue, getUrgencyColor, formatTimeRemaining 
 import { useKeyboardShortcuts, KeyboardShortcutOverlay } from '../../../../hooks/useKeyboardShortcuts.jsx'
 
 import { LEAD_TYPES } from '../../../../config/leadTypes'
+import PipelineModeToggle from '../PipelineModeToggle'
 
 // Shimmer skeleton for loading state
 function SkeletonCard() {
@@ -118,8 +119,11 @@ export default function PipelineView() {
   const filteredLeads = useMemo(() => {
     let leads = pipelineLeads
     if (leadTypeFilter) leads = leads.filter(l => (l.leadType || l.lead_type) === leadTypeFilter)
+    // Filter by pipeline mode (New/Aged/All)
+    if (state.pipelineMode === 'new') leads = leads.filter(l => (l.lead_age || l.leadAge || 'new_lead') !== 'aged')
+    if (state.pipelineMode === 'aged') leads = leads.filter(l => (l.lead_age || l.leadAge) === 'aged')
     return leads
-  }, [pipelineLeads, leadTypeFilter])
+  }, [pipelineLeads, leadTypeFilter, state.pipelineMode])
 
   // Build dynamic columns from stages
   const columns = useMemo(() => {
@@ -425,6 +429,7 @@ export default function PipelineView() {
           >⚙️</button>
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <PipelineModeToggle />
           <select
             value={leadTypeFilter}
             onChange={(e) => setLeadTypeFilter(e.target.value)}
