@@ -19,10 +19,12 @@ export default function AudioDeviceSelector() {
   const [selected, setSelected] = useState(loadSaved)
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState(null)
+  const [permError, setPermError] = useState(null)
   const audioCtxRef = useRef(null)
 
   const enumerate = useCallback(async () => {
     try {
+      setPermError(null)
       // Need permission first
       await navigator.mediaDevices.getUserMedia({ audio: true }).then(s => s.getTracks().forEach(t => t.stop()))
       const all = await navigator.mediaDevices.enumerateDevices()
@@ -32,6 +34,11 @@ export default function AudioDeviceSelector() {
       })
     } catch (err) {
       console.error('[AUDIO] Enumerate failed:', err)
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setPermError('Microphone permission denied. Allow microphone access in your browser settings to use audio features.')
+      } else {
+        setPermError('Could not access audio devices: ' + err.message)
+      }
     }
   }, [])
 
@@ -106,6 +113,12 @@ export default function AudioDeviceSelector() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#e4e4e7' }}>🎧 Audio Devices</h4>
+
+      {permError && (
+        <div style={{ padding: '10px 12px', borderRadius: '8px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', fontSize: '12px' }}>
+          ⚠️ {permError}
+        </div>
+      )}
 
       {/* Input */}
       <div>

@@ -10,8 +10,14 @@ const LS_KEY = 'forgedos_vm_drops'
 function loadDrops() {
   try { return JSON.parse(localStorage.getItem(LS_KEY)) || [] } catch { return [] }
 }
+const MAX_STORAGE_BYTES = 2 * 1024 * 1024 // 2MB total cap
+
 function saveDrops(drops) {
-  localStorage.setItem(LS_KEY, JSON.stringify(drops))
+  const json = JSON.stringify(drops)
+  if (json.length > MAX_STORAGE_BYTES) {
+    throw new Error('STORAGE_LIMIT')
+  }
+  localStorage.setItem(LS_KEY, json)
 }
 
 export default function VoicemailDropManager({ onDrop }) {
@@ -56,10 +62,18 @@ export default function VoicemailDropManager({ onDrop }) {
           createdAt: new Date().toISOString(),
         }
         const next = [...drops, newDrop]
-        setDrops(next)
-        saveDrops(next.map(d => ({ ...d, blobUrl: undefined })))
-        setNewName('')
-        setShowRecorder(false)
+        try {
+          saveDrops(next.map(d => ({ ...d, blobUrl: undefined })))
+          setDrops(next)
+          setNewName('')
+          setShowRecorder(false)
+        } catch (err) {
+          if (err.message === 'STORAGE_LIMIT') {
+            alert('Storage limit reached (2MB). Delete some voicemail drops to save new ones.')
+          } else {
+            console.error('[VM DROP] Save failed:', err)
+          }
+        }
       }
       reader.readAsDataURL(blob)
       streamRef.current?.getTracks().forEach(t => t.stop())

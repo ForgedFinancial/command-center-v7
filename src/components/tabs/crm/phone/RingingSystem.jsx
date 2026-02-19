@@ -55,7 +55,7 @@ export function useRinging() {
       gain.connect(ctx.destination)
       osc1.start()
       osc2.start()
-      setTimeout(() => { osc1.stop(); osc2.stop() }, tone.pattern[0])
+      setTimeout(() => { osc1.stop(); osc2.stop(); osc1.disconnect(); osc2.disconnect(); gain.disconnect() }, tone.pattern[0])
     }
 
     playBurst()
