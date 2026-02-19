@@ -19,6 +19,9 @@ export default function SMSTemplateEditor() {
   const [filterPipeline, setFilterPipeline] = useState('all')
   const [saveStatus, setSaveStatus] = useState({})
   const [loadError, setLoadError] = useState(false)
+  const [enabledMap, setEnabledMap] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cc7-sms-template-toggles') || '{}') } catch { return {} }
+  })
 
   useEffect(() => {
     (async () => {
@@ -84,6 +87,17 @@ export default function SMSTemplateEditor() {
     })
   }
 
+  const isEnabled = (id) => enabledMap[id] !== false // default ON
+  const toggleEnabled = (id) => {
+    setEnabledMap(prev => {
+      const next = { ...prev, [id]: !isEnabled(id) }
+      localStorage.setItem('cc7-sms-template-toggles', JSON.stringify(next))
+      // Also persist to server
+      crmClient.request(`/sms-templates/${id}`, { method: 'PUT', body: JSON.stringify({ enabled: next[id] !== false }) }).catch(() => {})
+      return next
+    })
+  }
+
   const pipelines = ['all', ...new Set(templates.map(t => t.pipeline))]
   const filtered = filterPipeline === 'all' ? templates : templates.filter(t => t.pipeline === filterPipeline)
 
@@ -116,12 +130,27 @@ export default function SMSTemplateEditor() {
         return (
           <div key={t.id} style={{
             background: 'rgba(255,255,255,0.03)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)',
-            overflow: 'hidden',
+            overflow: 'hidden', opacity: isEnabled(t.id) ? 1 : 0.5, transition: 'opacity 0.2s',
           }}>
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap' }}>
+              <div
+                onClick={() => toggleEnabled(t.id)}
+                title={isEnabled(t.id) ? 'Click to disable' : 'Click to enable'}
+                style={{
+                  width: 36, height: 20, borderRadius: 10, cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0,
+                  background: isEnabled(t.id) ? '#4ade80' : 'rgba(255,255,255,0.12)',
+                  position: 'relative',
+                }}
+              >
+                <div style={{
+                  width: 16, height: 16, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2,
+                  left: isEnabled(t.id) ? 18 : 2, transition: 'left 0.2s',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                }} />
+              </div>
               <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'rgba(59,130,246,0.15)', color: '#3b82f6', fontWeight: 600 }}>{t.pipeline}</span>
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{t.name}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: isEnabled(t.id) ? '#e2e8f0' : '#52525b' }}>{t.name}</span>
               <span style={{ fontSize: 11, color: '#64748b' }}>{t.stage} • {t.timing} • → {t.recipient}</span>
               {status && <span style={{ fontSize: 11, marginLeft: 'auto', color: status.type === 'success' ? '#4ade80' : '#f59e0b' }}>{status.msg}</span>}
             </div>
