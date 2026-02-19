@@ -1027,6 +1027,7 @@ function UploadLeadsModal({ onClose, actions, pipelines, stages, currentPipeline
   const [pipelineId, setPipelineId] = useState(currentPipelineId || '')
   const [stageId, setStageId] = useState(stages?.[0]?.id || '')
   const [leadType, setLeadType] = useState('')
+  const [leadAge, setLeadAge] = useState('new_lead')
   const [preview, setPreview] = useState(null)
   const [uploading, setUploading] = useState(false)
   const [result, setResult] = useState(null)
@@ -1088,7 +1089,7 @@ function UploadLeadsModal({ onClose, actions, pipelines, stages, currentPipeline
         phone: r.phone || r.phone_number || '',
         email: r.email || '', state: r.state || '', notes: r.notes || '',
         pipeline_id: pipelineId, stage_id: stageId,
-        lead_type: leadType, createdAt: new Date().toISOString(),
+        lead_type: leadType, lead_age: leadAge, createdAt: new Date().toISOString(),
       }))
       try {
         const data = await crmClient.importLeads({ leads })
@@ -1126,6 +1127,13 @@ function UploadLeadsModal({ onClose, actions, pipelines, stages, currentPipeline
           <select value={leadType} onChange={e => setLeadType(e.target.value)} style={inputStyle}>
             <option value="">— Select —</option>
             {LEAD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+        <div style={{ marginBottom: '16px' }}>
+          <label style={labelStyle}>Lead Age</label>
+          <select value={leadAge} onChange={e => setLeadAge(e.target.value)} style={inputStyle}>
+            <option value="new_lead">🆕 New</option>
+            <option value="aged">📜 Aged</option>
           </select>
         </div>
         <div style={{ marginBottom: '16px' }}>
