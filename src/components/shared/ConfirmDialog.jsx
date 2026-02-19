@@ -15,9 +15,9 @@ export default function ConfirmDialog({ isOpen, onClose, onConfirm, title = 'Con
               padding: '8px 16px',
               fontSize: '12px',
               borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.1)',
+              border: '1px solid var(--theme-border)',
               background: 'transparent',
-              color: '#a1a1aa',
+              color: 'var(--theme-text-secondary)',
               cursor: 'pointer',
             }}
           >
@@ -41,7 +41,7 @@ export default function ConfirmDialog({ isOpen, onClose, onConfirm, title = 'Con
         </>
       }
     >
-      <p style={{ margin: 0, fontSize: '14px', color: '#a1a1aa', lineHeight: 1.6 }}>
+      <p style={{ margin: 0, fontSize: '14px', color: 'var(--theme-text-secondary)', lineHeight: 1.6 }}>
         {message}
       </p>
     </Modal>

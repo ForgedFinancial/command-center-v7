@@ -28,9 +28,9 @@ export default function TasksListView() {
   const selectStyle = {
     padding: '8px 12px',
     borderRadius: '8px',
-    border: '1px solid rgba(255,255,255,0.1)',
-    background: 'rgba(255,255,255,0.04)',
-    color: '#a1a1aa',
+    border: '1px solid var(--theme-border)',
+    background: 'var(--theme-bg)',
+    color: 'var(--theme-text-secondary)',
     fontSize: '12px',
     outline: 'none',
     cursor: 'pointer',
@@ -40,7 +40,7 @@ export default function TasksListView() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Tasks</h2>
+        <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>Tasks</h2>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} style={selectStyle}>
             <option value="">All Projects</option>
@@ -62,9 +62,9 @@ export default function TasksListView() {
             style={{
               padding: '8px 14px',
               borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: 'rgba(255,255,255,0.04)',
-              color: '#e4e4e7',
+              border: '1px solid var(--theme-border)',
+              background: 'var(--theme-bg)',
+              color: 'var(--theme-text-primary)',
               fontSize: '12px',
               outline: 'none',
               width: '180px',
@@ -75,9 +75,9 @@ export default function TasksListView() {
             style={{
               padding: '8px 16px',
               borderRadius: '8px',
-              border: '1px solid rgba(0,212,255,0.3)',
-              background: 'rgba(0,212,255,0.1)',
-              color: '#00d4ff',
+              border: '1px solid var(--theme-accent)',
+              background: 'var(--theme-accent-muted)',
+              color: 'var(--theme-accent)',
               fontSize: '12px',
               fontWeight: 600,
               cursor: 'pointer',
@@ -100,9 +100,9 @@ export default function TasksListView() {
               style={{
                 padding: '8px 16px',
                 borderRadius: '8px',
-                border: '1px solid rgba(0,212,255,0.3)',
-                background: 'rgba(0,212,255,0.1)',
-                color: '#00d4ff',
+                border: '1px solid var(--theme-accent)',
+                background: 'var(--theme-accent-muted)',
+                color: 'var(--theme-accent)',
                 fontSize: '12px',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -115,7 +115,7 @@ export default function TasksListView() {
       ) : (
         <div style={{
           borderRadius: '10px',
-          border: '1px solid rgba(255,255,255,0.06)',
+          border: '1px solid var(--theme-border-subtle)',
           overflow: 'hidden',
         }}>
           {/* Table header */}
@@ -123,11 +123,11 @@ export default function TasksListView() {
             display: 'grid',
             gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 80px',
             padding: '10px 16px',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            borderBottom: '1px solid var(--theme-border-subtle)',
             fontSize: '10px',
             textTransform: 'uppercase',
             letterSpacing: '1.5px',
-            color: '#52525b',
+            color: 'var(--theme-text-secondary)',
             fontWeight: 600,
           }}>
             <span>Task</span>
@@ -152,7 +152,7 @@ export default function TasksListView() {
                   display: 'grid',
                   gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 80px',
                   padding: '12px 16px',
-                  borderBottom: '1px solid rgba(255,255,255,0.03)',
+                  borderBottom: '1px solid var(--theme-border-subtle)',
                   cursor: 'pointer',
                   opacity: isCompleted ? 0.6 : 1,
                   transition: 'background 0.15s',
@@ -160,10 +160,10 @@ export default function TasksListView() {
                 onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
                 onMouseOut={(e) => { e.currentTarget.style.background = 'transparent' }}
               >
-                <span style={{ fontSize: '12px', fontWeight: 500, color: '#e4e4e7', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--theme-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {task.title}
                 </span>
-                <span style={{ fontSize: '11px', color: '#71717a' }}>
+                <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>
                   {task.projectId ? getProjectName(task.projectId) : '—'}
                 </span>
                 <span style={{ fontSize: '11px', color: stageConf.color || '#71717a' }}>
@@ -201,15 +201,15 @@ export default function TasksListView() {
                       }}>
                         {task.assignedAgent[0].toUpperCase()}
                       </span>
-                      <span style={{ fontSize: '11px', color: '#a1a1aa', textTransform: 'capitalize' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', textTransform: 'capitalize' }}>
                         {task.assignedAgent}
                       </span>
                     </>
                   ) : (
-                    <span style={{ fontSize: '11px', color: '#52525b' }}>Unassigned</span>
+                    <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>Unassigned</span>
                   )}
                 </span>
-                <span style={{ fontSize: '11px', color: '#52525b' }}>
+                <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>
                   {task.dueDate
                     ? new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                     : '—'}

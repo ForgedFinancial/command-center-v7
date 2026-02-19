@@ -9,7 +9,7 @@ function renderContent(text) {
     if (line.startsWith('#')) {
       const text = line.replace(/^#+\s*/, '')
       return (
-        <div key={i} style={{ color: '#00d4ff', fontWeight: '700', fontSize: '14px', lineHeight: '1.8', marginTop: '8px' }}>
+        <div key={i} style={{ color: 'var(--theme-accent)', fontWeight: '700', fontSize: '14px', lineHeight: '1.8', marginTop: '8px' }}>
           {text}
         </div>
       )
@@ -56,7 +56,7 @@ export default function FileViewer({ agentId, filename, isLog, onClose }) {
         position: 'fixed',
         inset: 0,
         zIndex: 1000,
-        background: 'rgba(0,0,0,0.6)',
+        background: 'var(--theme-modal-overlay)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -126,9 +126,9 @@ export default function FileViewer({ agentId, filename, isLog, onClose }) {
               style={{
                 padding: '20px',
                 borderRadius: '8px',
-                background: 'rgba(239,68,68,0.08)',
-                border: '1px solid rgba(239,68,68,0.2)',
-                color: '#ef4444',
+                background: 'transparent',
+                border: '1px solid var(--theme-error)',
+                color: 'var(--theme-error)',
                 fontSize: '14px',
                 textAlign: 'center',
               }}

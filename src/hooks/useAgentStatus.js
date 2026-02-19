@@ -8,7 +8,7 @@ import { useEffect, useRef, useCallback } from 'react'
 import { useApp } from '../context/AppContext'
 import { syncClient } from '../api/syncClient'
 
-const POLL_INTERVAL = 30000
+const POLL_INTERVAL = 120000 // 2 min (was 30s)
 
 export function useAgentStatus() {
   const { actions } = useApp()

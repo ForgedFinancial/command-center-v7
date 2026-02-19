@@ -20,11 +20,10 @@ export default function Modal({ isOpen, onClose, title, width = 640, children, f
 
   return (
     <div
-      onClick={onClose}
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(0,0,0,0.6)',
+        backgroundColor: 'var(--theme-modal-overlay)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -37,12 +36,12 @@ export default function Modal({ isOpen, onClose, title, width = 640, children, f
           width: `${width}px`,
           maxWidth: '90vw',
           maxHeight: '80vh',
-          backgroundColor: '#12121a',
+          backgroundColor: 'var(--theme-surface)',
           borderRadius: '16px',
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid var(--theme-border)',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 24px 48px rgba(0,0,0,0.4)',
+          boxShadow: '0 24px 48px var(--theme-shadow)',
         }}
       >
         {/* Header */}
@@ -51,10 +50,10 @@ export default function Modal({ isOpen, onClose, title, width = 640, children, f
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '16px 24px',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          borderBottom: '1px solid var(--theme-border-subtle)',
           flexShrink: 0,
         }}>
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#e4e4e7' }}>
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: 'var(--theme-text-primary)' }}>
             {title}
           </h3>
           <button
@@ -62,15 +61,15 @@ export default function Modal({ isOpen, onClose, title, width = 640, children, f
             style={{
               background: 'none',
               border: 'none',
-              color: '#71717a',
+              color: 'var(--theme-text-secondary)',
               fontSize: '18px',
               cursor: 'pointer',
               padding: '4px 8px',
               borderRadius: '6px',
               lineHeight: 1,
             }}
-            onMouseOver={(e) => { e.target.style.color = '#e4e4e7'; e.target.style.backgroundColor = 'rgba(255,255,255,0.06)' }}
-            onMouseOut={(e) => { e.target.style.color = '#71717a'; e.target.style.backgroundColor = 'transparent' }}
+            onMouseOver={(e) => { e.target.style.color = 'var(--theme-text-primary)'; e.target.style.backgroundColor = 'var(--theme-surface-hover)' }}
+            onMouseOut={(e) => { e.target.style.color = 'var(--theme-text-secondary)'; e.target.style.backgroundColor = 'transparent' }}
           >
             ✕
           </button>
@@ -85,7 +84,7 @@ export default function Modal({ isOpen, onClose, title, width = 640, children, f
         {footer && (
           <div style={{
             padding: '16px 24px',
-            borderTop: '1px solid rgba(255,255,255,0.06)',
+            borderTop: '1px solid var(--theme-border-subtle)',
             display: 'flex',
             justifyContent: 'flex-end',
             gap: '8px',

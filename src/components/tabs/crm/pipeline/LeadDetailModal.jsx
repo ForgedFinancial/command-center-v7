@@ -21,12 +21,12 @@ const PAYMENT_METHODS = ['', 'Bank Draft', 'Credit Card', 'Check', 'Money Order'
 
 const inputStyle = {
   width: '100%', padding: '8px 12px', borderRadius: '8px',
-  border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
-  color: '#e4e4e7', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
+  border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
+  color: 'var(--theme-text-primary)', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
 }
 
 const labelStyle = {
-  display: 'block', fontSize: '11px', fontWeight: 600, color: '#71717a',
+  display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)',
   marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px',
 }
 
@@ -143,39 +143,39 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex',
+      position: 'fixed', inset: 0, background: 'var(--theme-modal-overlay)', display: 'flex',
       alignItems: 'center', justifyContent: 'center', zIndex: 1000,
     }}>
       <div onClick={e => e.stopPropagation()} style={{
         width: '640px', maxHeight: '85vh', overflow: 'auto',
-        background: '#1a1a2e', borderRadius: '16px',
-        border: '1px solid rgba(255,255,255,0.08)', padding: '0',
+        background: 'var(--theme-surface)', borderRadius: '16px',
+        border: '1px solid var(--theme-border)', padding: '0',
       }}>
         {/* Header */}
-        <div style={{ padding: '24px 28px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ padding: '24px 28px 16px', borderBottom: '1px solid var(--theme-border-subtle)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
               <div style={{
                 width: 48, height: 48, borderRadius: '50%', background: 'linear-gradient(135deg, #00d4ff, #a855f7)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '16px', fontWeight: 700, color: '#fff',
+                fontSize: '16px', fontWeight: 700, color: 'var(--theme-accent-text)',
               }}>{initials}</div>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#e4e4e7' }}>{form.name || 'Lead'}</h2>
+                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>{form.name || 'Lead'}</h2>
                   {Number(form.premium) > 0 && (
-                    <span style={{ fontSize: '14px', fontWeight: 700, color: '#4ade80' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--theme-success)' }}>
                       (${(Number(form.premium) * 12).toLocaleString()})
                     </span>
                   )}
                 </div>
                 <span style={{
                   fontSize: '11px', padding: '2px 8px', borderRadius: '6px',
-                  background: 'rgba(0,212,255,0.15)', color: '#00d4ff',
+                  background: 'var(--theme-accent-muted)', color: 'var(--theme-accent)',
                 }}>{form.stage || 'new_lead'}</span>
               </div>
             </div>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#71717a', fontSize: '22px', cursor: 'pointer' }}>✕</button>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--theme-text-secondary)', fontSize: '22px', cursor: 'pointer' }}>✕</button>
           </div>
 
           {/* Tabs */}
@@ -184,8 +184,8 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
               <button key={t.key} onClick={() => setTab(t.key)} style={{
                 padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: tab === t.key ? 600 : 400,
                 border: 'none', cursor: 'pointer',
-                background: tab === t.key ? 'rgba(0,212,255,0.12)' : 'transparent',
-                color: tab === t.key ? '#00d4ff' : '#71717a',
+                background: tab === t.key ? 'var(--theme-accent-muted)' : 'transparent',
+                color: tab === t.key ? 'var(--theme-accent)' : 'var(--theme-text-secondary)',
               }}>{t.icon} {t.label}</button>
             ))}
           </div>
@@ -241,7 +241,7 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
 
           {tab === 'beneficiary' && (
             <>
-              <h4 style={{ margin: '0 0 12px', fontSize: '13px', color: '#a1a1aa' }}>Beneficiary Information</h4>
+              <h4 style={{ margin: '0 0 12px', fontSize: '13px', color: 'var(--theme-text-secondary)' }}>Beneficiary Information</h4>
               <div style={rowStyle}>
                 <Field label="Primary Beneficiary"><Input value={form.beneficiary} onChange={set('beneficiary')} /></Field>
                 <Field label="Relationship"><Select value={form.beneficiaryRelation} onChange={set('beneficiaryRelation')} options={RELATIONSHIPS.map(r => [r, r || '— Select —'])} /></Field>
@@ -250,7 +250,7 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
                 <Field label="Secondary Beneficiary"><Input value={form.beneficiary2} onChange={set('beneficiary2')} /></Field>
                 <Field label="Relationship"><Select value={form.beneficiary2Relation} onChange={set('beneficiary2Relation')} options={RELATIONSHIPS.map(r => [r, r || '— Select —'])} /></Field>
               </div>
-              <h4 style={{ margin: '20px 0 12px', fontSize: '13px', color: '#a1a1aa' }}>Personal Details</h4>
+              <h4 style={{ margin: '20px 0 12px', fontSize: '13px', color: 'var(--theme-text-secondary)' }}>Personal Details</h4>
               <div style={rowStyle}>
                 <Field label="Date of Birth"><Input value={form.dob} onChange={set('dob')} type="date" /></Field>
                 <Field label="SSN (Last 4)"><Input value={form.ssn} onChange={set('ssn')} maxLength={4} placeholder="****" /></Field>
@@ -263,22 +263,22 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
           )}
 
           {tab === 'progress' && (
-            <div style={{ color: '#71717a', fontSize: '13px' }}>
-              <h4 style={{ margin: '0 0 12px', color: '#a1a1aa' }}>Stage Timeline</h4>
+            <div style={{ color: 'var(--theme-text-secondary)', fontSize: '13px' }}>
+              <h4 style={{ margin: '0 0 12px', color: 'var(--theme-text-secondary)' }}>Stage Timeline</h4>
               {STAGE_OPTIONS.map(([val, label]) => {
                 const isCurrent = form.stage === val
                 const isPast = STAGE_OPTIONS.findIndex(s => s[0] === form.stage) >= STAGE_OPTIONS.findIndex(s => s[0] === val)
                 return (
                   <div key={val} style={{
                     display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0',
-                    borderLeft: `2px solid ${isPast ? '#00d4ff' : 'rgba(255,255,255,0.08)'}`, paddingLeft: '16px', marginLeft: '8px',
+                    borderLeft: `2px solid ${isPast ? 'var(--theme-accent)' : 'var(--theme-border)'}`, paddingLeft: '16px', marginLeft: '8px',
                   }}>
                     <div style={{
                       width: 10, height: 10, borderRadius: '50%', marginLeft: '-22px',
-                      background: isCurrent ? '#00d4ff' : isPast ? '#00d4ff80' : 'rgba(255,255,255,0.1)',
+                      background: isCurrent ? 'var(--theme-accent)' : isPast ? 'var(--theme-accent-muted)' : 'var(--theme-surface)',
                     }} />
-                    <span style={{ color: isCurrent ? '#00d4ff' : isPast ? '#a1a1aa' : '#52525b', fontWeight: isCurrent ? 600 : 400 }}>{label}</span>
-                    {isCurrent && <span style={{ fontSize: '10px', color: '#00d4ff' }}>← Current</span>}
+                    <span style={{ color: isCurrent ? 'var(--theme-accent)' : isPast ? 'var(--theme-text-secondary)' : 'var(--theme-text-secondary)', fontWeight: isCurrent ? 600 : 400 }}>{label}</span>
+                    {isCurrent && <span style={{ fontSize: '10px', color: 'var(--theme-accent)' }}>← Current</span>}
                   </div>
                 )
               })}
@@ -291,11 +291,11 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
                 <input style={{ ...inputStyle, flex: 1 }} value={newNote} onChange={e => setNewNote(e.target.value)} placeholder="Type a note..." onKeyDown={e => e.key === 'Enter' && addNote()} />
                 <button onClick={addNote} style={{
                   padding: '8px 16px', borderRadius: '8px', border: 'none',
-                  background: 'rgba(0,212,255,0.15)', color: '#00d4ff', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+                  background: 'var(--theme-accent-muted)', color: 'var(--theme-accent)', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
                 }}>Add</button>
               </div>
-              <div style={{ fontSize: '13px', color: '#a1a1aa', whiteSpace: 'pre-wrap' }}>
-                {form.notes || <span style={{ color: '#52525b' }}>No notes yet.</span>}
+              <div style={{ fontSize: '13px', color: 'var(--theme-text-secondary)', whiteSpace: 'pre-wrap' }}>
+                {form.notes || <span style={{ color: 'var(--theme-text-secondary)' }}>No notes yet.</span>}
               </div>
             </>
           )}
@@ -303,17 +303,17 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
 
         {/* Footer */}
         <div style={{
-          padding: '16px 28px', borderTop: '1px solid rgba(255,255,255,0.06)',
+          padding: '16px 28px', borderTop: '1px solid var(--theme-border-subtle)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <button onClick={handleDelete} style={{
-              padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.3)',
-              background: 'rgba(239,68,68,0.1)', color: '#ef4444', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+              padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--theme-error)',
+              background: 'transparent', color: 'var(--theme-error)', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
             }}>🗑️ Delete</button>
             <button onClick={() => setShowSchedule(!showSchedule)} style={{
-              padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.3)',
-              background: showSchedule ? 'rgba(0,212,255,0.2)' : 'rgba(0,212,255,0.08)', color: '#00d4ff',
+              padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--theme-accent)',
+              background: showSchedule ? 'var(--theme-accent-muted)' : 'var(--theme-accent-muted)', color: 'var(--theme-accent)',
               fontSize: '12px', fontWeight: 600, cursor: 'pointer',
             }}>📅 Schedule Call</button>
           </div>
@@ -325,7 +325,7 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
                 style={{ ...inputStyle, width: '100px', padding: '6px 8px', fontSize: '12px' }} />
               <button onClick={handleSchedule} disabled={scheduling} style={{
                 padding: '6px 14px', borderRadius: '6px', border: 'none', whiteSpace: 'nowrap',
-                background: scheduling ? '#27272a' : '#00d4ff', color: scheduling ? '#52525b' : '#000',
+                background: scheduling ? 'var(--theme-surface)' : 'var(--theme-accent)', color: scheduling ? 'var(--theme-text-secondary)' : 'var(--theme-accent-text)',
                 fontSize: '12px', fontWeight: 600, cursor: scheduling ? 'default' : 'pointer',
               }}>{scheduling ? '...' : '✓ Add'}</button>
             </div>
@@ -333,12 +333,12 @@ export default function LeadDetailModal({ lead, onClose, onUpdate, onDelete }) {
           {!showSchedule && (
             <div style={{ display: 'flex', gap: '8px' }}>
               <button onClick={onClose} style={{
-                padding: '8px 20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
-                background: 'transparent', color: '#a1a1aa', fontSize: '12px', cursor: 'pointer',
+                padding: '8px 20px', borderRadius: '8px', border: '1px solid var(--theme-border)',
+                background: 'transparent', color: 'var(--theme-text-secondary)', fontSize: '12px', cursor: 'pointer',
               }}>Cancel</button>
               <button onClick={handleSave} disabled={saving} style={{
-                padding: '8px 20px', borderRadius: '8px', border: '1px solid rgba(74,222,128,0.3)',
-                background: 'rgba(74,222,128,0.15)', color: '#4ade80', fontSize: '12px', fontWeight: 600,
+                padding: '8px 20px', borderRadius: '8px', border: '1px solid var(--theme-success)',
+                background: 'var(--theme-accent-muted)', color: 'var(--theme-success)', fontSize: '12px', fontWeight: 600,
                 cursor: 'pointer', opacity: saving ? 0.6 : 1,
               }}>{saving ? 'Saving...' : 'Save'}</button>
             </div>

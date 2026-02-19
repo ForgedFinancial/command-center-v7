@@ -1,23 +1,25 @@
 import { useState, useEffect, useCallback } from 'react'
 import { WORKER_PROXY_URL, ENDPOINTS } from '../../../../config/api'
 import { useThemeContext } from '../../../../context/ThemeContext'
+import { THEME_DEFINITIONS, THEME_ORDER } from '../../../../hooks/useTheme'
+import PhoneLinesSection from './PhoneLinesSection'
 
 const LEAD_TYPES = ['FEX', 'VETERANS', 'MORTGAGE PROTECTION', 'TRUCKERS', 'IUL']
 
 const STAGE_CONFIG = [
-  { stage: 'new_lead', label: 'New Leads', color: '#3b82f6', note: 'Auto-assign enabled' },
+  { stage: 'new_lead', label: 'New Leads', color: 'var(--theme-accent)', note: 'Auto-assign enabled' },
   { stage: 'contact', label: 'Contacted', color: '#a855f7', note: '3-day follow-up' },
-  { stage: 'engaged', label: 'Qualified', color: '#00d4ff', note: 'Manual review' },
-  { stage: 'qualified', label: 'Proposal Sent', color: '#f59e0b', note: '7-day expiry' },
+  { stage: 'engaged', label: 'Qualified', color: 'var(--theme-accent)', note: 'Manual review' },
+  { stage: 'qualified', label: 'Proposal Sent', color: 'var(--theme-phone)', note: '7-day expiry' },
   { stage: 'application', label: 'Negotiation', color: '#f97316', note: 'Alert on stale' },
-  { stage: 'sold', label: 'Won', color: '#4ade80', note: 'Triggers onboarding' },
+  { stage: 'sold', label: 'Won', color: 'var(--theme-success)', note: 'Triggers onboarding' },
 ]
 
 const cardStyle = {
   padding: '24px',
   borderRadius: '12px',
-  background: 'rgba(255,255,255,0.03)',
-  border: '1px solid rgba(255,255,255,0.06)',
+  background: 'var(--theme-surface)',
+  border: '1px solid var(--theme-border)',
   marginBottom: '16px',
 }
 
@@ -25,15 +27,15 @@ const sectionTitle = {
   margin: '0 0 16px',
   fontSize: '15px',
   fontWeight: 600,
-  color: '#e4e4e7',
+  color: 'var(--theme-text-primary)',
 }
 
 const inputStyle = {
   padding: '8px 12px',
   borderRadius: '8px',
-  border: '1px solid rgba(255,255,255,0.1)',
-  background: 'rgba(255,255,255,0.04)',
-  color: '#e4e4e7',
+  border: '1px solid var(--theme-border)',
+  background: 'var(--theme-bg)',
+  color: 'var(--theme-text-primary)',
   fontSize: '12px',
   outline: 'none',
   width: '100%',
@@ -48,9 +50,9 @@ const selectStyle = {
 const btnPrimary = {
   padding: '8px 16px',
   borderRadius: '8px',
-  border: '1px solid rgba(0,212,255,0.3)',
-  background: 'rgba(0,212,255,0.1)',
-  color: '#00d4ff',
+  border: '1px solid var(--theme-accent)',
+  background: 'var(--theme-accent-muted)',
+  color: 'var(--theme-accent)',
   fontSize: '12px',
   fontWeight: 600,
   cursor: 'pointer',
@@ -59,9 +61,9 @@ const btnPrimary = {
 const btnDanger = {
   padding: '6px 10px',
   borderRadius: '6px',
-  border: '1px solid rgba(239,68,68,0.3)',
-  background: 'rgba(239,68,68,0.1)',
-  color: '#ef4444',
+  border: '1px solid var(--theme-error)',
+  background: 'transparent',
+  color: 'var(--theme-error)',
   fontSize: '11px',
   cursor: 'pointer',
 }
@@ -77,11 +79,14 @@ function getAuthHeaders() {
 export default function CRMSettings() {
   return (
     <div>
-      <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>CRM Settings</h2>
-      <p style={{ margin: '0 0 24px', fontSize: '13px', color: '#71717a' }}>Configure your CRM preferences</p>
+      <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>CRM Settings</h2>
+      <p style={{ margin: '0 0 24px', fontSize: '13px', color: 'var(--theme-text-secondary)' }}>Configure your CRM preferences</p>
 
       <div style={{ display: 'flex', gap: '24px' }}>
         <div style={{ flex: 1 }}>
+          {/* Phone Lines */}
+          <PhoneLinesSection />
+
           {/* Appearance / Theme */}
           <ThemePicker />
 
@@ -94,16 +99,16 @@ export default function CRMSettings() {
                 alignItems: 'center',
                 padding: '10px 16px',
                 borderRadius: '8px',
-                background: 'rgba(255,255,255,0.02)',
+                background: 'var(--theme-bg)',
                 marginBottom: '6px',
               }}>
                 <span style={{
                   width: '8px', height: '8px', borderRadius: '50%',
                   background: s.color, marginRight: '12px', flexShrink: 0,
                 }} />
-                <span style={{ flex: 1, fontSize: '13px', color: '#e4e4e7' }}>{s.label}</span>
-                <span style={{ fontSize: '11px', color: '#71717a', marginRight: '12px' }}>{s.note}</span>
-                <span style={{ fontSize: '14px', color: '#52525b', cursor: 'pointer' }}>⚙️</span>
+                <span style={{ flex: 1, fontSize: '13px', color: 'var(--theme-text-primary)' }}>{s.label}</span>
+                <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginRight: '12px' }}>{s.note}</span>
+                <span style={{ fontSize: '14px', color: 'var(--theme-text-secondary)', cursor: 'pointer' }}>⚙️</span>
               </div>
             ))}
           </div>
@@ -208,17 +213,17 @@ function LeadSourcesSection() {
         <h3 style={{ ...sectionTitle, margin: 0 }}>📊 Lead Sources</h3>
         <button onClick={addSource} style={btnPrimary}>+ Add Lead Source</button>
       </div>
-      <p style={{ margin: '0 0 16px', fontSize: '12px', color: '#71717a' }}>
+      <p style={{ margin: '0 0 16px', fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
         Connect Google Sheets to automatically import leads from vendors. Set each sheet to &quot;Anyone with the link&quot; (Viewer access).
       </p>
 
-      {loading && <div style={{ fontSize: '12px', color: '#71717a', padding: '12px 0' }}>Loading...</div>}
+      {loading && <div style={{ fontSize: '12px', color: 'var(--theme-text-secondary)', padding: '12px 0' }}>Loading...</div>}
 
       {error && (
         <div style={{
           padding: '10px 14px', borderRadius: '8px', marginBottom: '12px',
-          background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)',
-          color: '#ef4444', fontSize: '12px',
+          background: 'var(--theme-bg)', border: '1px solid var(--theme-error)',
+          color: 'var(--theme-error)', fontSize: '12px',
         }}>
           {error}
         </div>
@@ -227,8 +232,8 @@ function LeadSourcesSection() {
       {success && (
         <div style={{
           padding: '10px 14px', borderRadius: '8px', marginBottom: '12px',
-          background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.2)',
-          color: '#4ade80', fontSize: '12px',
+          background: 'var(--theme-bg)', border: '1px solid var(--theme-success)',
+          color: 'var(--theme-success)', fontSize: '12px',
         }}>
           ✅ {success}
         </div>
@@ -237,7 +242,7 @@ function LeadSourcesSection() {
       {sources.length === 0 && !loading && (
         <div style={{
           padding: '24px', textAlign: 'center', borderRadius: '8px',
-          border: '1px dashed rgba(255,255,255,0.08)', color: '#52525b', fontSize: '12px',
+          border: '1px dashed var(--theme-border)', color: 'var(--theme-text-secondary)', fontSize: '12px',
         }}>
           No lead sources configured. Click &quot;Add Lead Source&quot; to connect a Google Sheet.
         </div>
@@ -247,13 +252,13 @@ function LeadSourcesSection() {
         <div key={source.id} style={{
           padding: '16px',
           borderRadius: '10px',
-          background: 'rgba(255,255,255,0.02)',
-          border: `1px solid ${source.active ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.06)'}`,
+          background: 'var(--theme-bg)',
+          border: `1px solid ${source.active ? 'var(--theme-accent)' : 'var(--theme-border)'}`,
           marginBottom: '10px',
         }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '10px', color: '#71717a', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              <label style={{ display: 'block', fontSize: '10px', color: 'var(--theme-text-secondary)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                 Vendor Name
               </label>
               <input
@@ -265,7 +270,7 @@ function LeadSourcesSection() {
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '10px', color: '#71717a', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              <label style={{ display: 'block', fontSize: '10px', color: 'var(--theme-text-secondary)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                 Lead Type
               </label>
               <select
@@ -280,7 +285,7 @@ function LeadSourcesSection() {
           </div>
 
           <div style={{ marginBottom: '10px' }}>
-            <label style={{ display: 'block', fontSize: '10px', color: '#71717a', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            <label style={{ display: 'block', fontSize: '10px', color: 'var(--theme-text-secondary)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
               Google Sheet URL
             </label>
             <input
@@ -298,7 +303,7 @@ function LeadSourcesSection() {
                 active={source.active}
                 onChange={(val) => updateSource(index, 'active', val)}
               />
-              <span style={{ fontSize: '11px', color: source.active ? '#4ade80' : '#71717a' }}>
+              <span style={{ fontSize: '11px', color: source.active ? 'var(--theme-success)' : 'var(--theme-text-secondary)' }}>
                 {source.active ? 'Active' : 'Inactive'}
               </span>
             </div>
@@ -328,13 +333,13 @@ function StatusToggle({ active, onChange }) {
       onClick={() => onChange(!active)}
       style={{
         width: '36px', height: '20px', borderRadius: '10px',
-        background: active ? '#4ade80' : 'rgba(255,255,255,0.1)',
+        background: active ? 'var(--theme-success)' : 'var(--theme-border)',
         cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
       }}
     >
       <div style={{
         width: '16px', height: '16px', borderRadius: '50%',
-        background: active ? '#fff' : '#71717a',
+        background: active ? '#fff' : 'var(--theme-text-secondary)',
         position: 'absolute', top: '2px',
         left: active ? '18px' : '2px',
         transition: 'left 0.2s',
@@ -343,52 +348,152 @@ function StatusToggle({ active, onChange }) {
   )
 }
 
+/* ============================================
+   THEME PICKER — Mini-Dashboard Previews
+   ============================================ */
 function ThemePicker() {
-  const { themeId, selectTheme, themes } = useThemeContext()
+  const { themeId, selectTheme } = useThemeContext()
+
+  const categories = [
+    { key: 'dark', label: 'DARK', ids: THEME_ORDER.dark },
+    { key: 'rich', label: 'RICH', ids: THEME_ORDER.rich },
+    { key: 'light', label: 'LIGHT', ids: THEME_ORDER.light },
+  ]
 
   return (
     <div style={cardStyle}>
-      <h3 style={sectionTitle}>🎨 Appearance</h3>
-      <p style={{ margin: '0 0 16px', fontSize: '12px', color: '#71717a' }}>
-        Choose a background theme for Command Center
+      <h3 style={sectionTitle}>🎨 Theme</h3>
+      <p style={{ margin: '0 0 20px', fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
+        Choose a theme for Command Center. Click to apply instantly.
       </p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
-        {themes.map(t => {
-          const isActive = t.id === themeId
-          const swatchBg = t.isDefault ? '#0a0a0f' : t.isGradient ? t.value : t.value
-          return (
-            <div
-              key={t.id}
-              onClick={() => selectTheme(t.id)}
-              style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
-                cursor: 'pointer',
-              }}
-            >
-              <div style={{
-                width: '48px', height: '48px', borderRadius: '12px',
-                background: swatchBg,
-                border: isActive ? '3px solid #00d4ff' : '2px solid rgba(255,255,255,0.15)',
-                boxShadow: isActive ? '0 0 12px rgba(0,212,255,0.4)' : 'none',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transition: 'all 0.15s',
-                position: 'relative',
-              }}>
-                {isActive && (
-                  <span style={{ fontSize: '18px', color: t.light ? '#000' : '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>✓</span>
-                )}
-              </div>
-              <span style={{
-                fontSize: '10px', color: isActive ? '#00d4ff' : '#71717a',
-                fontWeight: isActive ? 600 : 400, textAlign: 'center', maxWidth: '60px',
-              }}>
-                {t.name}
-              </span>
-            </div>
-          )
-        })}
-      </div>
+
+      {categories.map(cat => (
+        <div key={cat.key} style={{ marginBottom: '20px' }}>
+          <div style={{
+            fontSize: '10px', fontWeight: 700, color: 'var(--theme-text-secondary)',
+            textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px',
+          }}>
+            {cat.label}
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+            {cat.ids.map(id => (
+              <ThemeSwatch
+                key={id}
+                id={id}
+                def={THEME_DEFINITIONS[id]}
+                isActive={themeId === id}
+                onSelect={() => selectTheme(id)}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
+  )
+}
+
+function ThemeSwatch({ id, def, isActive, onSelect }) {
+  const [hovered, setHovered] = useState(false)
+  const c = def.colors
+
+  return (
+    <button
+      onClick={onSelect}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      aria-label={`${def.name} theme: ${def.vibe} (${def.category})`}
+      style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+        background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+        transform: hovered ? 'scale(1.05)' : 'scale(1)',
+        transition: 'transform 0.15s ease',
+      }}
+    >
+      {/* Mini-dashboard preview */}
+      <div style={{
+        width: '120px', height: '80px', borderRadius: '8px', overflow: 'hidden',
+        border: isActive
+          ? `2px solid ${c.accent}`
+          : '2px solid var(--theme-border)',
+        boxShadow: isActive
+          ? `0 0 12px ${c.accent}40`
+          : hovered ? '0 4px 12px rgba(0,0,0,0.3)' : 'none',
+        position: 'relative',
+        display: 'flex',
+        transition: 'border-color 0.15s, box-shadow 0.15s',
+      }}>
+        {/* Sidebar band */}
+        <div style={{
+          width: '18px', flexShrink: 0,
+          background: c.sidebar,
+          display: 'flex', flexDirection: 'column',
+          padding: '6px 3px', gap: '3px',
+        }}>
+          {/* Nav dots */}
+          <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: c.accent, margin: '0 auto' }} />
+          <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: c.textSecondary, margin: '0 auto', opacity: 0.5 }} />
+          <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: c.textSecondary, margin: '0 auto', opacity: 0.5 }} />
+        </div>
+        {/* Content area */}
+        <div style={{
+          flex: 1, background: c.bg, padding: '6px',
+          display: 'flex', flexDirection: 'column', gap: '4px',
+        }}>
+          {/* Top bar simulation */}
+          <div style={{ height: '3px', width: '60%', background: c.textSecondary, borderRadius: '2px', opacity: 0.3 }} />
+          {/* Cards */}
+          <div style={{ display: 'flex', gap: '4px', flex: 1 }}>
+            <div style={{
+              flex: 1, background: c.surface, borderRadius: '3px',
+              borderLeft: `2px solid ${c.accent}`,
+              padding: '3px',
+              display: 'flex', flexDirection: 'column', gap: '2px',
+            }}>
+              <div style={{ height: '2px', width: '70%', background: c.textPrimary, borderRadius: '1px', opacity: 0.6 }} />
+              <div style={{ height: '2px', width: '50%', background: c.textSecondary, borderRadius: '1px', opacity: 0.4 }} />
+            </div>
+            <div style={{
+              flex: 1, background: c.surface, borderRadius: '3px',
+              borderLeft: `2px solid ${c.accent}`,
+              padding: '3px',
+              display: 'flex', flexDirection: 'column', gap: '2px',
+            }}>
+              <div style={{ height: '2px', width: '60%', background: c.textPrimary, borderRadius: '1px', opacity: 0.6 }} />
+              <div style={{ height: '2px', width: '40%', background: c.textSecondary, borderRadius: '1px', opacity: 0.4 }} />
+            </div>
+          </div>
+          {/* Accent dot */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+            <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: c.accent }} />
+            <div style={{ height: '2px', width: '20px', background: c.textSecondary, borderRadius: '1px', opacity: 0.3 }} />
+          </div>
+        </div>
+
+        {/* Selected checkmark overlay */}
+        {isActive && (
+          <div style={{
+            position: 'absolute', top: '4px', right: '4px',
+            width: '16px', height: '16px', borderRadius: '50%',
+            background: c.accent, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <span style={{ fontSize: '10px', color: def.category === 'light' ? '#fff' : c.bg, lineHeight: 1 }}>✓</span>
+          </div>
+        )}
+      </div>
+
+      {/* Theme name + vibe */}
+      <div style={{ textAlign: 'center' }}>
+        <div style={{
+          fontSize: '11px', fontWeight: isActive ? 600 : 500,
+          color: isActive ? 'var(--theme-accent)' : 'var(--theme-text-primary)',
+        }}>
+          {def.emoji} {def.name}
+        </div>
+        <div style={{ fontSize: '9px', color: 'var(--theme-text-secondary)', marginTop: '1px' }}>
+          {def.vibe}
+        </div>
+      </div>
+    </button>
   )
 }
 
@@ -410,18 +515,18 @@ function NotificationToggle({ label, defaultOn = true, storageKey = null }) {
       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       marginBottom: '12px',
     }}>
-      <span style={{ fontSize: '13px', color: '#e4e4e7' }}>{label}</span>
+      <span style={{ fontSize: '13px', color: 'var(--theme-text-primary)' }}>{label}</span>
       <div
         onClick={toggle}
         style={{
           width: '36px', height: '20px', borderRadius: '10px',
-          background: on ? '#00d4ff' : 'rgba(255,255,255,0.1)',
+          background: on ? 'var(--theme-accent)' : 'var(--theme-border)',
           cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
         }}
       >
         <div style={{
           width: '16px', height: '16px', borderRadius: '50%',
-          background: on ? '#fff' : '#71717a',
+          background: on ? '#fff' : 'var(--theme-text-secondary)',
           position: 'absolute', top: '2px',
           left: on ? '18px' : '2px',
           transition: 'left 0.2s',

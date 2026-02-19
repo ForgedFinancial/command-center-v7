@@ -4,8 +4,8 @@ const btnBase = {
   fontSize: '9px',
   padding: '4px 10px',
   borderRadius: '6px',
-  border: '1px solid rgba(255,255,255,0.12)',
-  background: 'rgba(255,255,255,0.05)',
+  border: '1px solid var(--theme-border)',
+  background: 'var(--theme-surface)',
   color: 'rgba(255,255,255,0.6)',
   cursor: 'pointer',
   fontFamily: "'JetBrains Mono', monospace",
@@ -14,7 +14,7 @@ const btnBase = {
 
 const btnPrimary = {
   ...btnBase,
-  borderColor: 'rgba(0,212,255,0.3)',
+  borderColor: 'var(--theme-accent)',
   color: 'rgba(0,212,255,0.7)',
 }
 
@@ -25,7 +25,7 @@ export default function QuickActions({ agentId, onRecentOutput, onViewWorkspace,
   const getHoverStyle = (key, base) => {
     if (hoveredBtn !== key) return base
     if (key === 'send') {
-      return { ...base, background: 'rgba(0,212,255,0.1)', color: '#00d4ff', borderColor: 'rgba(0,212,255,0.5)' }
+      return { ...base, background: 'var(--theme-accent-muted)', color: 'var(--theme-accent)', borderColor: 'rgba(0,212,255,0.5)' }
     }
     return { ...base, background: 'rgba(255,255,255,0.1)', color: '#fff', borderColor: 'rgba(255,255,255,0.25)' }
   }

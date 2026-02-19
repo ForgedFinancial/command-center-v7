@@ -34,9 +34,9 @@ export default function CRMLoginForm() {
     width: '100%',
     padding: '12px 16px',
     borderRadius: '10px',
-    border: '1px solid rgba(255,255,255,0.1)',
-    background: 'rgba(255,255,255,0.04)',
-    color: '#e4e4e7',
+    border: '1px solid var(--theme-border)',
+    background: 'var(--theme-bg)',
+    color: 'var(--theme-text-primary)',
     fontSize: '14px',
     outline: 'none',
     boxSizing: 'border-box',
@@ -53,13 +53,13 @@ export default function CRMLoginForm() {
         width: '380px',
         padding: '32px',
         borderRadius: '16px',
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--theme-surface)',
+        border: '1px solid var(--theme-border-subtle)',
       }}>
-        <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700, color: '#e4e4e7', textAlign: 'center' }}>
+        <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700, color: 'var(--theme-text-primary)', textAlign: 'center' }}>
           CRM Login
         </h2>
-        <p style={{ margin: '0 0 24px', fontSize: '13px', color: '#71717a', textAlign: 'center' }}>
+        <p style={{ margin: '0 0 24px', fontSize: '13px', color: 'var(--theme-text-secondary)', textAlign: 'center' }}>
           Sign in to access your CRM data
         </p>
 
@@ -67,9 +67,9 @@ export default function CRMLoginForm() {
           <div style={{
             padding: '10px 14px',
             borderRadius: '8px',
-            background: 'rgba(239,68,68,0.1)',
-            border: '1px solid rgba(239,68,68,0.2)',
-            color: '#ef4444',
+            background: 'transparent',
+            border: '1px solid var(--theme-error)',
+            color: 'var(--theme-error)',
             fontSize: '12px',
             marginBottom: '16px',
           }}>
@@ -78,7 +78,7 @@ export default function CRMLoginForm() {
         )}
 
         <div style={{ marginBottom: '14px' }}>
-          <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#71717a', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
+          <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
             Email
           </label>
           <input
@@ -92,7 +92,7 @@ export default function CRMLoginForm() {
         </div>
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#71717a', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
+          <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
             Password
           </label>
           <input
@@ -111,9 +111,9 @@ export default function CRMLoginForm() {
             width: '100%',
             padding: '12px',
             borderRadius: '10px',
-            border: '1px solid rgba(0,212,255,0.3)',
-            background: 'rgba(0,212,255,0.15)',
-            color: '#00d4ff',
+            border: '1px solid var(--theme-accent)',
+            background: 'var(--theme-accent-muted)',
+            color: 'var(--theme-accent)',
             fontSize: '14px',
             fontWeight: 600,
             cursor: loading ? 'wait' : 'pointer',

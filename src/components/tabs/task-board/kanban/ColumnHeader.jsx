@@ -8,7 +8,7 @@ export default function ColumnHeader({ stage, count }) {
     <div style={{
       padding: '10px 14px',
       borderRadius: '10px',
-      background: 'rgba(255,255,255,0.03)',
+      background: 'var(--theme-surface)',
       border: `1px solid ${config.borderColor}`,
       display: 'flex',
       alignItems: 'center',
@@ -29,7 +29,7 @@ export default function ColumnHeader({ stage, count }) {
         padding: '2px 8px',
         borderRadius: '10px',
         background: 'rgba(255,255,255,0.06)',
-        color: '#a1a1aa',
+        color: 'var(--theme-text-secondary)',
         fontWeight: 500,
       }}>
         {count}

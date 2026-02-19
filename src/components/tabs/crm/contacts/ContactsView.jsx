@@ -20,13 +20,13 @@ function formatPhone(phone) {
 const LEAD_TYPES = ['FEX', 'VETERANS', 'MORTGAGE PROTECTION', 'TRUCKERS', 'IUL']
 
 const TAG_COLORS = {
-  'VIP Client': { color: '#4ade80', bg: 'rgba(74,222,128,0.15)' },
+  'VIP Client': { color: 'var(--theme-success)', bg: 'rgba(74,222,128,0.15)' },
   'Lead': { color: '#3b82f6', bg: 'rgba(59,130,246,0.15)' },
-  'Client': { color: '#00d4ff', bg: 'rgba(0,212,255,0.15)' },
-  'Prospect': { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)' },
+  'Client': { color: 'var(--theme-accent)', bg: 'var(--theme-accent-muted)' },
+  'Prospect': { color: 'var(--theme-phone)', bg: 'rgba(245,158,11,0.15)' },
 }
 
-const AVATAR_COLORS = ['#3b82f6', '#ef4444', '#4ade80', '#f59e0b', '#a855f7', '#ec4899', '#f97316', '#00d4ff']
+const AVATAR_COLORS = ['#3b82f6', '#ef4444', '#4ade80', '#f59e0b', '#a855f7', '#ec4899', '#f97316', 'var(--theme-accent)']
 
 function getAvatarColor(name) {
   let hash = 0
@@ -200,9 +200,9 @@ export default function ContactsView() {
   const selectStyle = {
     padding: '8px 12px',
     borderRadius: '8px',
-    border: '1px solid rgba(255,255,255,0.1)',
-    background: 'rgba(255,255,255,0.04)',
-    color: '#a1a1aa',
+    border: '1px solid var(--theme-border)',
+    background: 'var(--theme-bg)',
+    color: 'var(--theme-text-secondary)',
     fontSize: '12px',
     outline: 'none',
     cursor: 'pointer',
@@ -213,7 +213,7 @@ export default function ContactsView() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Contacts</h2>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>Contacts</h2>
           <DataSourceToggle />
           <PipelineModeToggle />
         </div>
@@ -225,8 +225,8 @@ export default function ContactsView() {
             placeholder="Search contacts..."
             style={{
               padding: '8px 14px', borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
-              color: '#e4e4e7', fontSize: '12px', outline: 'none', width: '180px',
+              border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
+              color: 'var(--theme-text-primary)', fontSize: '12px', outline: 'none', width: '180px',
             }}
           />
           <select value={leadTypeFilter} onChange={(e) => setLeadTypeFilter(e.target.value)} style={selectStyle}>
@@ -244,8 +244,8 @@ export default function ContactsView() {
               title="Customize columns"
               style={{
                 padding: '8px 10px', borderRadius: '8px',
-                border: '1px solid rgba(255,255,255,0.1)', background: showColumnPicker ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.04)',
-                color: showColumnPicker ? '#00d4ff' : '#a1a1aa', fontSize: '14px', cursor: 'pointer',
+                border: '1px solid var(--theme-border)', background: showColumnPicker ? 'var(--theme-accent-muted)' : 'rgba(255,255,255,0.04)',
+                color: showColumnPicker ? 'var(--theme-accent)' : '#a1a1aa', fontSize: '14px', cursor: 'pointer',
               }}
             >
               ⚙️
@@ -254,11 +254,11 @@ export default function ContactsView() {
               <div style={{
                 position: 'absolute', top: '100%', right: 0, marginTop: '4px',
                 width: '320px', maxHeight: '420px', overflowY: 'auto',
-                background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)',
+                background: 'var(--theme-surface)', border: '1px solid var(--theme-border)',
                 borderRadius: '10px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', zIndex: 100,
                 padding: '12px',
               }}>
-                <div style={{ fontSize: '11px', fontWeight: 600, color: '#71717a', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
                   Visible Columns
                 </div>
                 {/* Active columns — reorderable */}
@@ -275,22 +275,22 @@ export default function ContactsView() {
                       style={{
                         display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px',
                         borderRadius: '6px', marginBottom: '2px', cursor: 'grab',
-                        background: dragIdx === idx ? 'rgba(0,212,255,0.1)' : 'transparent',
+                        background: dragIdx === idx ? 'var(--theme-accent-muted)' : 'transparent',
                       }}
                     >
-                      <span style={{ fontSize: '10px', color: '#52525b', cursor: 'grab' }}>⠿</span>
-                      <span style={{ flex: 1, fontSize: '12px', color: '#e4e4e7' }}>{col.label}</span>
+                      <span style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', cursor: 'grab' }}>⠿</span>
+                      <span style={{ flex: 1, fontSize: '12px', color: 'var(--theme-text-primary)' }}>{col.label}</span>
                       <button onClick={() => moveColumn(idx, idx - 1)} disabled={idx === 0}
                         style={{ background: 'none', border: 'none', color: idx === 0 ? '#333' : '#71717a', fontSize: '10px', cursor: 'pointer', padding: '2px' }}>▲</button>
                       <button onClick={() => moveColumn(idx, idx + 1)} disabled={idx === activeColumns.length - 1}
                         style={{ background: 'none', border: 'none', color: idx === activeColumns.length - 1 ? '#333' : '#71717a', fontSize: '10px', cursor: 'pointer', padding: '2px' }}>▼</button>
                       <button onClick={() => toggleColumn(colId)}
-                        style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '11px', cursor: 'pointer', padding: '2px' }}>✕</button>
+                        style={{ background: 'none', border: 'none', color: 'var(--theme-error)', fontSize: '11px', cursor: 'pointer', padding: '2px' }}>✕</button>
                     </div>
                   )
                 })}
                 <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '10px 0' }} />
-                <div style={{ fontSize: '11px', fontWeight: 600, color: '#71717a', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
                   Available Columns
                 </div>
                 {ALL_COLUMNS.filter(c => !activeColumns.includes(c.id)).map(col => (
@@ -301,17 +301,17 @@ export default function ContactsView() {
                       display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px',
                       borderRadius: '6px', cursor: 'pointer', marginBottom: '2px',
                     }}
-                    onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                    onMouseOver={(e) => e.currentTarget.style.background = 'var(--theme-bg)'}
                     onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                   >
-                    <span style={{ fontSize: '12px', color: '#4ade80' }}>+</span>
-                    <span style={{ fontSize: '12px', color: '#a1a1aa' }}>{col.label}</span>
+                    <span style={{ fontSize: '12px', color: 'var(--theme-success)' }}>+</span>
+                    <span style={{ fontSize: '12px', color: 'var(--theme-text-secondary)' }}>{col.label}</span>
                   </div>
                 ))}
                 <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'flex-end' }}>
                   <button
                     onClick={() => { setActiveColumns(DEFAULT_COLUMNS); saveColumnConfig(DEFAULT_COLUMNS) }}
-                    style={{ fontSize: '10px', color: '#71717a', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                    style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
                   >Reset to Default</button>
                 </div>
               </div>
@@ -320,8 +320,8 @@ export default function ContactsView() {
           <button
             style={{
               padding: '8px 16px', borderRadius: '8px',
-              border: '1px solid rgba(0,212,255,0.3)', background: 'rgba(0,212,255,0.1)',
-              color: '#00d4ff', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+              border: '1px solid var(--theme-accent)', background: 'var(--theme-accent-muted)',
+              color: 'var(--theme-accent)', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
             }}
           >
             + Add Contact
@@ -338,7 +338,7 @@ export default function ContactsView() {
         <>
           <div style={{
             borderRadius: '10px',
-            border: '1px solid rgba(255,255,255,0.06)',
+            border: '1px solid var(--theme-border-subtle)',
             overflow: 'auto',
             flex: 1,
             minHeight: 0,
@@ -348,11 +348,11 @@ export default function ContactsView() {
               display: 'grid',
               gridTemplateColumns: gridTemplate,
               padding: '10px 16px',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              borderBottom: '1px solid var(--theme-border-subtle)',
               fontSize: '10px',
               textTransform: 'uppercase',
               letterSpacing: '1.5px',
-              color: '#52525b',
+              color: 'var(--theme-text-secondary)',
               fontWeight: 600,
               position: 'sticky',
               top: 0,
@@ -367,7 +367,7 @@ export default function ContactsView() {
 
             {/* Rows */}
             {paginatedLeads.map(lead => {
-              const tagStyle = lead.tags?.[0] ? TAG_COLORS[lead.tags[0]] || { color: '#71717a', bg: 'rgba(113,113,122,0.15)' } : null
+              const tagStyle = lead.tags?.[0] ? TAG_COLORS[lead.tags[0]] || { color: 'var(--theme-text-secondary)', bg: 'rgba(113,113,122,0.15)' } : null
               return (
                 <div key={lead.id}>
                 <div
@@ -375,7 +375,7 @@ export default function ContactsView() {
                     display: 'grid',
                     gridTemplateColumns: gridTemplate,
                     padding: '12px 16px',
-                    borderBottom: '1px solid rgba(255,255,255,0.03)',
+                    borderBottom: '1px solid var(--theme-border-subtle)',
                     cursor: 'pointer',
                     transition: 'background 0.15s',
                     alignItems: 'center',
@@ -397,12 +397,12 @@ export default function ContactsView() {
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: '10px', fontWeight: 700, color: '#fff', flexShrink: 0,
                           }}>{getInitials(lead.name || '?')}</div>
-                          <span style={{ fontSize: '13px', fontWeight: 500, color: '#e4e4e7' }}>{lead.name}</span>
+                          <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--theme-text-primary)' }}>{lead.name}</span>
                           {!seenLeads.has(lead.id) && (
                             <span style={{
                               fontSize: '9px', fontWeight: 700, color: '#0ff', letterSpacing: '1px',
                               padding: '1px 6px', borderRadius: '4px',
-                              background: 'rgba(0,255,255,0.15)', border: '1px solid rgba(0,255,255,0.3)',
+                              background: 'var(--theme-accent-muted)', border: '1px solid var(--theme-accent)',
                               animation: 'cc7-pulse 1.5s ease-in-out infinite',
                             }}>NEW</span>
                           )}
@@ -412,7 +412,7 @@ export default function ContactsView() {
                     // Phone column with dial button
                     if (col.id === 'phone') {
                       return (
-                        <span key={col.id} style={{ fontSize: '12px', color: '#a1a1aa', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span key={col.id} style={{ fontSize: '12px', color: 'var(--theme-text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           {formatPhone(lead.phone) || '—'}
                           {lead.phone && (
                             <span onClick={(e) => { e.stopPropagation(); handleDial(lead) }}
@@ -440,7 +440,7 @@ export default function ContactsView() {
                     }
                     // Default
                     return (
-                      <span key={col.id} style={{ fontSize: '12px', color: '#a1a1aa', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <span key={col.id} style={{ fontSize: '12px', color: 'var(--theme-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {col.accessor(lead)}
                       </span>
                     )
@@ -450,8 +450,8 @@ export default function ContactsView() {
                     onClick={(e) => handleDeleteLead(lead.id, lead.name, e)}
                     title="Delete lead"
                     style={{
-                      background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)',
-                      color: '#ef4444', fontSize: '14px', cursor: 'pointer',
+                      background: 'transparent', border: '1px solid var(--theme-error)',
+                      color: 'var(--theme-error)', fontSize: '14px', cursor: 'pointer',
                       padding: '3px 6px', borderRadius: '6px', lineHeight: 1,
                       transition: 'all 0.15s',
                     }}
@@ -464,7 +464,7 @@ export default function ContactsView() {
                     gridColumn: '1 / -1',
                     padding: '16px 20px',
                     background: 'rgba(0,212,255,0.02)',
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    borderBottom: '1px solid var(--theme-border-subtle)',
                   }}>
                     <div style={{ display: 'flex', gap: '4px', marginBottom: '16px' }}>
                       {['info', 'activity'].map(tab => (
@@ -473,9 +473,9 @@ export default function ContactsView() {
                           onClick={(e) => { e.stopPropagation(); setDetailTab(tab) }}
                           style={{
                             padding: '5px 14px', borderRadius: '6px', fontSize: '11px', fontWeight: 500,
-                            border: '1px solid ' + (detailTab === tab ? 'rgba(0,212,255,0.3)' : 'transparent'),
-                            background: detailTab === tab ? 'rgba(0,212,255,0.1)' : 'transparent',
-                            color: detailTab === tab ? '#00d4ff' : '#71717a',
+                            border: '1px solid ' + (detailTab === tab ? 'var(--theme-accent)' : 'transparent'),
+                            background: detailTab === tab ? 'var(--theme-accent-muted)' : 'transparent',
+                            color: detailTab === tab ? 'var(--theme-accent)' : '#71717a',
                             cursor: 'pointer', textTransform: 'capitalize',
                           }}
                         >
@@ -485,15 +485,15 @@ export default function ContactsView() {
                     </div>
                     {detailTab === 'info' ? (
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', fontSize: '12px' }}>
-                        <div><span style={{ color: '#71717a' }}>Email:</span> <span style={{ color: '#e4e4e7' }}>{lead.email || '—'}</span></div>
-                        <div><span style={{ color: '#71717a' }}>Phone:</span> <span style={{ color: '#e4e4e7' }}>{formatPhone(lead.phone) || '—'}</span>
+                        <div><span style={{ color: 'var(--theme-text-secondary)' }}>Email:</span> <span style={{ color: 'var(--theme-text-primary)' }}>{lead.email || '—'}</span></div>
+                        <div><span style={{ color: 'var(--theme-text-secondary)' }}>Phone:</span> <span style={{ color: 'var(--theme-text-primary)' }}>{formatPhone(lead.phone) || '—'}</span>
                           {lead.phone && <span onClick={(e) => { e.stopPropagation(); handleDial(lead) }} style={{ cursor: 'pointer', marginLeft: '6px' }}>📞</span>}
                         </div>
-                        <div><span style={{ color: '#71717a' }}>Company:</span> <span style={{ color: '#e4e4e7' }}>{lead.carrier || '—'}</span></div>
-                        <div><span style={{ color: '#71717a' }}>Lead Type:</span> <span style={{ color: '#e4e4e7' }}>{lead.leadType || '—'}</span></div>
-                        <div><span style={{ color: '#71717a' }}>Stage:</span> <span style={{ color: '#e4e4e7' }}>{lead.stage || '—'}</span></div>
-                        <div><span style={{ color: '#71717a' }}>Tags:</span> <span style={{ color: '#e4e4e7' }}>{lead.tags?.join(', ') || '—'}</span></div>
-                        <div><span style={{ color: '#71717a' }}>Value:</span> <span style={{ color: '#e4e4e7' }}>{lead.value || lead.premium ? `$${lead.value || lead.premium}` : '—'}</span></div>
+                        <div><span style={{ color: 'var(--theme-text-secondary)' }}>Company:</span> <span style={{ color: 'var(--theme-text-primary)' }}>{lead.carrier || '—'}</span></div>
+                        <div><span style={{ color: 'var(--theme-text-secondary)' }}>Lead Type:</span> <span style={{ color: 'var(--theme-text-primary)' }}>{lead.leadType || '—'}</span></div>
+                        <div><span style={{ color: 'var(--theme-text-secondary)' }}>Stage:</span> <span style={{ color: 'var(--theme-text-primary)' }}>{lead.stage || '—'}</span></div>
+                        <div><span style={{ color: 'var(--theme-text-secondary)' }}>Tags:</span> <span style={{ color: 'var(--theme-text-primary)' }}>{lead.tags?.join(', ') || '—'}</span></div>
+                        <div><span style={{ color: 'var(--theme-text-secondary)' }}>Value:</span> <span style={{ color: 'var(--theme-text-primary)' }}>{lead.value || lead.premium ? `$${lead.value || lead.premium}` : '—'}</span></div>
                       </div>
                     ) : (
                       <ContactActivityTimeline contactId={lead.id} />
@@ -516,18 +516,18 @@ export default function ContactsView() {
                 disabled={page <= 1}
                 style={{
                   padding: '6px 12px', borderRadius: '6px',
-                  border: '1px solid rgba(255,255,255,0.1)', background: 'transparent',
+                  border: '1px solid var(--theme-border)', background: 'transparent',
                   color: page <= 1 ? '#52525b' : '#a1a1aa', fontSize: '11px',
                   cursor: page <= 1 ? 'default' : 'pointer',
                 }}
               >← Prev</button>
-              <span style={{ fontSize: '11px', color: '#71717a' }}>Page {page} of {totalPages}</span>
+              <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>Page {page} of {totalPages}</span>
               <button
                 onClick={() => actions.setPage(Math.min(totalPages, page + 1))}
                 disabled={page >= totalPages}
                 style={{
                   padding: '6px 12px', borderRadius: '6px',
-                  border: '1px solid rgba(255,255,255,0.1)', background: 'transparent',
+                  border: '1px solid var(--theme-border)', background: 'transparent',
                   color: page >= totalPages ? '#52525b' : '#a1a1aa', fontSize: '11px',
                   cursor: page >= totalPages ? 'default' : 'pointer',
                 }}

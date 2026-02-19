@@ -9,11 +9,11 @@ export default function EmptyState({ icon = '📋', title, message, action }) {
       textAlign: 'center',
     }}>
       <span style={{ fontSize: '48px', marginBottom: '16px' }}>{icon}</span>
-      <h3 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 600, color: '#e4e4e7' }}>
+      <h3 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 600, color: 'var(--theme-text-primary)' }}>
         {title}
       </h3>
       {message && (
-        <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#71717a', maxWidth: '320px' }}>
+        <p style={{ margin: '0 0 16px', fontSize: '13px', color: 'var(--theme-text-secondary)', maxWidth: '320px' }}>
           {message}
         </p>
       )}

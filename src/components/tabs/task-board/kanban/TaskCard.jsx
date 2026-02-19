@@ -13,7 +13,7 @@ export default function TaskCard({ task }) {
     opacity: isDragging ? 0.5 : task.stage === 'completed' ? 0.7 : 1,
     padding: '14px 16px',
     borderRadius: '10px',
-    background: isDragging ? 'rgba(0,212,255,0.06)' : 'rgba(255,255,255,0.03)',
+    background: isDragging ? 'var(--theme-accent-muted)' : 'rgba(255,255,255,0.03)',
     border: isDragging ? '1px solid rgba(0,212,255,0.2)' : '1px solid rgba(255,255,255,0.06)',
     cursor: 'grab',
     marginBottom: '6px',
@@ -31,7 +31,7 @@ export default function TaskCard({ task }) {
       onClick={() => actions.setSelectedTask(task)}
     >
       {/* Title */}
-      <div style={{ fontSize: '12px', fontWeight: 500, color: '#e4e4e7', marginBottom: '8px', lineHeight: 1.4 }}>
+      <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--theme-text-primary)', marginBottom: '8px', lineHeight: 1.4 }}>
         {task.title}
       </div>
 
@@ -59,7 +59,7 @@ export default function TaskCard({ task }) {
 
       {/* Start time */}
       {task.startTime && (
-        <div style={{ fontSize: '10px', color: '#71717a', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
           {new Date(task.startTime) > new Date() ? '🕐' : '▶️'}
           <span>
             {new Date(task.startTime) > new Date() ? 'Starts' : 'Started'}{' '}
@@ -71,7 +71,7 @@ export default function TaskCard({ task }) {
 
       {/* Due date */}
       {task.dueDate && (
-        <div style={{ fontSize: '10px', color: '#71717a', marginTop: task.startTime ? '4px' : '8px' }}>
+        <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', marginTop: task.startTime ? '4px' : '8px' }}>
           Due {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
         </div>
       )}

@@ -18,9 +18,9 @@ export default function ProjectsGrid() {
             style={{
               padding: '8px 16px',
               borderRadius: '8px',
-              border: '1px solid rgba(0,212,255,0.3)',
-              background: 'rgba(0,212,255,0.1)',
-              color: '#00d4ff',
+              border: '1px solid var(--theme-accent)',
+              background: 'var(--theme-accent-muted)',
+              color: 'var(--theme-accent)',
               fontSize: '12px',
               fontWeight: 600,
               cursor: 'pointer',

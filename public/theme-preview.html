@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CC v7 Theme Preview</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #e5e5e5; padding: 20px; }
+h1 { text-align: center; font-size: 28px; margin-bottom: 8px; }
+.subtitle { text-align: center; color: #888; margin-bottom: 32px; font-size: 14px; }
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; max-width: 1200px; margin: 0 auto; }
+@media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+
+.theme-card { border-radius: 12px; overflow: hidden; border: 1px solid #333; transition: transform 0.2s; }
+.theme-card:hover { transform: scale(1.02); }
+.theme-label { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+.theme-name { font-size: 18px; font-weight: 700; }
+.theme-vibe { font-size: 12px; opacity: 0.6; }
+.theme-category { font-size: 11px; padding: 3px 8px; border-radius: 99px; font-weight: 600; }
+
+/* Mini dashboard preview */
+.preview { display: flex; height: 180px; }
+.preview-sidebar { width: 48px; padding: 10px 6px; display: flex; flex-direction: column; gap: 6px; }
+.sidebar-item { height: 6px; border-radius: 3px; opacity: 0.4; }
+.sidebar-item.active { opacity: 1; }
+.preview-main { flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.preview-topbar { height: 16px; display: flex; align-items: center; gap: 6px; border-radius: 4px; padding: 0 6px; }
+.topbar-dot { width: 6px; height: 6px; border-radius: 50%; }
+.topbar-text { height: 4px; width: 40px; border-radius: 2px; opacity: 0.5; }
+.preview-content { flex: 1; display: flex; gap: 6px; }
+.preview-card { flex: 1; border-radius: 6px; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+.card-title { height: 5px; width: 60%; border-radius: 2px; }
+.card-phone { height: 5px; width: 50%; border-radius: 2px; font-size: 0; }
+.card-text { height: 4px; width: 80%; border-radius: 2px; opacity: 0.5; }
+.card-badge { height: 10px; width: 36px; border-radius: 3px; font-size: 7px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; }
+.card-text2 { height: 4px; width: 65%; border-radius: 2px; opacity: 0.3; }
+.preview-status { display: flex; gap: 6px; margin-top: auto; }
+.status-pill { height: 10px; border-radius: 5px; flex: 1; opacity: 0.8; }
+</style>
+</head>
+<body>
+
+<h1>🎨 CC v7 Premium Themes</h1>
+<p class="subtitle">10 themes — each with full color systems, verified contrast ratios, and eye-strain optimization</p>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const themes = [
+  {
+    name: "Obsidian", emoji: "⬛🔵", vibe: "Professional Focus", category: "Dark", rec: true,
+    bg: "#0f172a", surface: "#1e293b", surfaceHover: "#253348", sidebar: "#0b1120", sidebarHover: "#131d35",
+    text1: "#f1f5f9", text2: "#94a3b8", accent: "#3b82f6", accentHover: "#60a5fa", accentMuted: "#1e3a5f",
+    border: "#334155", success: "#22c55e", warning: "#f59e0b", error: "#ef4444", phone: "#f59e0b"
+  },
+  {
+    name: "Deep Ocean", emoji: "🌊", vibe: "Oceanic Depth", category: "Rich",
+    bg: "#0a1628", surface: "#122240", surfaceHover: "#183058", sidebar: "#06101e", sidebarHover: "#0d1a30",
+    text1: "#e0f2fe", text2: "#7dd3fc", accent: "#0ea5e9", accentHover: "#38bdf8", accentMuted: "#0c4a6e",
+    border: "#1e3a5f", success: "#22c55e", warning: "#f59e0b", error: "#f87171", phone: "#f59e0b"
+  },
+  {
+    name: "Phantom", emoji: "👻", vibe: "Minimal Power", category: "Dark",
+    bg: "#101010", surface: "#1a1a1a", surfaceHover: "#242424", sidebar: "#0a0a0a", sidebarHover: "#151515",
+    text1: "#e5e5e5", text2: "#a3a3a3", accent: "#a78bfa", accentHover: "#c4b5fd", accentMuted: "#2e1065",
+    border: "#2a2a2a", success: "#22c55e", warning: "#f59e0b", error: "#ef4444", phone: "#f59e0b"
+  },
+  {
+    name: "Midnight Ember", emoji: "🌹", vibe: "Warm Noir", category: "Rich",
+    bg: "#1a1015", surface: "#261a20", surfaceHover: "#32222a", sidebar: "#140c10", sidebarHover: "#201420",
+    text1: "#fce4ec", text2: "#c48b9f", accent: "#f472b6", accentHover: "#f9a8d4", accentMuted: "#831843",
+    border: "#3d2530", success: "#4ade80", warning: "#fbbf24", error: "#fb7185", phone: "#f59e0b"
+  },
+  {
+    name: "Evergreen", emoji: "🌲", vibe: "Forest Calm", category: "Rich",
+    bg: "#0c1a14", surface: "#152e22", surfaceHover: "#1e3d2e", sidebar: "#081410", sidebarHover: "#10241a",
+    text1: "#ecfdf5", text2: "#86efac", accent: "#34d399", accentHover: "#6ee7b7", accentMuted: "#064e3b",
+    border: "#1e4a35", success: "#4ade80", warning: "#fbbf24", error: "#f87171", phone: "#f59e0b"
+  },
+  {
+    name: "Titanium", emoji: "⚙️", vibe: "Carbon Steel", category: "Dark",
+    bg: "#18181b", surface: "#27272a", surfaceHover: "#323236", sidebar: "#111114", sidebarHover: "#1e1e22",
+    text1: "#fafafa", text2: "#a1a1aa", accent: "#f97316", accentHover: "#fb923c", accentMuted: "#7c2d12",
+    border: "#3f3f46", success: "#22c55e", warning: "#eab308", error: "#ef4444", phone: "#f59e0b"
+  },
+  {
+    name: "Aurora", emoji: "🌌", vibe: "Cosmic Violet", category: "Rich",
+    bg: "#0f0f23", surface: "#191933", surfaceHover: "#222244", sidebar: "#0a0a1a", sidebarHover: "#141428",
+    text1: "#e8e8f0", text2: "#9898c8", accent: "#818cf8", accentHover: "#a5b4fc", accentMuted: "#312e81",
+    border: "#2d2d50", success: "#34d399", warning: "#fbbf24", error: "#f87171", phone: "#f59e0b"
+  },
+  {
+    name: "Noir Gold", emoji: "👑", vibe: "Black Luxury", category: "Dark",
+    bg: "#0d0d0d", surface: "#1a1a1a", surfaceHover: "#242424", sidebar: "#080808", sidebarHover: "#141414",
+    text1: "#f5f5f5", text2: "#a3a3a3", accent: "#eab308", accentHover: "#facc15", accentMuted: "#713f12",
+    border: "#2a2a2a", success: "#22c55e", warning: "#f59e0b", error: "#ef4444", phone: "#f59e0b"
+  },
+  {
+    name: "Sandstorm", emoji: "☀️", vibe: "Warm Paper", category: "Light",
+    bg: "#faf7f2", surface: "#ffffff", surfaceHover: "#f5f0e8", sidebar: "#f0ebe3", sidebarHover: "#e8e0d4",
+    text1: "#1c1917", text2: "#57534e", accent: "#b45309", accentHover: "#92400e", accentMuted: "#fef3c7",
+    border: "#d6d3d1", success: "#15803d", warning: "#a16207", error: "#dc2626", phone: "#b45309"
+  },
+  {
+    name: "Arctic", emoji: "❄️", vibe: "Crisp Clarity", category: "Light",
+    bg: "#f8fafc", surface: "#ffffff", surfaceHover: "#f1f5f9", sidebar: "#f1f5f9", sidebarHover: "#e2e8f0",
+    text1: "#0f172a", text2: "#475569", accent: "#0369a1", accentHover: "#075985", accentMuted: "#e0f2fe",
+    border: "#cbd5e1", success: "#15803d", warning: "#a16207", error: "#dc2626", phone: "#b45309"
+  }
+];
+
+const grid = document.getElementById('grid');
+
+themes.forEach(t => {
+  const catColor = t.category === 'Dark' ? '#3b82f6' : t.category === 'Rich' ? '#a78bfa' : '#f59e0b';
+  const catBg = t.category === 'Dark' ? '#1e3a5f' : t.category === 'Rich' ? '#2e1065' : '#713f12';
+  
+  grid.innerHTML += `
+    <div class="theme-card" style="border-color: ${t.border}">
+      <div class="preview" style="background: ${t.bg}">
+        <div class="preview-sidebar" style="background: ${t.sidebar}; border-right: 1px solid ${t.border}">
+          <div class="sidebar-item active" style="background: ${t.accent}"></div>
+          <div class="sidebar-item" style="background: ${t.text2}"></div>
+          <div class="sidebar-item" style="background: ${t.text2}"></div>
+          <div class="sidebar-item" style="background: ${t.text2}"></div>
+          <div class="sidebar-item" style="background: ${t.text2}"></div>
+        </div>
+        <div class="preview-main">
+          <div class="preview-topbar" style="background: ${t.surface}; border: 1px solid ${t.border}">
+            <div class="topbar-dot" style="background: ${t.accent}"></div>
+            <div class="topbar-text" style="background: ${t.text2}"></div>
+            <div class="topbar-text" style="background: ${t.text2}; width: 30px; margin-left: auto;"></div>
+          </div>
+          <div class="preview-content">
+            <div class="preview-card" style="background: ${t.surface}; border: 1px solid ${t.border}">
+              <div class="card-badge" style="background: ${t.accentMuted}; color: ${t.accent}">NEW</div>
+              <div class="card-title" style="background: ${t.text1}"></div>
+              <div class="card-phone" style="background: ${t.phone}"></div>
+              <div class="card-text" style="background: ${t.text2}"></div>
+              <div class="card-text2" style="background: ${t.text2}"></div>
+            </div>
+            <div class="preview-card" style="background: ${t.surface}; border: 1px solid ${t.border}">
+              <div class="card-badge" style="background: ${t.success}; color: white; width: 30px;">WON</div>
+              <div class="card-title" style="background: ${t.text1}"></div>
+              <div class="card-phone" style="background: ${t.phone}"></div>
+              <div class="card-text" style="background: ${t.text2}"></div>
+              <div class="card-text2" style="background: ${t.text2}"></div>
+            </div>
+            <div class="preview-card" style="background: ${t.surface}; border: 1px solid ${t.border}">
+              <div class="card-badge" style="background: ${t.error}; color: white; width: 40px;">LOST</div>
+              <div class="card-title" style="background: ${t.text1}"></div>
+              <div class="card-phone" style="background: ${t.phone}"></div>
+              <div class="card-text" style="background: ${t.text2}"></div>
+              <div class="card-text2" style="background: ${t.text2}"></div>
+            </div>
+          </div>
+          <div class="preview-status">
+            <div class="status-pill" style="background: ${t.success}"></div>
+            <div class="status-pill" style="background: ${t.warning}"></div>
+            <div class="status-pill" style="background: ${t.error}"></div>
+            <div class="status-pill" style="background: ${t.accent}"></div>
+          </div>
+        </div>
+      </div>
+      <div class="theme-label" style="background: ${t.surface}; border-top: 1px solid ${t.border}">
+        <div>
+          <span class="theme-name" style="color: ${t.text1}">${t.emoji} ${t.name}</span>
+          ${t.rec ? '<span style="color: #22c55e; font-size: 11px; margin-left: 8px;">★ RECOMMENDED</span>' : ''}
+          <div class="theme-vibe" style="color: ${t.text2}">${t.vibe}</div>
+        </div>
+        <span class="theme-category" style="background: ${catBg}; color: ${catColor}">${t.category}</span>
+      </div>
+    </div>
+  `;
+});
+</script>
+
+</body>
+</html>

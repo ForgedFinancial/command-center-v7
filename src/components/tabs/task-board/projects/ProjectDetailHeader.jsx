@@ -1,7 +1,7 @@
 import { useTaskBoard } from '../../../../context/TaskBoardContext'
 
 const STATUS_COLORS = {
-  active: '#00d4ff',
+  active: 'var(--theme-accent)',
   planning: '#f59e0b',
   completed: '#4ade80',
   archived: '#71717a',
@@ -20,7 +20,7 @@ export default function ProjectDetailHeader({ project }) {
         style={{
           background: 'none',
           border: 'none',
-          color: '#71717a',
+          color: 'var(--theme-text-secondary)',
           fontSize: '12px',
           cursor: 'pointer',
           padding: '0',
@@ -29,7 +29,7 @@ export default function ProjectDetailHeader({ project }) {
           alignItems: 'center',
           gap: '4px',
         }}
-        onMouseOver={(e) => { e.currentTarget.style.color = '#00d4ff' }}
+        onMouseOver={(e) => { e.currentTarget.style.color = 'var(--theme-accent)' }}
         onMouseOut={(e) => { e.currentTarget.style.color = '#71717a' }}
       >
         ← Projects
@@ -37,11 +37,11 @@ export default function ProjectDetailHeader({ project }) {
 
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
-          <h2 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>
+          <h2 style={{ margin: '0 0 6px', fontSize: '20px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>
             {project.name}
           </h2>
           {project.description && (
-            <p style={{ margin: 0, fontSize: '13px', color: '#71717a' }}>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--theme-text-secondary)' }}>
               {project.description}
             </p>
           )}

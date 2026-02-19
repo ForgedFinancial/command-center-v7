@@ -47,17 +47,17 @@ export default function DocumentsView() {
   const templateCount = state.documents.filter(d => d.category === 'attachment').length
 
   const statCards = [
-    { label: 'Total Files', value: totalFiles, color: '#00d4ff' },
+    { label: 'Total Files', value: totalFiles, color: 'var(--theme-accent)' },
     { label: 'Specs', value: specCount, color: '#a855f7' },
     { label: 'Reports', value: reportCount, color: '#f59e0b' },
-    { label: 'Templates', value: templateCount, color: '#4ade80' },
+    { label: 'Templates', value: templateCount, color: 'var(--theme-success)' },
   ]
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Documents</h2>
+        <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>Documents</h2>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <input
             type="text"
@@ -67,9 +67,9 @@ export default function DocumentsView() {
             style={{
               padding: '8px 14px',
               borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: 'rgba(255,255,255,0.04)',
-              color: '#e4e4e7',
+              border: '1px solid var(--theme-border)',
+              background: 'var(--theme-bg)',
+              color: 'var(--theme-text-primary)',
               fontSize: '12px',
               outline: 'none',
               width: '180px',
@@ -79,9 +79,9 @@ export default function DocumentsView() {
             style={{
               padding: '8px 16px',
               borderRadius: '8px',
-              border: '1px solid rgba(0,212,255,0.3)',
-              background: 'rgba(0,212,255,0.1)',
-              color: '#00d4ff',
+              border: '1px solid var(--theme-accent)',
+              background: 'var(--theme-accent-muted)',
+              color: 'var(--theme-accent)',
               fontSize: '12px',
               fontWeight: 600,
               cursor: 'pointer',
@@ -103,12 +103,12 @@ export default function DocumentsView() {
           <div key={card.label} style={{
             padding: '16px 20px',
             borderRadius: '12px',
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.06)',
+            background: 'var(--theme-surface)',
+            border: '1px solid var(--theme-border-subtle)',
             textAlign: 'center',
           }}>
             <div style={{ fontSize: '24px', fontWeight: 700, color: card.color }}>{card.value}</div>
-            <div style={{ fontSize: '11px', color: '#71717a', marginTop: '4px' }}>{card.label}</div>
+            <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginTop: '4px' }}>{card.label}</div>
           </div>
         ))}
       </div>
@@ -136,7 +136,7 @@ export default function DocumentsView() {
                   alignItems: 'center',
                   padding: '14px 18px',
                   borderRadius: '10px',
-                  background: 'rgba(255,255,255,0.02)',
+                  background: 'var(--theme-bg)',
                   border: '1px solid rgba(255,255,255,0.04)',
                   marginBottom: '6px',
                   cursor: 'pointer',
@@ -160,8 +160,8 @@ export default function DocumentsView() {
                   {icon}
                 </span>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '13px', fontWeight: 500, color: '#e4e4e7' }}>{doc.name}</div>
-                  <div style={{ fontSize: '11px', color: '#52525b', marginTop: '2px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--theme-text-primary)' }}>{doc.name}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginTop: '2px' }}>
                     {doc.mimeType || 'Markdown'}
                     {doc.size ? ` • ${formatSize(doc.size)}` : ''}
                     {doc.createdAt && ` • Updated ${timeAgo(doc.createdAt)}`}

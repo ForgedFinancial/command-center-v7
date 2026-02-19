@@ -1,10 +1,10 @@
 import { useTaskBoard } from '../../../../context/TaskBoardContext'
 
 const STATUS_COLORS = {
-  active: { color: '#00d4ff', bg: 'rgba(0,212,255,0.1)' },
+  active: { color: 'var(--theme-accent)', bg: 'var(--theme-accent-muted)' },
   planning: { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-  completed: { color: '#4ade80', bg: 'rgba(74,222,128,0.1)' },
-  archived: { color: '#71717a', bg: 'rgba(113,113,122,0.1)' },
+  completed: { color: 'var(--theme-success)', bg: 'rgba(74,222,128,0.1)' },
+  archived: { color: 'var(--theme-text-secondary)', bg: 'rgba(113,113,122,0.1)' },
 }
 
 export default function ProjectCard({ project }) {
@@ -26,13 +26,13 @@ export default function ProjectCard({ project }) {
       style={{
         padding: '20px',
         borderRadius: '12px',
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--theme-surface)',
+        border: '1px solid var(--theme-border-subtle)',
         cursor: 'pointer',
         transition: 'all 0.15s',
       }}
       onMouseOver={(e) => {
-        e.currentTarget.style.borderColor = 'rgba(0,212,255,0.2)'
+        e.currentTarget.style.borderColor = 'var(--theme-accent)'
         e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
       }}
       onMouseOut={(e) => {
@@ -42,7 +42,7 @@ export default function ProjectCard({ project }) {
     >
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-        <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#e4e4e7' }}>
+        <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: 'var(--theme-text-primary)' }}>
           {project.name}
         </h3>
         <span style={{
@@ -60,7 +60,7 @@ export default function ProjectCard({ project }) {
         <p style={{
           margin: '0 0 12px',
           fontSize: '12px',
-          color: '#71717a',
+          color: 'var(--theme-text-secondary)',
           lineHeight: 1.4,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -73,7 +73,7 @@ export default function ProjectCard({ project }) {
       )}
 
       {/* Stats */}
-      <div style={{ display: 'flex', gap: '16px', fontSize: '11px', color: '#71717a', marginBottom: '12px' }}>
+      <div style={{ display: 'flex', gap: '16px', fontSize: '11px', color: 'var(--theme-text-secondary)', marginBottom: '12px' }}>
         <span>📋 {projectTasks.length} tasks</span>
         {agents.length > 0 && <span>👥 {agents.length} agents</span>}
         {project.createdAt && (
@@ -91,7 +91,7 @@ export default function ProjectCard({ project }) {
         <div style={{
           height: '100%',
           width: `${progress}%`,
-          background: project.status === 'completed' ? '#4ade80' : '#00d4ff',
+          background: project.status === 'completed' ? '#4ade80' : 'var(--theme-accent)',
           borderRadius: '2px',
           transition: 'width 0.3s',
         }} />

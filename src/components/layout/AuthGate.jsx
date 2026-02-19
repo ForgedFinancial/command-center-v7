@@ -91,7 +91,7 @@ function BootSequence({ onComplete }) {
       <div style={{
         width: lineExpanded ? '60%' : '0%',
         height: '2px',
-        backgroundColor: '#00d4ff',
+        backgroundColor: 'var(--theme-accent)',
         boxShadow: '0 0 15px #00d4ff, 0 0 30px rgba(0,212,255,0.4), 0 0 60px rgba(0,212,255,0.2)',
         transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
         marginBottom: '40px',
@@ -99,7 +99,7 @@ function BootSequence({ onComplete }) {
 
       <div style={{
         fontSize: '18px',
-        color: '#00d4ff',
+        color: 'var(--theme-accent)',
         letterSpacing: '2px',
         marginBottom: '32px',
         minHeight: '28px',
@@ -121,7 +121,7 @@ function BootSequence({ onComplete }) {
           <div key={i} style={{ color: 'rgba(255,255,255,0.5)' }}>
             {msg.text}
             {msg.showOk && (
-              <span style={{ color: '#4ade80', marginLeft: '8px', fontWeight: 600 }}>OK</span>
+              <span style={{ color: 'var(--theme-success)', marginLeft: '8px', fontWeight: 600 }}>OK</span>
             )}
           </div>
         ))}
@@ -157,7 +157,7 @@ function WelcomeScreen({ onComplete }) {
       <div style={{
         fontSize: '28px',
         fontWeight: 700,
-        color: '#00d4ff',
+        color: 'var(--theme-accent)',
         letterSpacing: '3px',
         textShadow: '0 0 20px rgba(0,212,255,0.6), 0 0 40px rgba(0,212,255,0.3)',
         marginBottom: '16px',
@@ -279,7 +279,7 @@ export default function AuthGate({ onAuth }) {
           width: '24px',
           height: '24px',
           border: '2px solid rgba(255,255,255,0.1)',
-          borderTopColor: '#00d4ff',
+          borderTopColor: 'var(--theme-accent)',
           borderRadius: '50%',
           animation: 'spin 1s linear infinite',
         }} />
@@ -316,7 +316,7 @@ export default function AuthGate({ onAuth }) {
           <h1 style={{
             fontSize: '24px',
             fontWeight: '600',
-            color: '#00d4ff',
+            color: 'var(--theme-accent)',
             marginTop: '16px',
             marginBottom: '4px',
             fontFamily: "'JetBrains Mono', monospace",
@@ -447,7 +447,7 @@ export default function AuthGate({ onAuth }) {
           {error && lockoutRemaining <= 0 && (
             <p style={{
               fontSize: '14px',
-              color: '#ef4444',
+              color: 'var(--theme-error)',
               marginBottom: '16px',
             }}>
               {error}
@@ -462,7 +462,7 @@ export default function AuthGate({ onAuth }) {
               padding: '14px 18px',
               fontSize: '16px',
               fontWeight: '500',
-              backgroundColor: lockoutRemaining > 0 ? '#555' : '#00d4ff',
+              backgroundColor: lockoutRemaining > 0 ? 'var(--theme-surface)' : 'var(--theme-accent)',
               color: '#0a0a0f',
               border: 'none',
               borderRadius: '10px',
@@ -472,7 +472,7 @@ export default function AuthGate({ onAuth }) {
               letterSpacing: '1px',
             }}
             onMouseOver={(e) => { if (lockoutRemaining <= 0) e.target.style.backgroundColor = '#33ddff' }}
-            onMouseOut={(e) => { if (lockoutRemaining <= 0) e.target.style.backgroundColor = '#00d4ff' }}
+            onMouseOut={(e) => { if (lockoutRemaining <= 0) e.target.style.backgroundColor = 'var(--theme-accent)' }}
           >
             AUTHENTICATE
           </button>

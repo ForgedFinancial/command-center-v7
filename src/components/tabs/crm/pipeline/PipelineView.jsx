@@ -66,7 +66,7 @@ const STAGE_LABELS = {
 const STAGE_COLORS = {
   new_lead: '#3b82f6',
   contact: '#a855f7',
-  engaged: '#00d4ff',
+  engaged: 'var(--theme-accent)',
   qualified: '#f59e0b',
   proposal: '#f97316',
   sold: '#4ade80',
@@ -202,17 +202,17 @@ export default function PipelineView() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Pipeline</h2>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>Pipeline</h2>
           <button
             onClick={() => setShowCardSettings(true)}
             title="Customize card fields"
             style={{
-              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
+              background: 'var(--theme-bg)', border: '1px solid var(--theme-border)',
               borderRadius: '8px', padding: '6px 10px', cursor: 'pointer',
-              fontSize: '14px', color: '#a1a1aa', transition: 'all 0.15s',
+              fontSize: '14px', color: 'var(--theme-text-secondary)', transition: 'all 0.15s',
             }}
-            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#e4e4e7' }}
-            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#a1a1aa' }}
+            onMouseOver={(e) => { e.currentTarget.style.background = 'var(--theme-surface-hover)'; e.currentTarget.style.color = 'var(--theme-text-primary)' }}
+            onMouseOut={(e) => { e.currentTarget.style.background = 'var(--theme-bg)'; e.currentTarget.style.color = 'var(--theme-text-secondary)' }}
           >⚙️</button>
           <PipelineModeToggle />
         </div>
@@ -222,8 +222,8 @@ export default function PipelineView() {
             onChange={(e) => setLeadTypeFilter(e.target.value)}
             style={{
               padding: '8px 12px', borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
-              color: '#a1a1aa', fontSize: '12px', outline: 'none', cursor: 'pointer',
+              border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
+              color: 'var(--theme-text-secondary)', fontSize: '12px', outline: 'none', cursor: 'pointer',
             }}
           >
             <option value="">All Lead Types</option>
@@ -231,13 +231,13 @@ export default function PipelineView() {
           </select>
           <button onClick={() => setShowUpload(true)} style={{
             padding: '8px 16px', borderRadius: '8px',
-            border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
-            color: '#a1a1aa', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+            border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
+            color: 'var(--theme-text-secondary)', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
           }}>📤 Upload Leads</button>
           <button onClick={() => setShowNewLead(true)} style={{
             padding: '8px 16px', borderRadius: '8px',
-            border: '1px solid rgba(0,212,255,0.3)', background: 'rgba(0,212,255,0.1)',
-            color: '#00d4ff', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+            border: '1px solid var(--theme-accent)', background: 'var(--theme-accent-muted)',
+            color: 'var(--theme-accent)', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
           }}>+ New Lead</button>
         </div>
       </div>
@@ -264,11 +264,11 @@ export default function PipelineView() {
               {/* Column header */}
               <div style={{
                 padding: '12px 14px', borderRadius: '10px 10px 0 0',
-                background: 'rgba(255,255,255,0.03)',
+                background: 'var(--theme-surface)',
                 borderBottom: `2px solid ${col.color}30`,
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#e4e4e7' }}>{col.label}</span>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--theme-text-primary)' }}>{col.label}</span>
                   {col.leads.length > 0 && (
                     <span style={{
                       fontSize: '10px', padding: '2px 8px', borderRadius: '6px',
@@ -277,7 +277,7 @@ export default function PipelineView() {
                   )}
                 </div>
                 {col.totalValue > 0 && (
-                  <div style={{ fontSize: '11px', color: '#71717a', marginTop: '4px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginTop: '4px' }}>
                     ${col.totalValue.toLocaleString()}
                   </div>
                 )}
@@ -333,7 +333,7 @@ export default function PipelineView() {
 // Field renderer for dynamic card fields
 function renderCardField(key, lead) {
   const age = lead.dob ? Math.floor((Date.now() - new Date(lead.dob).getTime()) / 31557600000) : null
-  const fieldStyle = { fontSize: '11px', color: '#71717a', marginBottom: '2px' }
+  const fieldStyle = { fontSize: '11px', color: 'var(--theme-text-secondary)', marginBottom: '2px' }
 
   switch (key) {
     case 'leadType':
@@ -351,7 +351,7 @@ function renderCardField(key, lead) {
       return <div key={key} style={fieldStyle}>🎂 {lead.dob}{age != null ? ` (${age})` : ''}</div>
     case 'phone':
       if (!lead.phone) return null
-      return <div key={key} style={{ fontSize: '12px', color: '#f59e0b', fontWeight: 700, marginBottom: '2px' }}>📞 {formatPhone(lead.phone)}</div>
+      return <div key={key} style={{ fontSize: '12px', color: 'var(--theme-phone)', fontWeight: 700, marginBottom: '2px' }}>📞 {formatPhone(lead.phone)}</div>
     case 'email':
       if (!lead.email) return null
       return <div key={key} style={fieldStyle}>✉️ {lead.email}</div>
@@ -402,7 +402,7 @@ function renderCardField(key, lead) {
       return <div key={key} style={fieldStyle}>📝 {lead.notes.length > 50 ? lead.notes.slice(0, 50) + '…' : lead.notes}</div>
     case 'createdAt':
       if (!lead.createdAt) return null
-      return <div key={key} style={{ fontSize: '10px', color: '#f59e0b', marginBottom: '2px', fontWeight: 500 }}>🕐 {formatLeadDate(lead.createdAt)}</div>
+      return <div key={key} style={{ fontSize: '10px', color: 'var(--theme-phone)', marginBottom: '2px', fontWeight: 500 }}>🕐 {formatLeadDate(lead.createdAt)}</div>
     default:
       return null
   }
@@ -426,7 +426,7 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
   }
 
   const actionBtnStyle = {
-    background: 'none', border: '1px solid rgba(255,255,255,0.08)',
+    background: 'none', border: '1px solid var(--theme-border)',
     borderRadius: '6px', padding: '4px 8px', cursor: 'pointer',
     fontSize: '12px', transition: 'all 0.15s', lineHeight: 1,
   }
@@ -440,8 +440,8 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
       onMouseLeave={handleHoverEnd}
       style={{
         padding: '10px 12px', borderRadius: '8px',
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--theme-surface)',
+        border: '1px solid var(--theme-border-subtle)',
         marginBottom: '8px', cursor: 'grab',
         transition: 'all 0.15s', position: 'relative',
       }}
@@ -467,7 +467,7 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
         style={{
           position: 'absolute', top: '6px', right: '6px',
           background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)',
-          color: '#ef4444', fontSize: '14px', cursor: 'pointer',
+          color: 'var(--theme-error)', fontSize: '14px', cursor: 'pointer',
           padding: '3px 6px', borderRadius: '6px', lineHeight: 1,
           transition: 'all 0.15s',
         }}
@@ -476,10 +476,10 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
       >🗑️</button>
 
       {/* Name + AP (always shown) */}
-      <div style={{ fontSize: '13px', fontWeight: 600, color: '#e4e4e7', marginBottom: '4px', paddingRight: '28px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--theme-text-primary)', marginBottom: '4px', paddingRight: '28px', display: 'flex', alignItems: 'center', gap: '6px' }}>
         {lead.name || 'Unknown'}
         {Number(lead.premium) > 0 && (
-          <span style={{ fontSize: '11px', fontWeight: 700, color: '#4ade80' }}>
+          <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--theme-success)' }}>
             (${(Number(lead.premium) * 12).toLocaleString()})
           </span>
         )}
@@ -489,25 +489,25 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
       {cardFields.map(key => renderCardField(key, lead))}
 
       {/* Time ago */}
-      <div style={{ fontSize: '10px', color: '#52525b', marginTop: '2px' }}>
+      <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', marginTop: '2px' }}>
         {lead.createdAt ? timeAgo(lead.createdAt) : ''}
       </div>
 
       {/* Action Buttons — Phone, Video, Message */}
       {lead.phone && (
-        <div style={{ display: 'flex', gap: '4px', marginTop: '8px', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '8px' }}>
+        <div style={{ display: 'flex', gap: '4px', marginTop: '8px', borderTop: '1px solid var(--theme-border-subtle)', paddingTop: '8px' }}>
           <button
             onClick={(e) => onPhoneCall(lead, e)}
             title="Phone call"
-            style={{ ...actionBtnStyle, color: '#4ade80' }}
+            style={{ ...actionBtnStyle, color: 'var(--theme-success)' }}
             onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(74,222,128,0.1)'; e.currentTarget.style.borderColor = 'rgba(74,222,128,0.3)' }}
             onMouseOut={(e) => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
           >📞</button>
           <button
             onClick={(e) => onVideoCall(lead, e)}
             title="Video call"
-            style={{ ...actionBtnStyle, color: '#00d4ff' }}
-            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(0,212,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(0,212,255,0.3)' }}
+            style={{ ...actionBtnStyle, color: 'var(--theme-accent)' }}
+            onMouseOver={(e) => { e.currentTarget.style.background = 'var(--theme-accent-muted)'; e.currentTarget.style.borderColor = 'var(--theme-accent)' }}
             onMouseOut={(e) => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
           >📹</button>
           <button
@@ -552,37 +552,37 @@ function CardFieldSettings({ fields, onSave, onClose }) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex',
+      position: 'fixed', inset: 0, background: 'var(--theme-modal-overlay)', display: 'flex',
       alignItems: 'center', justifyContent: 'center', zIndex: 1000,
     }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{
         width: '440px', maxHeight: '80vh', overflow: 'auto',
-        background: '#1a1a2e', borderRadius: '16px',
-        border: '1px solid rgba(255,255,255,0.08)', padding: '24px',
+        background: 'var(--theme-surface)', borderRadius: '16px',
+        border: '1px solid var(--theme-border)', padding: '24px',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#e4e4e7' }}>⚙️ Card Fields</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#71717a', fontSize: '18px', cursor: 'pointer' }}>✕</button>
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>⚙️ Card Fields</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--theme-text-secondary)', fontSize: '18px', cursor: 'pointer' }}>✕</button>
         </div>
-        <div style={{ fontSize: '11px', color: '#71717a', marginBottom: '12px' }}>
+        <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginBottom: '12px' }}>
           Select up to {MAX_CUSTOM_FIELDS} fields. Name and Date/Time are always shown. Drag order = card order.
         </div>
 
         {/* Selected fields with reorder */}
         {selected.length > 0 && (
           <div style={{ marginBottom: '16px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active Fields ({selected.length}/{MAX_CUSTOM_FIELDS})</div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active Fields ({selected.length}/{MAX_CUSTOM_FIELDS})</div>
             {selected.map((key, idx) => {
               const field = ALL_CARD_FIELDS.find(f => f.key === key)
               if (!field) return null
               return (
                 <div key={key} style={{
                   display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px',
-                  background: 'rgba(0,212,255,0.06)', border: '1px solid rgba(0,212,255,0.15)',
+                  background: 'var(--theme-accent-muted)', border: '1px solid var(--theme-accent)',
                   borderRadius: '8px', marginBottom: '4px',
                 }}>
                   <span style={{ fontSize: '13px' }}>{field.icon}</span>
-                  <span style={{ flex: 1, fontSize: '12px', color: '#e4e4e7', fontWeight: 500 }}>{field.label}</span>
+                  <span style={{ flex: 1, fontSize: '12px', color: 'var(--theme-text-primary)', fontWeight: 500 }}>{field.label}</span>
                   <button onClick={() => moveUp(idx)} disabled={idx === 0} style={{
                     background: 'none', border: 'none', color: idx === 0 ? '#333' : '#71717a',
                     cursor: idx === 0 ? 'default' : 'pointer', fontSize: '12px', padding: '2px 4px',
@@ -592,7 +592,7 @@ function CardFieldSettings({ fields, onSave, onClose }) {
                     cursor: idx === selected.length - 1 ? 'default' : 'pointer', fontSize: '12px', padding: '2px 4px',
                   }}>▼</button>
                   <button onClick={() => toggle(key)} style={{
-                    background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '12px', padding: '2px 4px',
+                    background: 'none', border: 'none', color: 'var(--theme-error)', cursor: 'pointer', fontSize: '12px', padding: '2px 4px',
                   }}>✕</button>
                 </div>
               )
@@ -601,28 +601,28 @@ function CardFieldSettings({ fields, onSave, onClose }) {
         )}
 
         {/* Available fields */}
-        <div style={{ fontSize: '11px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Available Fields</div>
+        <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Available Fields</div>
         {ALL_CARD_FIELDS.filter(f => !isSelected(f.key)).map(field => (
           <div key={field.key} onClick={() => toggle(field.key)} style={{
             display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px',
-            background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)',
+            background: 'var(--theme-bg)', border: '1px solid var(--theme-border-subtle)',
             borderRadius: '8px', marginBottom: '4px', cursor: selected.length >= MAX_CUSTOM_FIELDS ? 'default' : 'pointer',
             opacity: selected.length >= MAX_CUSTOM_FIELDS ? 0.4 : 1,
           }}>
             <span style={{ fontSize: '13px' }}>{field.icon}</span>
-            <span style={{ flex: 1, fontSize: '12px', color: '#a1a1aa' }}>{field.label}</span>
-            <span style={{ fontSize: '11px', color: '#4ade80' }}>+ Add</span>
+            <span style={{ flex: 1, fontSize: '12px', color: 'var(--theme-text-secondary)' }}>{field.label}</span>
+            <span style={{ fontSize: '11px', color: 'var(--theme-success)' }}>+ Add</span>
           </div>
         ))}
 
         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }}>
           <button onClick={onClose} style={{
-            padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
-            background: 'transparent', color: '#a1a1aa', fontSize: '12px', cursor: 'pointer',
+            padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--theme-border)',
+            background: 'transparent', color: 'var(--theme-text-secondary)', fontSize: '12px', cursor: 'pointer',
           }}>Cancel</button>
           <button onClick={() => { onSave(selected.length > 0 ? selected : DEFAULT_CARD_FIELDS) }} style={{
-            padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.3)',
-            background: 'rgba(0,212,255,0.15)', color: '#00d4ff', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+            padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--theme-accent)',
+            background: 'var(--theme-accent-muted)', color: 'var(--theme-accent)', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
           }}>Save</button>
         </div>
       </div>
@@ -695,48 +695,48 @@ function UploadLeadsModal({ onClose, actions }) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex',
+      position: 'fixed', inset: 0, background: 'var(--theme-modal-overlay)', display: 'flex',
       alignItems: 'center', justifyContent: 'center', zIndex: 1000,
     }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{
         width: '560px', maxHeight: '80vh', overflow: 'auto',
-        background: '#1a1a2e', borderRadius: '16px',
-        border: '1px solid rgba(255,255,255,0.08)', padding: '32px',
+        background: 'var(--theme-surface)', borderRadius: '16px',
+        border: '1px solid var(--theme-border)', padding: '32px',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#e4e4e7' }}>Upload Leads</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#71717a', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>Upload Leads</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--theme-text-secondary)', fontSize: '20px', cursor: 'pointer' }}>✕</button>
         </div>
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Assign to Pipeline</label>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Assign to Pipeline</label>
           <div style={{ display: 'flex', gap: '4px' }}>
             {[['new', '🆕 New Leads'], ['aged', '📜 Aged Leads']].map(([val, label]) => (
               <button key={val} onClick={() => setPipeline(val)} style={{
                 flex: 1, padding: '10px', borderRadius: '8px', fontSize: '13px', fontWeight: pipeline === val ? 600 : 400,
-                border: `1px solid ${pipeline === val ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.08)'}`,
-                background: pipeline === val ? 'rgba(0,212,255,0.1)' : 'transparent',
-                color: pipeline === val ? '#00d4ff' : '#71717a', cursor: 'pointer',
+                border: `1px solid ${pipeline === val ? 'var(--theme-accent)' : 'rgba(255,255,255,0.08)'}`,
+                background: pipeline === val ? 'var(--theme-accent-muted)' : 'transparent',
+                color: pipeline === val ? 'var(--theme-accent)' : '#71717a', cursor: 'pointer',
               }}>{label}</button>
             ))}
           </div>
         </div>
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Lead Type</label>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Lead Type</label>
           <select value={leadType} onChange={e => setLeadType(e.target.value)} style={{
             width: '100%', padding: '10px 14px', borderRadius: '8px',
-            border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
-            color: '#e4e4e7', fontSize: '13px', outline: 'none',
+            border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
+            color: 'var(--theme-text-primary)', fontSize: '13px', outline: 'none',
           }}>
             <option value="">— Select Lead Type —</option>
             {LEAD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Starting Stage</label>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Starting Stage</label>
           <select value={stage} onChange={e => setStage(e.target.value)} style={{
             width: '100%', padding: '10px 14px', borderRadius: '8px',
-            border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
-            color: '#e4e4e7', fontSize: '13px', outline: 'none',
+            border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
+            color: 'var(--theme-text-primary)', fontSize: '13px', outline: 'none',
           }}>
             {['new_lead', 'contact', 'engaged', 'qualified', 'proposal', 'sold'].map(s => (
               <option key={s} value={s}>{{new_lead:'New Leads',contact:'Contacted',engaged:'Engaged',qualified:'Qualified',proposal:'Proposal',sold:'Won'}[s]}</option>
@@ -744,28 +744,28 @@ function UploadLeadsModal({ onClose, actions }) {
           </select>
         </div>
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>CSV File</label>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>CSV File</label>
           <div onClick={() => fileRef.current?.click()} style={{
-            padding: '32px', borderRadius: '10px', border: '2px dashed rgba(255,255,255,0.1)',
-            background: 'rgba(255,255,255,0.02)', textAlign: 'center', cursor: 'pointer',
+            padding: '32px', borderRadius: '10px', border: '2px dashed var(--theme-border)',
+            background: 'var(--theme-bg)', textAlign: 'center', cursor: 'pointer',
           }}>
             <div style={{ fontSize: '28px', marginBottom: '8px' }}>📄</div>
-            <div style={{ fontSize: '13px', color: '#a1a1aa' }}>{preview ? preview.fileName : 'Click to select CSV file'}</div>
-            <div style={{ fontSize: '11px', color: '#52525b', marginTop: '4px' }}>Columns: name, phone, email, state, notes</div>
+            <div style={{ fontSize: '13px', color: 'var(--theme-text-secondary)' }}>{preview ? preview.fileName : 'Click to select CSV file'}</div>
+            <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginTop: '4px' }}>Columns: name, phone, email, state, notes</div>
             <input ref={fileRef} type="file" accept=".csv" onChange={handleFile} style={{ display: 'none' }} />
           </div>
         </div>
         {preview && (
           <div style={{ marginBottom: '16px' }}>
-            <div style={{ fontSize: '12px', color: '#4ade80', marginBottom: '8px' }}>✅ {preview.rows.length} leads found</div>
-            <div style={{ maxHeight: '150px', overflow: 'auto', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)', fontSize: '11px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--theme-success)', marginBottom: '8px' }}>✅ {preview.rows.length} leads found</div>
+            <div style={{ maxHeight: '150px', overflow: 'auto', borderRadius: '8px', border: '1px solid var(--theme-border-subtle)', fontSize: '11px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead><tr>{preview.headers.slice(0, 4).map(h => (
-                  <th key={h} style={{ padding: '6px 10px', textAlign: 'left', color: '#71717a', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>{h}</th>
+                  <th key={h} style={{ padding: '6px 10px', textAlign: 'left', color: 'var(--theme-text-secondary)', borderBottom: '1px solid var(--theme-border-subtle)' }}>{h}</th>
                 ))}</tr></thead>
                 <tbody>{preview.rows.slice(0, 5).map((r, i) => (
                   <tr key={i}>{preview.headers.slice(0, 4).map(h => (
-                    <td key={h} style={{ padding: '6px 10px', color: '#a1a1aa', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>{r[h]}</td>
+                    <td key={h} style={{ padding: '6px 10px', color: 'var(--theme-text-secondary)', borderBottom: '1px solid var(--theme-border-subtle)' }}>{r[h]}</td>
                   ))}</tr>
                 ))}</tbody>
               </table>
@@ -773,16 +773,16 @@ function UploadLeadsModal({ onClose, actions }) {
           </div>
         )}
         {result && (
-          <div style={{ padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.2)', color: '#4ade80', fontSize: '13px' }}>
+          <div style={{ padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.2)', color: 'var(--theme-success)', fontSize: '13px' }}>
             ✅ {result.count} leads uploaded
           </div>
         )}
         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#a1a1aa', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+          <button onClick={onClose} style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid var(--theme-border)', background: 'transparent', color: 'var(--theme-text-secondary)', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
           <button onClick={handleUpload} disabled={!preview || uploading} style={{
-            padding: '10px 20px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.3)',
-            background: preview ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.04)',
-            color: preview ? '#00d4ff' : '#52525b', fontSize: '13px', fontWeight: 600,
+            padding: '10px 20px', borderRadius: '8px', border: '1px solid var(--theme-accent)',
+            background: preview ? 'var(--theme-accent-muted)' : 'rgba(255,255,255,0.04)',
+            color: preview ? 'var(--theme-accent)' : '#52525b', fontSize: '13px', fontWeight: 600,
             cursor: preview ? 'pointer' : 'default', opacity: uploading ? 0.6 : 1,
           }}>{uploading ? 'Uploading...' : 'Upload'}</button>
         </div>
@@ -844,27 +844,27 @@ function NewLeadModal({ onClose, actions }) {
 
   const inputStyle = {
     width: '100%', padding: '10px 14px', borderRadius: '8px',
-    border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
-    color: '#e4e4e7', fontSize: '13px', outline: 'none',
+    border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
+    color: 'var(--theme-text-primary)', fontSize: '13px', outline: 'none',
   }
   const labelStyle = {
-    display: 'block', fontSize: '11px', fontWeight: 600, color: '#71717a',
+    display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)',
     marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px',
   }
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex',
+      position: 'fixed', inset: 0, background: 'var(--theme-modal-overlay)', display: 'flex',
       alignItems: 'center', justifyContent: 'center', zIndex: 1000,
     }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{
         width: '520px', maxHeight: '85vh', overflow: 'auto',
-        background: '#1a1a2e', borderRadius: '16px',
-        border: '1px solid rgba(255,255,255,0.08)', padding: '32px',
+        background: 'var(--theme-surface)', borderRadius: '16px',
+        border: '1px solid var(--theme-border)', padding: '32px',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#e4e4e7' }}>+ New Lead</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#71717a', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>+ New Lead</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--theme-text-secondary)', fontSize: '20px', cursor: 'pointer' }}>✕</button>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -939,14 +939,14 @@ function NewLeadModal({ onClose, actions }) {
         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '24px' }}>
           <button onClick={onClose} style={{
             padding: '10px 20px', borderRadius: '8px',
-            border: '1px solid rgba(255,255,255,0.1)', background: 'transparent',
-            color: '#a1a1aa', fontSize: '13px', cursor: 'pointer',
+            border: '1px solid var(--theme-border)', background: 'transparent',
+            color: 'var(--theme-text-secondary)', fontSize: '13px', cursor: 'pointer',
           }}>Cancel</button>
           <button onClick={handleSave} disabled={saving || (!form.name && !form.phone)} style={{
             padding: '10px 20px', borderRadius: '8px',
-            border: '1px solid rgba(0,212,255,0.3)',
-            background: (form.name || form.phone) ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.04)',
-            color: (form.name || form.phone) ? '#00d4ff' : '#52525b',
+            border: '1px solid var(--theme-accent)',
+            background: (form.name || form.phone) ? 'var(--theme-accent-muted)' : 'rgba(255,255,255,0.04)',
+            color: (form.name || form.phone) ? 'var(--theme-accent)' : '#52525b',
             fontSize: '13px', fontWeight: 600, cursor: (form.name || form.phone) ? 'pointer' : 'default',
             opacity: saving ? 0.6 : 1,
           }}>{saving ? 'Saving...' : 'Create Lead'}</button>

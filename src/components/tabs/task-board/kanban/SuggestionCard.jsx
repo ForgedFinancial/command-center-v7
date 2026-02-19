@@ -55,8 +55,8 @@ export default function SuggestionCard({ task }) {
           onClick={handleApprove}
           style={{
             flex: 1, padding: '5px', fontSize: '10px', borderRadius: '6px',
-            border: '1px solid rgba(74,222,128,0.3)', background: 'rgba(74,222,128,0.1)',
-            color: '#4ade80', cursor: 'pointer', fontWeight: 500,
+            border: '1px solid var(--theme-success)', background: 'var(--theme-accent-muted)',
+            color: 'var(--theme-success)', cursor: 'pointer', fontWeight: 500,
           }}
         >
           ✓ Approve
@@ -65,8 +65,8 @@ export default function SuggestionCard({ task }) {
           onClick={handleDismiss}
           style={{
             flex: 1, padding: '5px', fontSize: '10px', borderRadius: '6px',
-            border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)',
-            color: '#71717a', cursor: 'pointer', fontWeight: 500,
+            border: '1px solid var(--theme-border)', background: 'var(--theme-surface)',
+            color: 'var(--theme-text-secondary)', cursor: 'pointer', fontWeight: 500,
           }}
         >
           ✕ Dismiss

@@ -30,7 +30,7 @@ export default function KanbanColumn({ stage, tasks }) {
       }}>
         <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.length === 0 && (
-            <div style={{ padding: '16px 8px', textAlign: 'center', fontSize: '11px', color: '#71717a' }}>
+            <div style={{ padding: '16px 8px', textAlign: 'center', fontSize: '11px', color: 'var(--theme-text-secondary)' }}>
               No tasks yet
             </div>
           )}

@@ -73,7 +73,7 @@ export default function TaskDetailModal() {
           </button>
           <button
             onClick={handleApprove}
-            style={{ padding: '8px 16px', fontSize: '12px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.3)', background: 'rgba(0,212,255,0.1)', color: '#00d4ff', cursor: 'pointer', fontWeight: 500 }}
+            style={{ padding: '8px 16px', fontSize: '12px', borderRadius: '8px', border: '1px solid rgba(0,212,255,0.3)', background: 'var(--theme-accent-muted)', color: 'var(--theme-accent)', cursor: 'pointer', fontWeight: 500 }}
           >
             Approve
           </button>

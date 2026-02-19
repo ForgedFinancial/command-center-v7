@@ -1,6 +1,7 @@
 // ========================================
 // FEATURE: Sidebar
 // Config-driven left sidebar for Task Board + CRM
+// Theme-aware via CSS custom properties
 // ========================================
 
 export default function Sidebar({ items, activeItem, onSelect }) {
@@ -8,8 +9,8 @@ export default function Sidebar({ items, activeItem, onSelect }) {
     <aside style={{
       width: '220px',
       flexShrink: 0,
-      borderRight: '1px solid rgba(255,255,255,0.06)',
-      background: 'rgba(15,15,26,0.95)',
+      borderRight: '1px solid var(--theme-border)',
+      background: 'var(--theme-sidebar)',
       display: 'flex',
       flexDirection: 'column',
       padding: '16px 12px',
@@ -19,7 +20,7 @@ export default function Sidebar({ items, activeItem, onSelect }) {
         fontSize: '11px',
         textTransform: 'uppercase',
         letterSpacing: '1.5px',
-        color: '#71717a',
+        color: 'var(--theme-text-secondary)',
         fontWeight: 600,
         padding: '0 16px',
         marginBottom: '12px',
@@ -39,8 +40,8 @@ export default function Sidebar({ items, activeItem, onSelect }) {
               padding: '10px 16px',
               borderRadius: '8px',
               border: 'none',
-              background: isActive ? 'rgba(0,212,255,0.08)' : 'transparent',
-              color: isActive ? '#00d4ff' : '#a1a1aa',
+              background: isActive ? 'var(--theme-accent-muted)' : 'transparent',
+              color: isActive ? 'var(--theme-accent)' : 'var(--theme-text-secondary)',
               fontSize: '14px',
               fontWeight: isActive ? 500 : 400,
               cursor: 'pointer',
@@ -50,14 +51,14 @@ export default function Sidebar({ items, activeItem, onSelect }) {
             }}
             onMouseOver={(e) => {
               if (!isActive) {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
-                e.currentTarget.style.color = '#e4e4e7'
+                e.currentTarget.style.background = 'var(--theme-sidebar-hover)'
+                e.currentTarget.style.color = 'var(--theme-text-primary)'
               }
             }}
             onMouseOut={(e) => {
               if (!isActive) {
                 e.currentTarget.style.background = 'transparent'
-                e.currentTarget.style.color = '#a1a1aa'
+                e.currentTarget.style.color = 'var(--theme-text-secondary)'
               }
             }}
           >
@@ -70,8 +71,8 @@ export default function Sidebar({ items, activeItem, onSelect }) {
                 fontSize: '10px',
                 padding: '2px 7px',
                 borderRadius: '10px',
-                background: 'rgba(255,255,255,0.08)',
-                color: '#a1a1aa',
+                background: 'var(--theme-surface)',
+                color: 'var(--theme-text-secondary)',
                 fontWeight: 500,
               }}>
                 {item.badge}

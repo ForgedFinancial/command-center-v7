@@ -10,15 +10,15 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
           padding: '6px 12px',
           fontSize: '12px',
           borderRadius: '6px',
-          border: '1px solid rgba(255,255,255,0.08)',
-          background: 'rgba(255,255,255,0.03)',
+          border: '1px solid var(--theme-border)',
+          background: 'var(--theme-surface)',
           color: currentPage <= 1 ? '#71717a' : '#e4e4e7',
           cursor: currentPage <= 1 ? 'not-allowed' : 'pointer',
         }}
       >
         ← Prev
       </button>
-      <span style={{ fontSize: '12px', color: '#a1a1aa' }}>
+      <span style={{ fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
         {currentPage} of {totalPages}
       </span>
       <button
@@ -28,8 +28,8 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
           padding: '6px 12px',
           fontSize: '12px',
           borderRadius: '6px',
-          border: '1px solid rgba(255,255,255,0.08)',
-          background: 'rgba(255,255,255,0.03)',
+          border: '1px solid var(--theme-border)',
+          background: 'var(--theme-surface)',
           color: currentPage >= totalPages ? '#71717a' : '#e4e4e7',
           cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer',
         }}

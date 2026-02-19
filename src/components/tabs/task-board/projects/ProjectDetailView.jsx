@@ -23,7 +23,7 @@ export default function ProjectDetailView() {
         display: 'flex',
         gap: '4px',
         marginBottom: '24px',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        borderBottom: '1px solid var(--theme-border-subtle)',
         paddingBottom: '0',
       }}>
         {TABS.map(tab => {
@@ -38,7 +38,7 @@ export default function ProjectDetailView() {
                 border: 'none',
                 borderBottom: isActive ? '2px solid #00d4ff' : '2px solid transparent',
                 background: 'none',
-                color: isActive ? '#00d4ff' : '#71717a',
+                color: isActive ? 'var(--theme-accent)' : '#71717a',
                 fontSize: '12px',
                 fontWeight: isActive ? 600 : 400,
                 cursor: 'pointer',

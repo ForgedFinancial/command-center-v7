@@ -25,7 +25,7 @@ function renderPreviewLine(line, i) {
   if (line.startsWith('#')) {
     const text = line.replace(/^#+\s*/, '')
     return (
-      <div key={i} style={{ color: '#00d4ff', fontWeight: '700', fontSize: '10px', lineHeight: '1.5' }}>
+      <div key={i} style={{ color: 'var(--theme-accent)', fontWeight: '700', fontSize: '10px', lineHeight: '1.5' }}>
         {text}
       </div>
     )
@@ -226,7 +226,7 @@ function DailyLogs({ agentId, onViewLog }) {
                 padding: '8px 12px',
                 borderRadius: '6px',
                 cursor: 'pointer',
-                background: 'rgba(255,255,255,0.03)',
+                background: 'var(--theme-surface)',
                 border: '1px solid var(--border-color, rgba(255,255,255,0.06))',
                 transition: 'border-color 0.15s',
               }}
@@ -467,7 +467,7 @@ function AgentRow({ id, selected, onSelect, indent }) {
         transition: 'background 0.15s',
       }}
       onMouseEnter={(e) => {
-        if (!selected) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
+        if (!selected) e.currentTarget.style.background = 'var(--theme-bg)'
       }}
       onMouseLeave={(e) => {
         if (!selected) e.currentTarget.style.background = 'transparent'

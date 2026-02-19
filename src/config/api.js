@@ -75,4 +75,4 @@ export const ENDPOINTS = {
   authCheck: '/api/auth/check',
 }
 
-export const POLL_INTERVAL_MS = 15000 // 15 seconds
+export const POLL_INTERVAL_MS = 60000 // 60 seconds (was 15s)

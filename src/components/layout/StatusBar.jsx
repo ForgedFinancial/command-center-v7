@@ -47,7 +47,7 @@ export default function StatusBar({ onToggleHealth }) {
   const statusColor = state.isConnected
     ? 'var(--accent, var(--status-online))'
     : isApiNotConnected
-      ? '#f59e0b'
+      ? 'var(--theme-warning)'
       : 'var(--status-offline)'
 
   return (
@@ -110,7 +110,7 @@ export default function StatusBar({ onToggleHealth }) {
             cursor: 'pointer',
             fontSize: '12px',
             padding: '4px 10px',
-            color: '#ef4444',
+            color: 'var(--theme-error)',
             transition: 'all 0.15s',
             fontFamily: "'JetBrains Mono', monospace",
             letterSpacing: '0.5px',

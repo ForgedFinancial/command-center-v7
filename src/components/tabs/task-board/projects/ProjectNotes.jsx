@@ -38,12 +38,12 @@ export default function ProjectNotes({ project }) {
           fontSize: '11px',
           textTransform: 'uppercase',
           letterSpacing: '1.5px',
-          color: '#71717a',
+          color: 'var(--theme-text-secondary)',
           fontWeight: 600,
         }}>
           Project Notes
         </h4>
-        {saving && <span style={{ fontSize: '11px', color: '#71717a' }}>Saving...</span>}
+        {saving && <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>Saving...</span>}
       </div>
       <textarea
         value={notes}
@@ -55,16 +55,16 @@ export default function ProjectNotes({ project }) {
           minHeight: '200px',
           padding: '16px',
           borderRadius: '10px',
-          border: '1px solid rgba(255,255,255,0.08)',
-          background: 'rgba(255,255,255,0.03)',
-          color: '#e4e4e7',
+          border: '1px solid var(--theme-border)',
+          background: 'var(--theme-surface)',
+          color: 'var(--theme-text-primary)',
           fontSize: '13px',
           lineHeight: 1.6,
           resize: 'vertical',
           outline: 'none',
           fontFamily: 'inherit',
         }}
-        onFocus={(e) => { e.target.style.borderColor = 'rgba(0,212,255,0.3)' }}
+        onFocus={(e) => { e.target.style.borderColor = 'var(--theme-accent)' }}
       />
     </div>
   )

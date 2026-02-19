@@ -28,9 +28,9 @@ export default function DataSourceToggle() {
               fontSize: '11px',
               fontWeight: active ? 600 : 400,
               borderRadius: '6px',
-              border: '1px solid ' + (active ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.08)'),
-              background: active ? 'rgba(0,212,255,0.1)' : 'transparent',
-              color: active ? '#00d4ff' : '#71717a',
+              border: '1px solid ' + (active ? 'var(--theme-accent)' : 'rgba(255,255,255,0.08)'),
+              background: active ? 'var(--theme-accent-muted)' : 'transparent',
+              color: active ? 'var(--theme-accent)' : 'var(--theme-text-secondary)',
               cursor: 'pointer',
               transition: 'all 0.15s ease',
             }}

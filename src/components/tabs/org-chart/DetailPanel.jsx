@@ -31,7 +31,7 @@ export default function DetailPanel({ agentId, agentData, onClose, onNavigate, i
   const panelBorder = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.08)'
   const textPrimary = isLight ? '#1a1a2e' : '#f5f5f5'
   const textSecondary = isLight ? '#4b5563' : '#a1a1aa'
-  const textMono = isLight ? '#0284c7' : '#00d4ff'
+  const textMono = isLight ? '#0284c7' : 'var(--theme-accent)'
   const sectionBorder = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)'
 
   return (
@@ -207,7 +207,7 @@ function SectionLabel({ text, color }) {
 
 function DataRow({ label, value, mono, cyanValue, valueColor, isLight }) {
   const textSecondary = isLight ? '#6b7280' : '#a1a1aa'
-  const textMono = isLight ? '#0284c7' : '#00d4ff'
+  const textMono = isLight ? '#0284c7' : 'var(--theme-accent)'
   return (
     <div style={{
       display: 'flex',

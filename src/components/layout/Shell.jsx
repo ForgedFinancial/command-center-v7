@@ -122,14 +122,14 @@ export default function Shell() {
     return (
       <div style={{
         height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-primary)', gap: '16px',
+        alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--theme-bg)', gap: '16px',
       }}>
         <div style={{
           width: '40px', height: '40px',
-          border: '3px solid var(--border-color, #1e293b)', borderTop: '3px solid var(--accent, #00d4ff)',
+          border: '3px solid var(--theme-border)', borderTop: '3px solid var(--theme-accent)',
           borderRadius: '50%', animation: 'spin 1s linear infinite',
         }} />
-        <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: 0 }}>Connecting to server…</p>
+        <p style={{ color: 'var(--theme-text-secondary)', fontSize: '13px', margin: 0 }}>Connecting to server…</p>
         <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
       </div>
     )
@@ -142,9 +142,7 @@ export default function Shell() {
 
       <div style={{
         height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column',
-        ...(theme.isGradient
-          ? { backgroundImage: theme.value, backgroundColor: '#000' }
-          : { backgroundColor: theme.isDefault ? 'var(--bg-primary)' : theme.value }),
+        backgroundColor: 'var(--theme-bg)',
         overflow: 'hidden',
       }}>
         {/* Header — left-aligned tabs next to logo */}
@@ -153,12 +151,12 @@ export default function Shell() {
           style={{
             display: 'flex', alignItems: 'center', padding: '0 24px', height: '52px',
             borderRadius: 0,
-            boxShadow: '0 1px 0 var(--border-color), 0 4px 12px rgba(0,0,0,0.2)',
+            boxShadow: '0 1px 0 var(--theme-border), 0 4px 12px var(--theme-shadow)',
           }}
         >
           <Logo size={28} />
           <span style={{
-            fontSize: '15px', fontWeight: 700, color: '#00d4ff',
+            fontSize: '15px', fontWeight: 700, color: 'var(--theme-accent)',
             letterSpacing: '2px', marginLeft: '10px', marginRight: '32px',
           }}>
             CC v7
@@ -171,9 +169,9 @@ export default function Shell() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <div style={{
               width: '6px', height: '6px', borderRadius: '50%',
-              backgroundColor: state.isConnected ? '#4ade80' : '#6b7280',
+              backgroundColor: state.isConnected ? 'var(--theme-success)' : 'var(--theme-text-secondary)',
             }} />
-            <span style={{ fontSize: '11px', color: '#71717a' }}>
+            <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>
               {state.isConnected ? 'Connected' : 'Offline'}
             </span>
           </div>
@@ -226,13 +224,13 @@ function CRMSubTabs() {
             onClick={() => actions.setView(tab.id)}
             style={{
               padding: '8px 16px', fontSize: '12px', fontWeight: isActive ? 600 : 400,
-              color: isActive ? '#00d4ff' : '#a1a1aa',
-              background: isActive ? 'rgba(0,212,255,0.1)' : 'transparent',
-              border: isActive ? '1px solid rgba(0,212,255,0.2)' : '1px solid transparent',
+              color: isActive ? 'var(--theme-accent)' : 'var(--theme-text-secondary)',
+              background: isActive ? 'var(--theme-accent-muted)' : 'transparent',
+              border: isActive ? '1px solid var(--theme-accent)' : '1px solid transparent',
               borderRadius: '8px', cursor: 'pointer', transition: 'all 0.15s',
             }}
-            onMouseOver={(e) => { if (!isActive) e.currentTarget.style.color = '#e4e4e7' }}
-            onMouseOut={(e) => { if (!isActive) e.currentTarget.style.color = '#a1a1aa' }}
+            onMouseOver={(e) => { if (!isActive) e.currentTarget.style.color = 'var(--theme-text-primary)' }}
+            onMouseOut={(e) => { if (!isActive) e.currentTarget.style.color = 'var(--theme-text-secondary)' }}
           >
             {tab.label}
           </button>

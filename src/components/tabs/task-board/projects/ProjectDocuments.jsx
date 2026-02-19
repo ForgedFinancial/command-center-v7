@@ -22,7 +22,7 @@ export default function ProjectDocuments({ project }) {
               alignItems: 'center',
               padding: '14px 18px',
               borderRadius: '10px',
-              background: 'rgba(255,255,255,0.02)',
+              background: 'var(--theme-bg)',
               border: '1px solid rgba(255,255,255,0.04)',
               marginBottom: '6px',
             }}
@@ -31,8 +31,8 @@ export default function ProjectDocuments({ project }) {
               {doc.category === 'report' ? '📊' : doc.category === 'brief' ? '📝' : doc.category === 'research' ? '🔍' : '📎'}
             </span>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '13px', fontWeight: 500, color: '#e4e4e7' }}>{doc.name}</div>
-              <div style={{ fontSize: '11px', color: '#52525b', marginTop: '2px' }}>
+              <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--theme-text-primary)' }}>{doc.name}</div>
+              <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginTop: '2px' }}>
                 {doc.mimeType || 'Document'}{doc.size ? ` • ${formatSize(doc.size)}` : ''}
                 {doc.createdAt && ` • ${timeAgo(doc.createdAt)}`}
               </div>

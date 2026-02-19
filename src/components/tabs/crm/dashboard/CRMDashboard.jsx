@@ -7,7 +7,7 @@ import EmptyState from '../../../shared/EmptyState'
 const STAGE_COLORS = {
   new_lead: '#3b82f6',
   contact: '#a855f7',
-  engaged: '#00d4ff',
+  engaged: 'var(--theme-accent)',
   qualified: '#f59e0b',
   application: '#f97316',
   sold: '#4ade80',
@@ -52,8 +52,8 @@ export default function CRMDashboard() {
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
           <div>
-            <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>CRM Dashboard</h2>
-            <p style={{ margin: 0, fontSize: '13px', color: '#71717a' }}>Overview of your sales pipeline and key metrics</p>
+            <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>CRM Dashboard</h2>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--theme-text-secondary)' }}>Overview of your sales pipeline and key metrics</p>
           </div>
           <PipelineModeToggle />
         </div>
@@ -63,9 +63,9 @@ export default function CRMDashboard() {
   }
 
   const kpis = [
-    { label: 'TOTAL LEADS', value: stats.total.toString(), icon: '👥', trend: null, color: '#00d4ff' },
-    { label: 'PIPELINE VALUE', value: formatCurrency(stats.totalValue), icon: '💰', trend: null, color: '#f59e0b' },
-    { label: 'CLOSE RATE', value: `${stats.closeRate}%`, icon: '🎯', trend: null, color: '#4ade80' },
+    { label: 'TOTAL LEADS', value: stats.total.toString(), icon: '👥', trend: null, color: 'var(--theme-accent)' },
+    { label: 'PIPELINE VALUE', value: formatCurrency(stats.totalValue), icon: '💰', trend: null, color: 'var(--theme-phone)' },
+    { label: 'CLOSE RATE', value: `${stats.closeRate}%`, icon: '🎯', trend: null, color: 'var(--theme-success)' },
     { label: 'AVG DEAL SIZE', value: formatCurrency(stats.avgDeal), icon: '📊', trend: null, color: '#a855f7' },
   ]
 
@@ -73,12 +73,12 @@ export default function CRMDashboard() {
     <div style={{ height: '100%', overflowY: 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
         <div>
-          <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>CRM Dashboard</h2>
-          <p style={{ margin: 0, fontSize: '13px', color: '#71717a' }}>Overview of your sales pipeline and key metrics</p>
+          <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>CRM Dashboard</h2>
+          <p style={{ margin: 0, fontSize: '13px', color: 'var(--theme-text-secondary)' }}>Overview of your sales pipeline and key metrics</p>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <PipelineModeToggle />
-          <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.08)' }} />
+          <div style={{ width: '1px', height: '20px', background: 'var(--theme-surface-hover)' }} />
           <div style={{ display: 'flex', gap: '2px' }}>
           {[['7d', '7 Days'], ['30d', '30 Days'], ['90d', '90 Days'], ['all', 'All Time']].map(([key, label]) => (
             <button
@@ -87,9 +87,9 @@ export default function CRMDashboard() {
               style={{
                 padding: '6px 12px', fontSize: '11px', fontWeight: timeRange === key ? 600 : 400,
                 borderRadius: '6px',
-                border: '1px solid ' + (timeRange === key ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.08)'),
-                background: timeRange === key ? 'rgba(0,212,255,0.1)' : 'transparent',
-                color: timeRange === key ? '#00d4ff' : '#71717a',
+                border: '1px solid ' + (timeRange === key ? 'var(--theme-accent)' : 'rgba(255,255,255,0.08)'),
+                background: timeRange === key ? 'var(--theme-accent-muted)' : 'transparent',
+                color: timeRange === key ? 'var(--theme-accent)' : '#71717a',
                 cursor: 'pointer',
               }}
             >
@@ -106,8 +106,8 @@ export default function CRMDashboard() {
           <div key={kpi.label} style={{
             padding: '20px',
             borderRadius: '12px',
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.06)',
+            background: 'var(--theme-surface)',
+            border: '1px solid var(--theme-border-subtle)',
             position: 'relative',
           }}>
             <div style={{
@@ -116,10 +116,10 @@ export default function CRMDashboard() {
             }}>
               {kpi.icon}
             </div>
-            <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1.5px', color: '#71717a', fontWeight: 600, marginBottom: '8px' }}>
+            <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--theme-text-secondary)', fontWeight: 600, marginBottom: '8px' }}>
               {kpi.label}
             </div>
-            <div style={{ fontSize: '28px', fontWeight: 700, color: '#e4e4e7' }}>{kpi.value}</div>
+            <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>{kpi.value}</div>
           </div>
         ))}
       </div>
@@ -143,11 +143,11 @@ export default function CRMDashboard() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{ fontSize: '20px' }}>📋</span>
           <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#e4e4e7' }}>Follow-Up Queue</div>
-            <div style={{ fontSize: '11px', color: '#71717a' }}>View contacts needing follow-up, sorted by priority</div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--theme-text-primary)' }}>Follow-Up Queue</div>
+            <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>View contacts needing follow-up, sorted by priority</div>
           </div>
         </div>
-        <span style={{ fontSize: '12px', color: '#f59e0b', fontWeight: 500 }}>View →</span>
+        <span style={{ fontSize: '12px', color: 'var(--theme-phone)', fontWeight: 500 }}>View →</span>
       </div>
 
       {/* Pipeline by Stage + Activity */}
@@ -159,7 +159,7 @@ export default function CRMDashboard() {
             fontSize: '11px',
             textTransform: 'uppercase',
             letterSpacing: '1.5px',
-            color: '#71717a',
+            color: 'var(--theme-text-secondary)',
             fontWeight: 600,
           }}>
             Pipeline by Stage
@@ -167,8 +167,8 @@ export default function CRMDashboard() {
           <div style={{
             padding: '20px',
             borderRadius: '12px',
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.06)',
+            background: 'var(--theme-surface)',
+            border: '1px solid var(--theme-border-subtle)',
           }}>
             {Object.entries(STAGE_LABELS).map(([stage, label]) => {
               const count = stats.byStage[stage] || 0
@@ -177,8 +177,8 @@ export default function CRMDashboard() {
               return (
                 <div key={stage} style={{ marginBottom: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 500, color: '#e4e4e7' }}>{label}</span>
-                    <span style={{ fontSize: '13px', color: '#71717a' }}>{count}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--theme-text-primary)' }}>{label}</span>
+                    <span style={{ fontSize: '13px', color: 'var(--theme-text-secondary)' }}>{count}</span>
                   </div>
                   <div style={{ height: '6px', borderRadius: '3px', background: 'rgba(255,255,255,0.06)' }}>
                     <div style={{
@@ -202,23 +202,23 @@ export default function CRMDashboard() {
             fontSize: '11px',
             textTransform: 'uppercase',
             letterSpacing: '1.5px',
-            color: '#71717a',
+            color: 'var(--theme-text-secondary)',
             fontWeight: 600,
           }}>
             Recent Activity
           </h3>
           {state.activity.length === 0 ? (
-            <p style={{ fontSize: '12px', color: '#52525b' }}>No recent activity.</p>
+            <p style={{ fontSize: '12px', color: 'var(--theme-text-secondary)' }}>No recent activity.</p>
           ) : (
             state.activity.slice(0, 5).map((item, i) => (
               <div key={i} style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
                 <div style={{
                   width: '8px', height: '8px', borderRadius: '50%',
-                  background: '#00d4ff', marginTop: '5px', flexShrink: 0,
+                  background: 'var(--theme-accent)', marginTop: '5px', flexShrink: 0,
                 }} />
                 <div>
-                  <div style={{ fontSize: '12px', color: '#e4e4e7' }}>{item.message}</div>
-                  <div style={{ fontSize: '11px', color: '#52525b' }}>{item.time}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--theme-text-primary)' }}>{item.message}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>{item.time}</div>
                 </div>
               </div>
             ))

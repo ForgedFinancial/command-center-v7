@@ -7,7 +7,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { WORKER_PROXY_URL, ENDPOINTS } from '../../config/api'
 
-const POLL_INTERVAL = 30000
+const POLL_INTERVAL = 120000 // 2 min (was 30s)
 
 function getToken() {
   return sessionStorage.getItem('cc_auth_token') || ''
@@ -71,7 +71,7 @@ function NotificationItem({ notif, onMarkRead }) {
       style={{
         padding: '12px 16px',
         borderBottom: '1px solid rgba(255,255,255,0.04)',
-        background: isRead ? 'transparent' : 'rgba(0,212,255,0.04)',
+        background: isRead ? 'transparent' : 'var(--theme-accent-muted)',
         opacity: fading ? 0.6 : 1,
         transition: 'all 0.3s ease',
         cursor: 'default',
@@ -98,14 +98,14 @@ function NotificationItem({ notif, onMarkRead }) {
               {notif.description}
             </div>
           )}
-          <div style={{ fontSize: '10px', color: '#52525b', marginTop: '4px' }}>
+          <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', marginTop: '4px' }}>
             {timeAgo}
           </div>
         </div>
         {!isRead && (
           <div style={{
             width: '6px', height: '6px', borderRadius: '50%',
-            background: '#00d4ff', flexShrink: 0, marginTop: '6px',
+            background: 'var(--theme-accent)', flexShrink: 0, marginTop: '6px',
             transition: 'opacity 0.3s ease',
             opacity: fading ? 0 : 1,
           }} />
@@ -174,11 +174,11 @@ export default function NotificationCenter() {
           cursor: 'pointer',
           fontSize: '18px',
           padding: '4px 8px',
-          color: '#a1a1aa',
+          color: 'var(--theme-text-secondary)',
           transition: 'color 0.15s',
         }}
-        onMouseOver={(e) => e.currentTarget.style.color = '#e4e4e7'}
-        onMouseOut={(e) => e.currentTarget.style.color = '#a1a1aa'}
+        onMouseOver={(e) => e.currentTarget.style.color = 'var(--theme-text-primary)'}
+        onMouseOut={(e) => e.currentTarget.style.color = 'var(--theme-text-secondary)'}
       >
         🔔
         {unreadCount > 0 && (
@@ -214,7 +214,7 @@ export default function NotificationCenter() {
           width: '360px',
           maxHeight: '480px',
           borderRadius: '12px',
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid var(--theme-border)',
           background: 'rgba(15,15,26,0.98)',
           backdropFilter: 'blur(16px)',
           boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
@@ -225,19 +225,19 @@ export default function NotificationCenter() {
           {/* Header */}
           <div style={{
             padding: '14px 16px',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            borderBottom: '1px solid var(--theme-border-subtle)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
           }}>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: '#e4e4e7' }}>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--theme-text-primary)' }}>
               Notifications
             </span>
             {unreadCount > 0 && (
               <span style={{
-                fontSize: '10px', color: '#71717a',
+                fontSize: '10px', color: 'var(--theme-text-secondary)',
                 padding: '2px 8px', borderRadius: '4px',
-                background: 'rgba(255,255,255,0.04)',
+                background: 'var(--theme-bg)',
               }}>
                 {unreadCount} unread
               </span>
@@ -250,7 +250,7 @@ export default function NotificationCenter() {
               <div style={{
                 padding: '40px 16px',
                 textAlign: 'center',
-                color: '#52525b',
+                color: 'var(--theme-text-secondary)',
                 fontSize: '12px',
               }}>
                 No notifications yet

@@ -3,7 +3,7 @@ import { useInterval } from './useInterval'
 import { useApp } from '../context/AppContext'
 import { syncClient } from '../api/syncClient'
 
-const BASE_INTERVAL = 15000      // 15s
+const BASE_INTERVAL = 60000      // 60s (was 15s — reduced to save Cloudflare requests)
 const MAX_INTERVAL = 300000      // 5 min
 const IDLE_INTERVAL = 300000     // 5 min
 const IDLE_THRESHOLD = 5         // consecutive failures before idle

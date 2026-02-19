@@ -91,7 +91,7 @@ export default function OutputPanel({ agentId, agentData, onClose }) {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '20px 24px',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          borderBottom: '1px solid var(--theme-border-subtle)',
         }}>
           <div>
             <div style={{ fontSize: '18px', fontWeight: 600, color: tierColor }}>
@@ -109,7 +109,7 @@ export default function OutputPanel({ agentId, agentData, onClose }) {
             onClick={handleSlideOut}
             style={{
               background: 'none',
-              border: '1px solid rgba(255,255,255,0.1)',
+              border: '1px solid var(--theme-border)',
               borderRadius: '8px',
               color: 'rgba(255,255,255,0.5)',
               fontSize: '14px',
@@ -143,7 +143,7 @@ export default function OutputPanel({ agentId, agentData, onClose }) {
                 justifyContent: 'space-between',
                 padding: '8px 0',
                 fontSize: '11px',
-                borderBottom: '1px solid rgba(255,255,255,0.03)',
+                borderBottom: '1px solid var(--theme-border-subtle)',
               }}>
                 <span style={{ color: 'rgba(255,255,255,0.3)' }}>{row.label}</span>
                 <span style={{ color: row.color || 'rgba(255,255,255,0.6)' }}>{row.value}</span>

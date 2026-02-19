@@ -42,17 +42,17 @@ export default function FollowUpQueue() {
     <div style={{ height: '100%', overflowY: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div>
-          <h2 style={{ margin: '0 0 4px', fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Follow-Up Queue</h2>
-          <p style={{ margin: 0, fontSize: '12px', color: '#71717a' }}>Contacts prioritized by days since last contact</p>
+          <h2 style={{ margin: '0 0 4px', fontSize: '20px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>Follow-Up Queue</h2>
+          <p style={{ margin: 0, fontSize: '12px', color: 'var(--theme-text-secondary)' }}>Contacts prioritized by days since last contact</p>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <PipelineModeToggle />
-          <span style={{ fontSize: '12px', color: '#52525b' }}>{filteredQueue.length} contacts</span>
+          <span style={{ fontSize: '12px', color: 'var(--theme-text-secondary)' }}>{filteredQueue.length} contacts</span>
         </div>
       </div>
 
       {loading ? (
-        <div style={{ padding: '24px', textAlign: 'center', color: '#71717a', fontSize: '12px' }}>Loading...</div>
+        <div style={{ padding: '24px', textAlign: 'center', color: 'var(--theme-text-secondary)', fontSize: '12px' }}>Loading...</div>
       ) : filteredQueue.length === 0 ? (
         <EmptyState icon="📋" title="No Follow-Ups" message="All contacts are up to date, or connect your CRM to populate this queue." />
       ) : (
@@ -69,8 +69,8 @@ export default function FollowUpQueue() {
                 style={{
                   padding: '14px 16px',
                   borderRadius: '10px',
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.06)',
+                  background: 'var(--theme-surface)',
+                  border: '1px solid var(--theme-border-subtle)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '16px',
@@ -84,10 +84,10 @@ export default function FollowUpQueue() {
 
                 {/* Contact info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#e4e4e7', marginBottom: '2px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--theme-text-primary)', marginBottom: '2px' }}>
                     {contact.name || 'Unknown'}
                   </div>
-                  <div style={{ fontSize: '11px', color: '#71717a' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>
                     {contact.phone || 'No phone'} · {contact.stage || 'No stage'}
                   </div>
                 </div>
@@ -97,15 +97,15 @@ export default function FollowUpQueue() {
                   <div style={{ fontSize: '18px', fontWeight: 700, color: urgency }}>
                     {typeof daysOverdue === 'number' ? daysOverdue : '—'}
                   </div>
-                  <div style={{ fontSize: '9px', color: '#52525b', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  <div style={{ fontSize: '9px', color: 'var(--theme-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                     days
                   </div>
                 </div>
 
                 {/* Last contact */}
                 <div style={{ textAlign: 'right', flexShrink: 0, minWidth: '80px' }}>
-                  <div style={{ fontSize: '11px', color: '#71717a' }}>Last contact</div>
-                  <div style={{ fontSize: '11px', color: '#a1a1aa' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>Last contact</div>
+                  <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>
                     {contact.lastContact ? new Date(contact.lastContact).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Never'}
                   </div>
                 </div>
@@ -116,8 +116,8 @@ export default function FollowUpQueue() {
                     onClick={() => handleDial(contact)}
                     style={{
                       padding: '6px 12px', borderRadius: '8px',
-                      border: '1px solid rgba(74,222,128,0.3)', background: 'rgba(74,222,128,0.1)',
-                      color: '#4ade80', fontSize: '12px', fontWeight: 500, cursor: 'pointer',
+                      border: '1px solid var(--theme-success)', background: 'var(--theme-accent-muted)',
+                      color: 'var(--theme-success)', fontSize: '12px', fontWeight: 500, cursor: 'pointer',
                       flexShrink: 0, display: 'flex', alignItems: 'center', gap: '4px',
                     }}
                   >

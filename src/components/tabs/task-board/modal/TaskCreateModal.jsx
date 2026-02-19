@@ -57,7 +57,7 @@ export default function TaskCreateModal() {
       </button>
       <button onClick={handleSubmit} disabled={saving} style={{
         padding: '8px 16px', fontSize: '12px', borderRadius: '8px', border: 'none',
-        background: '#00d4ff', color: '#0f0f1a', cursor: saving ? 'not-allowed' : 'pointer', fontWeight: 600, opacity: saving ? 0.6 : 1,
+        background: 'var(--theme-accent)', color: '#0f0f1a', cursor: saving ? 'not-allowed' : 'pointer', fontWeight: 600, opacity: saving ? 0.6 : 1,
       }}>
         {saving ? 'Creating...' : 'Create Task'}
       </button>

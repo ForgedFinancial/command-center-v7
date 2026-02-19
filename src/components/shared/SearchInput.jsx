@@ -10,12 +10,12 @@ export default function SearchInput({ value, onChange, placeholder = 'Search...'
         padding: '6px 12px',
         fontSize: '13px',
         backgroundColor: 'rgba(255,255,255,0.04)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        border: '1px solid var(--theme-border)',
         borderRadius: '8px',
-        color: '#e4e4e7',
+        color: 'var(--theme-text-primary)',
         outline: 'none',
       }}
-      onFocus={(e) => { e.target.style.borderColor = 'rgba(0,212,255,0.3)' }}
+      onFocus={(e) => { e.target.style.borderColor = 'var(--theme-accent)' }}
       onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)' }}
     />
   )

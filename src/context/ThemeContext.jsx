@@ -4,8 +4,8 @@ import { useTheme } from '../hooks/useTheme'
 const ThemeContext = createContext(null)
 
 export function ThemeProvider({ children }) {
-  const theme = useTheme()
-  return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>
+  const themeValue = useTheme()
+  return <ThemeContext.Provider value={themeValue}>{children}</ThemeContext.Provider>
 }
 
 export function useThemeContext() {

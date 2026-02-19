@@ -3,6 +3,7 @@ import Shell from './components/layout/Shell'
 import { TaskBoardProvider } from './context/TaskBoardContext'
 import { CRMProvider } from './context/CRMContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { PhoneProvider } from './context/PhoneContext'
 
 function App() {
   const authenticated = sessionStorage.getItem('forged-os-session') === 'true'
@@ -13,11 +14,13 @@ function App() {
 
   return (
     <ThemeProvider>
-      <TaskBoardProvider>
-        <CRMProvider>
-          <Shell />
-        </CRMProvider>
-      </TaskBoardProvider>
+      <PhoneProvider>
+        <TaskBoardProvider>
+          <CRMProvider>
+            <Shell />
+          </CRMProvider>
+        </TaskBoardProvider>
+      </PhoneProvider>
     </ThemeProvider>
   )
 }

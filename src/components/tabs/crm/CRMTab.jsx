@@ -72,8 +72,13 @@ export default function CRMTab() {
     }
     init()
 
-    // Auto-refresh leads every 15 seconds
-    const pollInterval = setInterval(async () => {
+    // Smart polling: 15s on Pipeline view, 60s elsewhere (saves Cloudflare Worker requests)
+    const getInterval = () => {
+      const v = state.activeView
+      return (v === 'pipeline' || v === CRM_VIEWS.PIPELINE) ? 15000 : 60000
+    }
+    let pollTimer = null
+    const pollLeads = async () => {
       if (cancelled) return
       try {
         const leadsRes = await crmClient.getLeads({ limit: 1000 })
@@ -84,9 +89,11 @@ export default function CRMTab() {
         else if (leadsRes.data) rawLeads = leadsRes.data
         actions.setLeads(rawLeads.map(normalizeLead))
       } catch { /* silent refresh failure */ }
-    }, 15000)
+      if (!cancelled) pollTimer = setTimeout(pollLeads, getInterval())
+    }
+    pollTimer = setTimeout(pollLeads, getInterval())
 
-    return () => { cancelled = true; clearInterval(pollInterval) }
+    return () => { cancelled = true; clearTimeout(pollTimer) }
   }, [appState.activeTab])
 
   switch (state.activeView) {

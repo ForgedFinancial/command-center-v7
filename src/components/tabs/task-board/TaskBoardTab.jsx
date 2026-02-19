@@ -40,16 +40,16 @@ function BackToBoardButton() {
         padding: '6px 14px',
         marginBottom: '16px',
         borderRadius: '8px',
-        border: '1px solid rgba(255,255,255,0.1)',
-        background: 'rgba(255,255,255,0.04)',
-        color: '#a1a1aa',
+        border: '1px solid var(--theme-border)',
+        background: 'var(--theme-bg)',
+        color: 'var(--theme-text-secondary)',
         fontSize: '12px',
         fontWeight: 500,
         cursor: 'pointer',
         transition: 'all 0.15s',
       }}
-      onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(0,212,255,0.08)'; e.currentTarget.style.color = '#00d4ff'; e.currentTarget.style.borderColor = 'rgba(0,212,255,0.3)' }}
-      onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#a1a1aa'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
+      onMouseOver={(e) => { e.currentTarget.style.background = 'var(--theme-accent-muted)'; e.currentTarget.style.color = 'var(--theme-accent)'; e.currentTarget.style.borderColor = 'var(--theme-accent)' }}
+      onMouseOut={(e) => { e.currentTarget.style.background = 'var(--theme-bg)'; e.currentTarget.style.color = 'var(--theme-text-secondary)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
     >
       ← Back to Board
     </button>

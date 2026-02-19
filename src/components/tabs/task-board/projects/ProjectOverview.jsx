@@ -15,8 +15,8 @@ export default function ProjectOverview({ project }) {
   const cardStyle = {
     padding: '20px',
     borderRadius: '12px',
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.06)',
+    background: 'var(--theme-surface)',
+    border: '1px solid var(--theme-border-subtle)',
     textAlign: 'center',
   }
 
@@ -27,20 +27,20 @@ export default function ProjectOverview({ project }) {
         {/* KPI cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
           <div style={cardStyle}>
-            <div style={{ fontSize: '24px', fontWeight: 700, color: '#00d4ff' }}>{projectTasks.length}</div>
-            <div style={{ fontSize: '11px', color: '#71717a', marginTop: '4px' }}>Total Tasks</div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--theme-accent)' }}>{projectTasks.length}</div>
+            <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginTop: '4px' }}>Total Tasks</div>
           </div>
           <div style={cardStyle}>
             <div style={{ fontSize: '24px', fontWeight: 700, color: '#3b82f6' }}>{inProgress.length}</div>
-            <div style={{ fontSize: '11px', color: '#71717a', marginTop: '4px' }}>In Progress</div>
+            <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginTop: '4px' }}>In Progress</div>
           </div>
           <div style={cardStyle}>
-            <div style={{ fontSize: '24px', fontWeight: 700, color: '#4ade80' }}>{completed.length}</div>
-            <div style={{ fontSize: '11px', color: '#71717a', marginTop: '4px' }}>Completed</div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--theme-success)' }}>{completed.length}</div>
+            <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginTop: '4px' }}>Completed</div>
           </div>
           <div style={cardStyle}>
             <div style={{ fontSize: '24px', fontWeight: 700, color: '#f59e0b' }}>{progress}%</div>
-            <div style={{ fontSize: '11px', color: '#71717a', marginTop: '4px' }}>Progress</div>
+            <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginTop: '4px' }}>Progress</div>
           </div>
         </div>
 
@@ -51,13 +51,13 @@ export default function ProjectOverview({ project }) {
             fontSize: '11px',
             textTransform: 'uppercase',
             letterSpacing: '1.5px',
-            color: '#71717a',
+            color: 'var(--theme-text-secondary)',
             fontWeight: 600,
           }}>
             Recent Tasks
           </h4>
           {projectTasks.length === 0 ? (
-            <p style={{ fontSize: '12px', color: '#52525b' }}>No tasks in this project yet.</p>
+            <p style={{ fontSize: '12px', color: 'var(--theme-text-secondary)' }}>No tasks in this project yet.</p>
           ) : (
             projectTasks.slice(0, 5).map(task => {
               const stageConf = STAGE_CONFIG[task.stage] || {}
@@ -70,7 +70,7 @@ export default function ProjectOverview({ project }) {
                     alignItems: 'center',
                     padding: '10px 14px',
                     borderRadius: '8px',
-                    background: 'rgba(255,255,255,0.02)',
+                    background: 'var(--theme-bg)',
                     border: '1px solid rgba(255,255,255,0.04)',
                     marginBottom: '6px',
                     cursor: 'pointer',
@@ -105,7 +105,7 @@ export default function ProjectOverview({ project }) {
                     </span>
                   )}
                   {task.dueDate && (
-                    <span style={{ fontSize: '11px', color: '#52525b' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>
                       {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </span>
                   )}
@@ -125,13 +125,13 @@ export default function ProjectOverview({ project }) {
             fontSize: '11px',
             textTransform: 'uppercase',
             letterSpacing: '1.5px',
-            color: '#71717a',
+            color: 'var(--theme-text-secondary)',
             fontWeight: 600,
           }}>
             Team
           </h4>
           {agents.length === 0 ? (
-            <p style={{ fontSize: '12px', color: '#52525b' }}>No agents assigned yet.</p>
+            <p style={{ fontSize: '12px', color: 'var(--theme-text-secondary)' }}>No agents assigned yet.</p>
           ) : (
             agents.map(agent => (
               <div key={agent} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
@@ -150,8 +150,8 @@ export default function ProjectOverview({ project }) {
                   {agent[0].toUpperCase()}
                 </div>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 500, color: '#e4e4e7', textTransform: 'capitalize' }}>{agent}</div>
-                  <div style={{ fontSize: '10px', color: '#52525b' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--theme-text-primary)', textTransform: 'capitalize' }}>{agent}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)' }}>
                     {agent === 'architect' ? 'Planner' : agent === 'mason' ? 'Builder' : agent === 'sentinel' ? 'Inspector' : 'Agent'}
                   </div>
                 </div>
@@ -167,23 +167,23 @@ export default function ProjectOverview({ project }) {
             fontSize: '11px',
             textTransform: 'uppercase',
             letterSpacing: '1.5px',
-            color: '#71717a',
+            color: 'var(--theme-text-secondary)',
             fontWeight: 600,
           }}>
             Timeline
           </h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-              <span style={{ color: '#71717a' }}>Started</span>
-              <span style={{ color: '#e4e4e7' }}>
+              <span style={{ color: 'var(--theme-text-secondary)' }}>Started</span>
+              <span style={{ color: 'var(--theme-text-primary)' }}>
                 {project.createdAt
                   ? new Date(project.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                   : '—'}
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-              <span style={{ color: '#71717a' }}>Updated</span>
-              <span style={{ color: '#e4e4e7' }}>
+              <span style={{ color: 'var(--theme-text-secondary)' }}>Updated</span>
+              <span style={{ color: 'var(--theme-text-primary)' }}>
                 {project.updatedAt
                   ? new Date(project.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                   : '—'}

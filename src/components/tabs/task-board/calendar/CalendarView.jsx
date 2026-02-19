@@ -183,7 +183,7 @@ export default function CalendarView() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#e4e4e7' }}>Calendar</h2>
+        <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>Calendar</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button
             onClick={fetchEvents}
@@ -207,41 +207,41 @@ export default function CalendarView() {
               <button key={v} onClick={() => setView(v)} style={{
                 padding: '6px 14px',
                 borderRadius: v === 'Month' ? '8px 0 0 8px' : v === 'Day' ? '0 8px 8px 0' : '0',
-                border: '1px solid rgba(255,255,255,0.1)',
-                background: view === v ? 'rgba(0,212,255,0.15)' : 'transparent',
-                color: view === v ? '#00d4ff' : '#71717a',
+                border: '1px solid var(--theme-border)',
+                background: view === v ? 'var(--theme-accent-muted)' : 'transparent',
+                color: view === v ? 'var(--theme-accent)' : '#71717a',
                 fontSize: '12px', fontWeight: view === v ? 600 : 400, cursor: 'pointer',
               }}>{v}</button>
             ))}
           </div>
 
           <button onClick={prev} style={navBtn}>←</button>
-          <span style={{ fontSize: '14px', fontWeight: 600, color: '#e4e4e7', minWidth: '140px', textAlign: 'center' }}>{monthName}</span>
+          <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--theme-text-primary)', minWidth: '140px', textAlign: 'center' }}>{monthName}</span>
           <button onClick={next} style={navBtn}>→</button>
 
           <button onClick={() => openCreateModal()} style={{
             padding: '8px 16px', borderRadius: '8px',
-            border: '1px solid rgba(0,212,255,0.3)', background: 'rgba(0,212,255,0.1)',
-            color: '#00d4ff', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+            border: '1px solid var(--theme-accent)', background: 'var(--theme-accent-muted)',
+            color: 'var(--theme-accent)', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
           }}>+ Event</button>
         </div>
       </div>
 
       {events.length === 0 && !syncing && (
-        <div style={{ marginBottom: '16px', padding: '12px 16px', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', fontSize: '12px', color: '#71717a', textAlign: 'center' }}>
+        <div style={{ marginBottom: '16px', padding: '12px 16px', borderRadius: '8px', background: 'var(--theme-bg)', border: '1px solid var(--theme-border-subtle)', fontSize: '12px', color: 'var(--theme-text-secondary)', textAlign: 'center' }}>
           No events — connect iCloud calendar to sync
         </div>
       )}
 
       {/* Day headers */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid var(--theme-border-subtle)' }}>
         {DAYS.map(d => (
-          <div key={d} style={{ padding: '8px', fontSize: '11px', fontWeight: 600, color: '#71717a', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '1px' }}>{d}</div>
+          <div key={d} style={{ padding: '8px', fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '1px' }}>{d}</div>
         ))}
       </div>
 
       {/* Calendar grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gridTemplateRows: 'repeat(6, 1fr)', flex: 1, border: '1px solid rgba(255,255,255,0.06)', borderTop: 'none' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gridTemplateRows: 'repeat(6, 1fr)', flex: 1, border: '1px solid var(--theme-border-subtle)', borderTop: 'none' }}>
         {calendarDays.map((d, i) => {
           const dayEvents = events.filter(e => {
             const eDate = new Date(e.start)
@@ -256,13 +256,13 @@ export default function CalendarView() {
                 padding: '6px 8px', cursor: 'pointer',
                 borderRight: (i + 1) % 7 !== 0 ? '1px solid rgba(255,255,255,0.04)' : 'none',
                 borderBottom: i < 35 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                background: isToday(d) ? 'rgba(0,212,255,0.04)' : 'transparent',
+                background: isToday(d) ? 'var(--theme-accent-muted)' : 'transparent',
                 minHeight: '80px',
               }}
             >
               <div style={{
                 fontSize: '12px', fontWeight: isToday(d) ? 700 : 400,
-                color: !d.current ? '#3f3f46' : isToday(d) ? '#00d4ff' : '#a1a1aa',
+                color: !d.current ? '#3f3f46' : isToday(d) ? 'var(--theme-accent)' : '#a1a1aa',
                 marginBottom: '4px',
               }}>{d.day}</div>
               {dayEvents.slice(0, 3).map((evt, j) => {
@@ -280,7 +280,7 @@ export default function CalendarView() {
                 )
               })}
               {dayEvents.length > 3 && (
-                <div style={{ fontSize: '9px', color: '#71717a', paddingLeft: '6px' }}>+{dayEvents.length - 3} more</div>
+                <div style={{ fontSize: '9px', color: 'var(--theme-text-secondary)', paddingLeft: '6px' }}>+{dayEvents.length - 3} more</div>
               )}
             </div>
           )
@@ -290,13 +290,13 @@ export default function CalendarView() {
       {/* Create Event Modal */}
       {showModal && (
         <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+          position: 'fixed', inset: 0, background: 'var(--theme-modal-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
         }}>
           <div onClick={e => e.stopPropagation()} style={{
-            background: '#18181b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px',
+            background: '#18181b', border: '1px solid var(--theme-border)', borderRadius: '16px',
             padding: '28px', width: '420px', maxWidth: '90vw',
           }}>
-            <h3 style={{ margin: '0 0 20px', fontSize: '18px', fontWeight: 700, color: '#e4e4e7' }}>{editingEvent ? 'Edit Event' : 'New Event'}</h3>
+            <h3 style={{ margin: '0 0 20px', fontSize: '18px', fontWeight: 700, color: 'var(--theme-text-primary)' }}>{editingEvent ? 'Edit Event' : 'New Event'}</h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <Field label="Title" required>
@@ -355,11 +355,11 @@ export default function CalendarView() {
                         <option value={10080}>1 week before</option>
                       </select>
                       <button onClick={() => setForm(f => ({ ...f, alerts: f.alerts.filter((_, i) => i !== idx) }))}
-                        style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '16px', cursor: 'pointer', padding: '4px' }}>✕</button>
+                        style={{ background: 'none', border: 'none', color: 'var(--theme-error)', fontSize: '16px', cursor: 'pointer', padding: '4px' }}>✕</button>
                     </div>
                   ))}
                   <button onClick={() => setForm(f => ({ ...f, alerts: [...(f.alerts || []), 15] }))}
-                    style={{ alignSelf: 'flex-start', background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: '#00d4ff', fontSize: '12px', padding: '4px 12px', cursor: 'pointer' }}>
+                    style={{ alignSelf: 'flex-start', background: 'none', border: '1px solid var(--theme-border)', borderRadius: '6px', color: 'var(--theme-accent)', fontSize: '12px', padding: '4px 12px', cursor: 'pointer' }}>
                     + Add Alert
                   </button>
                 </div>
@@ -369,18 +369,18 @@ export default function CalendarView() {
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '24px' }}>
               {editingEvent?.uid ? (
                 <button onClick={handleDeleteEvent} disabled={creating} style={{
-                  padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.3)',
-                  background: 'rgba(239,68,68,0.1)', color: '#ef4444', fontSize: '13px', fontWeight: 500, cursor: 'pointer',
+                  padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--theme-error)',
+                  background: 'transparent', color: 'var(--theme-error)', fontSize: '13px', fontWeight: 500, cursor: 'pointer',
                 }}>🗑️ Delete</button>
               ) : <div />}
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button onClick={() => { setShowModal(false); setEditingEvent(null) }} style={{
-                  padding: '8px 20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
-                  background: 'transparent', color: '#a1a1aa', fontSize: '13px', cursor: 'pointer',
+                  padding: '8px 20px', borderRadius: '8px', border: '1px solid var(--theme-border)',
+                  background: 'transparent', color: 'var(--theme-text-secondary)', fontSize: '13px', cursor: 'pointer',
                 }}>Cancel</button>
                 <button onClick={handleSave} disabled={creating || !form.title} style={{
                   padding: '8px 20px', borderRadius: '8px', border: 'none',
-                  background: creating || !form.title ? '#27272a' : '#00d4ff', color: creating || !form.title ? '#52525b' : '#000',
+                  background: creating || !form.title ? '#27272a' : 'var(--theme-accent)', color: creating || !form.title ? '#52525b' : '#000',
                   fontSize: '13px', fontWeight: 600, cursor: creating || !form.title ? 'default' : 'pointer',
                 }}>{creating ? 'Saving...' : editingEvent ? 'Save Changes' : 'Create Event'}</button>
               </div>
@@ -395,8 +395,8 @@ export default function CalendarView() {
 function Field({ label, required, children, style }) {
   return (
     <div style={style}>
-      <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#71717a', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-        {label}{required && <span style={{ color: '#ef4444' }}> *</span>}
+      <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-secondary)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+        {label}{required && <span style={{ color: 'var(--theme-error)' }}> *</span>}
       </label>
       {children}
     </div>
@@ -405,12 +405,12 @@ function Field({ label, required, children, style }) {
 
 const inputStyle = {
   width: '100%', padding: '8px 12px', borderRadius: '8px',
-  border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)',
-  color: '#e4e4e7', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
+  border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
+  color: 'var(--theme-text-primary)', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
 }
 
 const navBtn = {
   padding: '4px 10px', borderRadius: '6px',
-  border: '1px solid rgba(255,255,255,0.1)', background: 'transparent',
-  color: '#a1a1aa', fontSize: '14px', cursor: 'pointer',
+  border: '1px solid var(--theme-border)', background: 'transparent',
+  color: 'var(--theme-text-secondary)', fontSize: '14px', cursor: 'pointer',
 }

@@ -28,7 +28,7 @@ export default function ProjectTaskList({ project }) {
               alignItems: 'center',
               padding: '12px 16px',
               borderRadius: '8px',
-              background: 'rgba(255,255,255,0.02)',
+              background: 'var(--theme-bg)',
               border: '1px solid rgba(255,255,255,0.04)',
               marginBottom: '6px',
               cursor: 'pointer',
@@ -46,7 +46,7 @@ export default function ProjectTaskList({ project }) {
               marginRight: '12px',
               flexShrink: 0,
             }} />
-            <span style={{ flex: 1, fontSize: '12px', fontWeight: 500, color: '#e4e4e7' }}>
+            <span style={{ flex: 1, fontSize: '12px', fontWeight: 500, color: 'var(--theme-text-primary)' }}>
               {task.title}
             </span>
             <span style={{
@@ -87,13 +87,13 @@ export default function ProjectTaskList({ project }) {
                 }}>
                   {task.assignedAgent[0].toUpperCase()}
                 </div>
-                <span style={{ fontSize: '11px', color: '#a1a1aa', textTransform: 'capitalize' }}>
+                <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', textTransform: 'capitalize' }}>
                   {task.assignedAgent}
                 </span>
               </div>
             )}
             {task.dueDate && (
-              <span style={{ fontSize: '11px', color: '#52525b' }}>
+              <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>
                 {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </span>
             )}
