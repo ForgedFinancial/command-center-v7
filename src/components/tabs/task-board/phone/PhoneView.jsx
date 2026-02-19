@@ -32,7 +32,10 @@ function formatPhone(phone) {
 
 export default function PhoneView() {
   const { source } = useDataSource()
-  const { activeLine, twilioConfigured, callState, setCallState, setActiveCall, setIsMuted, makeCall: ctxMakeCall } = usePhone()
+  const { 
+    activeLine, twilioConfigured, callState, setCallState, setActiveCall, setIsMuted, 
+    makeCall: ctxMakeCall, makeMultiLineCalls, multiLineMode 
+  } = usePhone()
   const [activeTab, setActiveTab] = useState('Dialer')
   const [filter, setFilter] = useState('All')
   const [search, setSearch] = useState('')
@@ -112,9 +115,21 @@ export default function PhoneView() {
   const handleDial = async () => {
     const number = dialNumber || search
     if (!number) return
+    
     if (twilioConfigured && activeLine?.type === 'twilio') {
       try {
-        await ctxMakeCall({ phone: number, name: callingName || number })
+        if (multiLineMode) {
+          // For demo purposes, create multiple leads with same number
+          // In real usage, this would come from a call queue
+          const leads = [
+            { phone: number, name: callingName || `Lead 1 (${number})`, id: '1' },
+            { phone: number, name: callingName || `Lead 2 (${number})`, id: '2' },
+            { phone: number, name: callingName || `Lead 3 (${number})`, id: '3' },
+          ]
+          await makeMultiLineCalls(leads)
+        } else {
+          await ctxMakeCall({ phone: number, name: callingName || number })
+        }
       } catch (err) {
         setError(err.message)
       }
