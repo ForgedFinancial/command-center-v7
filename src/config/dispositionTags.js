@@ -5,7 +5,7 @@
 
 export const DISPOSITION_TAGS = [
   { id: 'new_lead', label: 'New Lead', color: '#3b82f6', bg: 'rgba(59,130,246,0.15)' },
-  { id: 'called', label: 'Called', color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)' },
+  { id: 'called', label: 'Called', color: '#3b82f6', bg: 'rgba(59,130,246,0.18)' },
   { id: 'follow_up', label: 'Follow-Up', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)' },
   { id: 'appt_booked', label: 'Appointment Booked', color: '#10b981', bg: 'rgba(16,185,129,0.15)' },
   { id: 'appt_no_show', label: 'Appointment - No Show', color: '#ef4444', bg: 'rgba(239,68,68,0.15)' },

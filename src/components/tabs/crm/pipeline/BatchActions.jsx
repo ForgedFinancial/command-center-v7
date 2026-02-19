@@ -1,4 +1,4 @@
-export default function BatchActions({ selectedCount, stages, onSelectAll, onDeselectAll, onBatchMoveStage, onBatchExport, onBatchDelete }) {
+export default function BatchActions({ selectedCount, onSelectAll, onDeselectAll, stages, onBatchMoveStage, onBatchExport, onBatchDelete }) {
   if (selectedCount === 0) return null
 
   return (
