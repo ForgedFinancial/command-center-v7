@@ -10,6 +10,7 @@ import LeadDetailModal from './LeadDetailModal'
 import StageTransitionModal from './StageTransitionModal'
 import { validateTransition, checkOverdue, getUrgencyColor, formatTimeRemaining } from '../../../../services/pipelineLogic'
 import { useKeyboardShortcuts, KeyboardShortcutOverlay } from '../../../../hooks/useKeyboardShortcuts.jsx'
+import { DISPOSITION_TAGS, getTagById } from '../../../../config/dispositionTags'
 
 import { LEAD_TYPES } from '../../../../config/leadTypes'
 import PipelineModeToggle from '../PipelineModeToggle'
@@ -844,6 +845,24 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
   const [quickNote, setQuickNote] = useState('')
   const [showQuickNote, setShowQuickNote] = useState(false)
   const [showDisposition, setShowDisposition] = useState(false)
+  const [showTagDropdown, setShowTagDropdown] = useState(false)
+
+  // Parse lead tags
+  const leadTags = useMemo(() => {
+    const raw = lead.tags || lead.tag || []
+    if (Array.isArray(raw)) return raw.filter(t => typeof t === 'string')
+    if (typeof raw === 'string') { try { return JSON.parse(raw) } catch { return [] } }
+    return []
+  }, [lead.tags, lead.tag])
+
+  const toggleTag = (tagId, e) => {
+    e.stopPropagation()
+    const current = [...leadTags]
+    const idx = current.indexOf(tagId)
+    const updated = idx >= 0 ? current.filter(t => t !== tagId) : [...current, tagId]
+    actions?.updateLead({ id: lead.id, tags: updated })
+    crmClient.updateLead(lead.id, { tags: JSON.stringify(updated) }).catch(() => {})
+  }
 
   useEffect(() => { setShowNew(isNew) }, [isNew])
 
@@ -960,9 +979,24 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
       {/* Dynamic fields */}
       {cardFields.map(key => renderCardField(key, lead))}
 
+      {/* Disposition Tags */}
+      {leadTags.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', marginTop: '4px' }}>
+          {leadTags.map(tagId => {
+            const tag = getTagById(tagId)
+            if (!tag) return <span key={tagId} style={{ fontSize: '9px', padding: '1px 5px', borderRadius: '4px', background: 'rgba(255,255,255,0.08)', color: '#a1a1aa' }}>{tagId}</span>
+            return (
+              <span key={tagId} style={{ fontSize: '9px', fontWeight: 600, padding: '1px 5px', borderRadius: '4px', background: tag.bg, color: tag.color }}>
+                {tag.label}
+              </span>
+            )
+          })}
+        </div>
+      )}
+
       {/* Time ago */}
       <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', marginTop: '2px' }}>
-        {lead.createdAt ? timeAgo(lead.createdAt) : ''}
+        {lead.createdAt || lead.created_at ? timeAgo(lead.createdAt || lead.created_at) : ''}
       </div>
 
       {/* Action Buttons */}
@@ -972,8 +1006,9 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
           <button onClick={(e) => onVideoCall(lead, e)} title="Video call" style={{ ...actionBtnStyle, color: 'var(--theme-accent)' }}>📹</button>
           <button onClick={(e) => onMessage(lead, e)} title="Send message" style={{ ...actionBtnStyle, color: '#a855f7' }}>💬</button>
         </>}
-        <button onClick={(e) => { e.stopPropagation(); setShowQuickNote(v => !v); setShowDisposition(false) }} title="Quick note" style={{ ...actionBtnStyle, color: '#f59e0b' }}>✏️</button>
-        <button onClick={(e) => { e.stopPropagation(); setShowDisposition(v => !v); setShowQuickNote(false) }} title="Quick disposition" style={{ ...actionBtnStyle, color: '#3b82f6' }}>🔄</button>
+        <button onClick={(e) => { e.stopPropagation(); setShowQuickNote(v => !v); setShowDisposition(false); setShowTagDropdown(false) }} title="Quick note" style={{ ...actionBtnStyle, color: '#f59e0b' }}>✏️</button>
+        <button onClick={(e) => { e.stopPropagation(); setShowTagDropdown(v => !v); setShowQuickNote(false); setShowDisposition(false) }} title="Add/remove tags" style={{ ...actionBtnStyle, color: '#a855f7' }}>🏷️</button>
+        <button onClick={(e) => { e.stopPropagation(); setShowDisposition(v => !v); setShowQuickNote(false); setShowTagDropdown(false) }} title="Quick disposition" style={{ ...actionBtnStyle, color: '#3b82f6' }}>🔄</button>
       </div>
 
       {/* Quick Note Inline */}
@@ -993,6 +1028,31 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
           />
           <button onClick={handleQuickNote} style={{ ...actionBtnStyle, color: 'var(--theme-success)', fontSize: '10px', padding: '3px 6px' }}>✓</button>
           <button onClick={() => { setShowQuickNote(false); setQuickNote('') }} style={{ ...actionBtnStyle, color: 'var(--theme-text-secondary)', fontSize: '10px', padding: '3px 6px' }}>✕</button>
+        </div>
+      )}
+
+      {/* Tag Dropdown */}
+      {showTagDropdown && (
+        <div onClick={e => e.stopPropagation()} style={{ marginTop: '6px', maxHeight: '180px', overflowY: 'auto', borderRadius: '6px', border: '1px solid var(--theme-border)', background: 'var(--theme-bg)', padding: '4px' }}>
+          {DISPOSITION_TAGS.map(tag => {
+            const active = leadTags.includes(tag.id)
+            return (
+              <div
+                key={tag.id}
+                onClick={(e) => toggleTag(tag.id, e)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  padding: '4px 8px', borderRadius: '4px', cursor: 'pointer',
+                  background: active ? tag.bg : 'transparent',
+                  marginBottom: '1px', transition: 'background 100ms',
+                }}
+              >
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: tag.color, flexShrink: 0 }} />
+                <span style={{ fontSize: '11px', color: active ? tag.color : 'var(--theme-text-secondary)', fontWeight: active ? 600 : 400, flex: 1 }}>{tag.label}</span>
+                {active && <span style={{ fontSize: '10px', color: tag.color }}>✓</span>}
+              </div>
+            )
+          })}
         </div>
       )}
 

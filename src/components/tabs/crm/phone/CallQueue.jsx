@@ -96,57 +96,8 @@ export default function CallQueue({ onLeadSelected }) {
     setError(null)
     
     try {
-      // Mock data for now - in real app this would fetch from CRM/pipeline
-      const mockLeads = [
-        {
-          id: 'lead_1',
-          name: 'John Smith',
-          phone: '+17739239449',
-          state: 'IL',
-          lead_type: 'Life Insurance',
-          face_amount: '500K',
-          created_at: new Date(Date.now() - 180000).toISOString(), // 3 min ago
-          last_called: null,
-          call_attempts: 0,
-          callback_scheduled: false,
-          followup_due: null,
-        },
-        {
-          id: 'lead_2', 
-          name: 'Sarah Johnson',
-          phone: '+16304896325',
-          state: 'TX',
-          lead_type: 'Final Expense',
-          face_amount: '25K',
-          created_at: new Date(Date.now() - 1800000).toISOString(), // 30 min ago
-          last_called: new Date(Date.now() - 3600000).toISOString(), // 1h ago
-          call_attempts: 1,
-          callback_scheduled: true,
-          callback_time: new Date(Date.now() + 300000).toISOString(), // 5 min from now
-          followup_due: null,
-        },
-        {
-          id: 'lead_3',
-          name: 'Mike Davis',
-          phone: '+14692754702',
-          state: 'CA',
-          lead_type: 'Term Life',
-          face_amount: '1M',
-          created_at: new Date(Date.now() - 7200000).toISOString(), // 2h ago
-          last_called: new Date(Date.now() - 5400000).toISOString(), // 90 min ago
-          call_attempts: 2,
-          callback_scheduled: false,
-          followup_due: new Date(Date.now() - 3600000).toISOString(), // 1h overdue
-        },
-      ]
-      
-      // Calculate priority scores and sort
-      const scoredLeads = mockLeads.map(lead => ({
-        ...lead,
-        priorityScore: calculatePriority(lead),
-      })).sort((a, b) => b.priorityScore - a.priorityScore)
-      
-      setLeads(scoredLeads)
+      // Empty state — will populate from real CRM pipeline data
+      setLeads([])
     } catch (err) {
       setError(err.message)
     } finally {

@@ -4,6 +4,7 @@ import { WORKER_PROXY_URL, getSyncHeaders } from '../../../../config/api'
 import { LEAD_TYPES } from '../../../../config/leadTypes'
 import PipelineHistoryPanel from './PipelineHistoryPanel'
 import { getCrossPipelineTransitions, checkOverdue, parseTags, isEscalationTag, formatTimeRemaining, getUrgencyColor, getNurtureDripStatus, getRecycleStatus, getEscalationStatus } from '../../../../services/pipelineLogic'
+import { DISPOSITION_TAGS, getTagById } from '../../../../config/dispositionTags'
 
 const TABS = [
   { key: 'contact', icon: '📋', label: 'Contact' },
@@ -275,7 +276,12 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
                 <Field label="State"><Input value={form.state} onChange={set('state')} maxLength={2} onAutoSave={autoSave} /></Field>
               </div>
               <div style={rowStyle}>
-                <Field label="Tags"><Input value={form.tags} onChange={set('tags')} placeholder="warm, referral" onAutoSave={autoSave} /></Field>
+                <Field label="Tags">
+                  <DispositionTagPicker
+                    tags={form.tags}
+                    onChange={(updated) => { set('tags')(updated); setTimeout(autoSave, 100) }}
+                  />
+                </Field>
                 <Field label="Follow-up Date"><Input value={form.followUp} onChange={set('followUp')} type="date" onAutoSave={autoSave} /></Field>
               </div>
             </>
@@ -482,6 +488,79 @@ export default function LeadDetailModal({ lead, pipeline, stages, onClose, onUpd
           )}
         </div>
       </div>
+    </div>
+  )
+}
+
+// Disposition Tag Picker — multi-select with colored tags
+function DispositionTagPicker({ tags, onChange }) {
+  const [open, setOpen] = useState(false)
+
+  // Parse tags to array
+  const tagList = Array.isArray(tags) ? tags : (() => {
+    if (!tags) return []
+    if (typeof tags === 'string') { try { return JSON.parse(tags) } catch { return tags.split(',').map(t => t.trim()).filter(Boolean) } }
+    return []
+  })()
+
+  const toggle = (tagId) => {
+    const updated = tagList.includes(tagId) ? tagList.filter(t => t !== tagId) : [...tagList, tagId]
+    onChange(updated)
+  }
+
+  return (
+    <div>
+      {/* Current tags */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '4px', minHeight: '24px' }}>
+        {tagList.map(tagId => {
+          const tag = getTagById(tagId)
+          return (
+            <span
+              key={tagId}
+              onClick={() => toggle(tagId)}
+              style={{
+                fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', cursor: 'pointer',
+                background: tag?.bg || 'rgba(255,255,255,0.08)', color: tag?.color || '#a1a1aa',
+                display: 'flex', alignItems: 'center', gap: '4px',
+              }}
+            >
+              {tag?.label || tagId} <span style={{ fontSize: '8px', opacity: 0.7 }}>✕</span>
+            </span>
+          )
+        })}
+        <button
+          onClick={() => setOpen(!open)}
+          style={{
+            fontSize: '10px', padding: '2px 8px', borderRadius: '4px', cursor: 'pointer',
+            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
+            color: 'var(--theme-text-secondary)',
+          }}
+        >+ Tag</button>
+      </div>
+
+      {/* Dropdown */}
+      {open && (
+        <div style={{ maxHeight: '200px', overflowY: 'auto', borderRadius: '6px', border: '1px solid var(--theme-border)', background: 'var(--theme-bg)', padding: '4px' }}>
+          {DISPOSITION_TAGS.map(tag => {
+            const active = tagList.includes(tag.id)
+            return (
+              <div
+                key={tag.id}
+                onClick={() => toggle(tag.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  padding: '5px 8px', borderRadius: '4px', cursor: 'pointer',
+                  background: active ? tag.bg : 'transparent', marginBottom: '1px',
+                }}
+              >
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: tag.color, flexShrink: 0 }} />
+                <span style={{ fontSize: '11px', color: active ? tag.color : 'var(--theme-text-secondary)', fontWeight: active ? 600 : 400, flex: 1 }}>{tag.label}</span>
+                {active && <span style={{ fontSize: '10px', color: tag.color }}>✓</span>}
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

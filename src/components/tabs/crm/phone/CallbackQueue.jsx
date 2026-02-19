@@ -68,43 +68,8 @@ export default function CallbackQueue() {
     setError(null)
     
     try {
-      // Mock data for now - in real app this would fetch from database
-      const mockCallbacks = [
-        {
-          id: 'cb_1',
-          name: 'John Smith',
-          phone: '+17739239449',
-          callbackTime: new Date(Date.now() + 180000).toISOString(), // 3 min from now
-          notes: 'Follow up on life insurance quote',
-          created_at: new Date(Date.now() - 3600000).toISOString(),
-          status: 'scheduled',
-        },
-        {
-          id: 'cb_2',
-          name: 'Sarah Johnson', 
-          phone: '+16304896325',
-          callbackTime: new Date(Date.now() - 1800000).toISOString(), // 30 min ago (overdue)
-          notes: 'Discuss final expense options',
-          created_at: new Date(Date.now() - 7200000).toISOString(),
-          status: 'overdue',
-        },
-        {
-          id: 'cb_3',
-          name: 'Mike Davis',
-          phone: '+14692754702', 
-          callbackTime: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
-          notes: 'Present term life proposal',
-          created_at: new Date(Date.now() - 1800000).toISOString(),
-          status: 'scheduled',
-        },
-      ]
-      
-      // Sort by callback time
-      const sortedCallbacks = mockCallbacks.sort((a, b) => 
-        new Date(a.callbackTime).getTime() - new Date(b.callbackTime).getTime()
-      )
-      
-      setCallbacks(sortedCallbacks)
+      // Empty state — will populate from real scheduled callbacks
+      setCallbacks([])
     } catch (err) {
       setError(err.message)
     } finally {
