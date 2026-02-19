@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import crmClient from '../../../../api/crmClient'
 import { LEAD_TYPES } from '../../../../config/leadTypes'
-
-// CRM fields available for mapping
+import { CRM_FIELDS, loadSavedCustomFields, saveCustomField, guessMapping } from './pipelineHelpers'
 const CRM_FIELDS = [
   { key: '', label: '— Skip —' },
   { key: 'name', label: 'Full Name' },
