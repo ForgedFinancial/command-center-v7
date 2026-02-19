@@ -17,8 +17,10 @@ import VoicemailDropManager from '../../crm/phone/VoicemailDropManager'
 import AudioDeviceSelector from '../../crm/phone/AudioDeviceSelector'
 import PhoneNumberHealth from '../../crm/phone/PhoneNumberHealth'
 import { RingSettings } from '../../crm/phone/RingingSystem'
+import LiveCallDashboard from '../../crm/phone/LiveCallDashboard'
+import CallQueue from '../../crm/phone/CallQueue'
 
-const TABS = ['Dialer', 'Call History', 'Voicemail', 'Settings']
+const TABS = ['Dialer', 'Dashboard', 'Call History', 'Voicemail', 'Settings']
 const FILTERS = ['All', 'Missed', 'Incoming', 'Outgoing']
 const REFRESH_INTERVAL = 60000
 
@@ -203,12 +205,23 @@ export default function PhoneView() {
       {/* Tab content */}
       <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
         {activeTab === 'Dialer' && (
-          <DialerTab
-            callState={callState} dialNumber={dialNumber} setDialNumber={setDialNumber}
-            callingName={callingName} handleDial={handleDial} handleDialDigit={handleDialDigit}
-            handleEndCall={handleEndCall} activeLine={activeLine} search={search}
-            dialPadKeys={dialPadKeys} formatPhone={formatPhone}
-          />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', height: '100%' }}>
+            <DialerTab
+              callState={callState} dialNumber={dialNumber} setDialNumber={setDialNumber}
+              callingName={callingName} handleDial={handleDial} handleDialDigit={handleDialDigit}
+              handleEndCall={handleEndCall} activeLine={activeLine} search={search}
+              dialPadKeys={dialPadKeys} formatPhone={formatPhone}
+            />
+            <CallQueue 
+              onLeadSelected={(lead) => {
+                setDialNumber(lead.phone || '')
+                setCallingName(lead.name || '')
+              }} 
+            />
+          </div>
+        )}
+        {activeTab === 'Dashboard' && (
+          <LiveCallDashboard />
         )}
         {activeTab === 'Call History' && (
           <CallHistoryTab
@@ -336,7 +349,7 @@ function SettingsTab() {
 function DialerTab({ callState, dialNumber, setDialNumber, callingName, handleDial, handleDialDigit, handleEndCall, activeLine, search, dialPadKeys, formatPhone }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '20px' }}>
-      <div style={{ width: '300px' }}>
+      <div style={{ width: '100%', maxWidth: '300px' }}>
         {callState !== 'idle' ? (
           <CallControls contactName={callingName} contactNumber={formatPhone(dialNumber)} onEnd={handleEndCall} />
         ) : (

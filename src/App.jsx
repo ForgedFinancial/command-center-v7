@@ -6,6 +6,7 @@ import { ThemeProvider } from './context/ThemeContext'
 import { PhoneProvider } from './context/PhoneContext'
 import FloatingCallBar from './components/shared/FloatingCallBar'
 import { IncomingCallBanner } from './components/tabs/crm/phone/RingingSystem'
+import CallScriptPanel from './components/tabs/crm/phone/CallScriptPanel'
 
 function App() {
   const authenticated = sessionStorage.getItem('forged-os-session') === 'true'
@@ -22,6 +23,7 @@ function App() {
             <Shell />
             <FloatingCallBar />
             <IncomingCallBanner />
+            <CallScriptPanel isVisible={true} />
           </CRMProvider>
         </TaskBoardProvider>
       </PhoneProvider>
