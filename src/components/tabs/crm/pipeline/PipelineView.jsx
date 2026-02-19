@@ -989,11 +989,13 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
         </div>
       )}
 
-      {/* Time ago + Disposition Dropdown */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-        <span style={{ fontSize: '10px', color: 'var(--theme-text-secondary)' }}>
-          {lead.createdAt || lead.created_at ? timeAgo(lead.createdAt || lead.created_at) : ''}
-        </span>
+      {/* Time ago */}
+      <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', marginTop: '2px' }}>
+        {lead.createdAt || lead.created_at ? timeAgo(lead.createdAt || lead.created_at) : ''}
+      </div>
+
+      {/* Disposition Tag Dropdown — between time ago and action buttons */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
         <select
           value=""
           onClick={e => e.stopPropagation()}
@@ -1004,15 +1006,14 @@ function LeadCard({ lead, color, cardFields, onDragStart, onClick, onDelete, onP
             e.target.value = ''
           }}
           style={{
-            fontSize: '10px', padding: '1px 4px', borderRadius: '4px',
+            fontSize: '10px', padding: '2px 6px', borderRadius: '4px',
             border: '1px solid var(--theme-border)', background: 'var(--theme-bg)',
             color: 'var(--theme-text-secondary)', cursor: 'pointer', outline: 'none',
-            maxWidth: '130px',
           }}
         >
           <option value="">+ Tag</option>
           {DISPOSITION_TAGS.map(tag => (
-            <option key={tag.id} value={tag.id} style={{ color: leadTags.includes(tag.id) ? tag.color : undefined }}>
+            <option key={tag.id} value={tag.id}>
               {leadTags.includes(tag.id) ? '✓ ' : ''}{tag.label}
             </option>
           ))}
