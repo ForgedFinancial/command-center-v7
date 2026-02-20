@@ -18,6 +18,31 @@ export default function StandUpTab() {
   const [error, setError] = useState(null)
   const pollRef = useRef(null)
 
+  const fetchSession = useCallback(async () => {
+    try {
+      const res = await fetch('/api/comms/session', { headers: { 'Content-Type': 'application/json' } })
+      if (res.ok) {
+        const data = await res.json()
+        actions.updateStandUpSession(data)
+      }
+    } catch {}
+  }, [actions])
+
+  const toggleSession = useCallback(async () => {
+    const newActive = !state.standUpSession?.active
+    try {
+      const res = await fetch('/api/comms/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: newActive }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        actions.updateStandUpSession(data.session)
+      }
+    } catch {}
+  }, [state.standUpSession, actions])
+
   const fetchMessages = useCallback(async () => {
     try {
       const res = await fetch('/api/comms/room?topic=standup&limit=100', {
@@ -41,7 +66,8 @@ export default function StandUpTab() {
       return
     }
     fetchMessages()
-    pollRef.current = setInterval(fetchMessages, 10000)
+    fetchSession()
+    pollRef.current = setInterval(() => { fetchMessages(); fetchSession() }, 10000)
     return () => {
       if (pollRef.current) clearInterval(pollRef.current)
     }
@@ -154,6 +180,53 @@ export default function StandUpTab() {
         flexDirection: 'column',
         overflow: 'hidden',
       }}>
+        {/* Session Header */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '8px 16px',
+          borderBottom: '1px solid var(--border-color)',
+          backgroundColor: state.standUpSession?.active
+            ? 'rgba(16, 185, 129, 0.08)'
+            : 'var(--bg-secondary)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{
+              width: 8, height: 8, borderRadius: '50%',
+              backgroundColor: state.standUpSession?.active
+                ? 'var(--status-online, #4ade80)'
+                : 'var(--status-offline, #6b7280)',
+            }} />
+            <span style={{
+              fontSize: '12px',
+              color: state.standUpSession?.active ? 'var(--status-online, #4ade80)' : 'var(--text-muted)',
+              fontWeight: 500,
+            }}>
+              {state.standUpSession?.active ? 'Session Active — Agents can collaborate' : 'Session Inactive'}
+            </span>
+          </div>
+          <button
+            onClick={toggleSession}
+            style={{
+              padding: '4px 12px',
+              fontSize: '12px',
+              fontWeight: 600,
+              borderRadius: '4px',
+              border: 'none',
+              cursor: 'pointer',
+              backgroundColor: state.standUpSession?.active
+                ? 'rgba(239, 68, 68, 0.15)'
+                : 'rgba(16, 185, 129, 0.15)',
+              color: state.standUpSession?.active
+                ? 'var(--status-error, #ef4444)'
+                : 'var(--status-online, #4ade80)',
+              transition: 'all 0.15s',
+            }}
+          >
+            {state.standUpSession?.active ? 'End Session' : 'Start Session'}
+          </button>
+        </div>
         {error && (
           <div style={{
             padding: '8px 16px',
