@@ -17,6 +17,7 @@ export const TIER_MAP = {
   architect: 'department',
   mason: 'department',
   sentinel: 'department',
+  kyle: 'specialist',
   scout: 'specialist',
   cartographer: 'specialist',
   coder: 'specialist',
@@ -53,3 +54,6 @@ export const SPECIALIST_MAP = {
   mason: ['coder', 'wirer', 'scribe'],
   sentinel: ['probe', 'auditor'],
 };
+
+// Agents that report directly to Clawd but are NOT department heads
+export const CLAWD_DIRECTS = ['kyle'];

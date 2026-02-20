@@ -26,7 +26,7 @@ class TaskboardClient {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'x-api-key': import.meta.env.VITE_SYNC_API_KEY || '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0',
+        'x-api-key': import.meta.env.VITE_SYNC_API_KEY || import.meta.env.VITE_WORKER_API_KEY || '',
         ...options.headers,
       },
     })

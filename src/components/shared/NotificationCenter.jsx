@@ -14,7 +14,8 @@ function getToken() {
 }
 
 async function apiFetch(endpoint, options = {}) {
-  const res = await fetch(`${WORKER_PROXY_URL}${endpoint}`, {
+  const base = WORKER_PROXY_URL.replace(/\/$/, '');
+  const res = await fetch(`${base}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -120,8 +121,10 @@ export default function NotificationCenter() {
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [syncPaused, setSyncPaused] = useState(false)
   const panelRef = useRef(null)
   const intervalRef = useRef(null)
+  const failCountRef = useRef(0)
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -130,10 +133,24 @@ export default function NotificationCenter() {
         setNotifications(data.data || [])
         setUnreadCount(data.unreadCount || 0)
       }
+      // Recovery: reset failures on success
+      if (failCountRef.current > 0) {
+        failCountRef.current = 0;
+        setSyncPaused(false);
+        // Reset to normal interval
+        clearInterval(intervalRef.current);
+        intervalRef.current = setInterval(fetchNotifications, POLL_INTERVAL);
+      }
     } catch {
-      // Silently fail — don't break the header
+      failCountRef.current++;
+      if (failCountRef.current >= 3 && !syncPaused) {
+        setSyncPaused(true);
+        // Back off to 60s
+        clearInterval(intervalRef.current);
+        intervalRef.current = setInterval(fetchNotifications, 60000);
+      }
     }
-  }, [])
+  }, [syncPaused])
 
   useEffect(() => {
     fetchNotifications()

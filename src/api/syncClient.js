@@ -39,7 +39,7 @@ class SyncClient {
 
     const headers = {
       'Content-Type': 'application/json',
-      'x-api-key': import.meta.env.VITE_SYNC_API_KEY || '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0',
+      'x-api-key': import.meta.env.VITE_SYNC_API_KEY || import.meta.env.VITE_WORKER_API_KEY || '',
       ...options.headers,
     }
     if (this._authToken) {
@@ -167,24 +167,8 @@ class SyncClient {
   }
 
   // Dashboard Data
-  async getDashboardEmail() {
-    return this.request(ENDPOINTS.dashboardEmail)
-  }
-
-  async getDashboardFinance() {
-    return this.request(ENDPOINTS.dashboardFinance)
-  }
-
   async getDashboardCalendar() {
     return this.request(ENDPOINTS.dashboardCalendar)
-  }
-
-  async getDashboardAds() {
-    return this.request(ENDPOINTS.dashboardAds)
-  }
-
-  async getDashboardWeather() {
-    return this.request(ENDPOINTS.dashboardWeather)
   }
 
   // Agent Status

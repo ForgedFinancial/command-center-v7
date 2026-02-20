@@ -97,7 +97,14 @@ export default function PipelineView() {
           if (stage.name === 'New Lead' || idx === 0) {
             const aTime = new Date(a.createdAt || a.created_at || 0).getTime()
             const bTime = new Date(b.createdAt || b.created_at || 0).getTime()
-            return bTime - aTime
+            // Aged pipeline: oldest first (longest waiting at top)
+            // New pipeline: newest first (most recently added at top)
+            const timeDiff = state.pipelineMode === 'aged' ? aTime - bTime : bTime - aTime
+            if (timeDiff !== 0) return timeDiff
+            // Tiebreaker: sort by ID (aged = lowest ID first, new = highest ID first)
+            const aId = parseInt(a.id) || 0
+            const bId = parseInt(b.id) || 0
+            return state.pipelineMode === 'aged' ? aId - bId : bId - aId
           } else {
             const aTime = new Date(a.updatedAt || a.updated_at || 0).getTime()
             const bTime = new Date(b.updatedAt || b.updated_at || 0).getTime()

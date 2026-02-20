@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AGENT_COLORS } from '../../../config/constants'
 
 const MENTION_REGEX = /@(dano|clawd|kyle|soren|mason|sentinel)\b/gi
+const ROUTABLE_AGENTS = ['soren', 'mason', 'sentinel', 'kyle']
 
 function formatTimestamp(ts) {
   const d = new Date(ts)
@@ -72,6 +73,27 @@ export default function MessageBubble({ message }) {
       }}>
         {renderMessage(message.message || '')}
       </div>
+      {isDano && (() => {
+        const text = message.message || ''
+        const mentions = text.match(MENTION_REGEX)
+        const targets = mentions
+          ? [...new Set(mentions.map(m => m.slice(1).toLowerCase()))].filter(m => ROUTABLE_AGENTS.includes(m))
+          : null
+        const label = targets && targets.length > 0
+          ? `→ Routed to ${targets.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(', ')}`
+          : '→ Broadcast to all agents'
+        return (
+          <div style={{
+            fontSize: '11px',
+            color: 'var(--text-muted)',
+            marginTop: '4px',
+            fontStyle: 'italic',
+            opacity: 0.7,
+          }}>
+            {label}
+          </div>
+        )
+      })()}
     </div>
   )
 }

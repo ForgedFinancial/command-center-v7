@@ -21,8 +21,9 @@ import LiveCallDashboard from '../../crm/phone/LiveCallDashboard'
 import CallQueue from '../../crm/phone/CallQueue'
 import CallbackQueue from '../../crm/phone/CallbackQueue'
 import BestTimeIntelligence from '../../crm/phone/BestTimeIntelligence'
+import PowerDialerView from './PowerDialerView'
 
-const TABS = ['Dialer', 'Dashboard', 'Call History', 'Callbacks', 'Intelligence', 'Voicemail', 'Settings']
+const TABS = ['Dialer', 'Power Dialer', 'Dashboard', 'Call History', 'Callbacks', 'Intelligence', 'Voicemail', 'Settings']
 const FILTERS = ['All', 'Missed', 'Incoming', 'Outgoing']
 const REFRESH_INTERVAL = 60000
 
@@ -221,6 +222,9 @@ export default function PhoneView() {
               }} 
             />
           </div>
+        )}
+        {activeTab === 'Power Dialer' && (
+          <PowerDialerView />
         )}
         {activeTab === 'Dashboard' && (
           <LiveCallDashboard />

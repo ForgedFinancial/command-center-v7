@@ -5,8 +5,9 @@
 
 export const WORKER_PROXY_URL = 'https://api.forgedfinancial.us'
 
-// Sync server auth — pulled from env at build or fallback
-export const SYNC_API_KEY = import.meta.env.VITE_SYNC_API_KEY || '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0'
+// Sync server auth — pulled from env at build time (Cloudflare Pages env vars)
+export const SYNC_API_KEY = import.meta.env.VITE_SYNC_API_KEY || import.meta.env.VITE_WORKER_API_KEY || '';
+if (!SYNC_API_KEY) console.warn('[CC] VITE_SYNC_API_KEY / VITE_WORKER_API_KEY not set — API requests will fail auth');
 
 export function getSyncHeaders() {
   return { 'Content-Type': 'application/json', 'x-api-key': SYNC_API_KEY }
@@ -31,11 +32,7 @@ export const ENDPOINTS = {
   commsSession: '/api/comms/session',
 
   // Dashboard Data
-  dashboardEmail: '/api/dashboard/email',
-  dashboardFinance: '/api/dashboard/finance',
   dashboardCalendar: '/api/dashboard/calendar',
-  dashboardAds: '/api/dashboard/ads',
-  dashboardWeather: '/api/dashboard/weather',
 
   // OpenClaw Webhooks
   openclawComplete: '/api/openclaw/complete',
@@ -76,6 +73,16 @@ export const ENDPOINTS = {
 
   // Lead Sources Settings
   leadSources: '/api/settings/lead-sources',
+
+  // Ops — Pipeline + Knowledge
+  opsPipelineTasks: '/api/ops/pipeline/tasks',
+  opsPipelineTask: (id) => `/api/ops/pipeline/tasks/${id}`,
+  opsPipelineTaskComments: (id) => `/api/ops/pipeline/tasks/${id}/comments`,
+  opsPipelineTaskReviews: (id) => `/api/ops/pipeline/tasks/${id}/reviews`,
+  opsPipelineArchive: '/api/ops/pipeline/tasks/archive',
+  opsPipelineBoard: '/api/ops/pipeline/board',
+  opsKnowledgeEntries: '/api/ops/knowledge/entries',
+  opsKnowledgeEntry: (id) => `/api/ops/knowledge/entries/${id}`,
 
   // Auth
   authSetup: '/api/auth/setup',

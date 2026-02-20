@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useApp } from '../../../context/AppContext'
 import { TABS, AGENT_COLORS } from '../../../config/constants'
+import { WORKER_PROXY_URL, getSyncHeaders, ENDPOINTS } from '../../../config/api'
 import MessageFeed from './MessageFeed'
 import RoomInput from './RoomInput'
 
@@ -20,7 +21,7 @@ export default function StandUpTab() {
 
   const fetchSession = useCallback(async () => {
     try {
-      const res = await fetch('/api/comms/session', { headers: { 'Content-Type': 'application/json' } })
+      const res = await fetch(`${WORKER_PROXY_URL}${ENDPOINTS.commsSession}`, { headers: getSyncHeaders() })
       if (res.ok) {
         const data = await res.json()
         actions.updateStandUpSession(data)
@@ -31,9 +32,9 @@ export default function StandUpTab() {
   const toggleSession = useCallback(async () => {
     const newActive = !state.standUpSession?.active
     try {
-      const res = await fetch('/api/comms/session', {
+      const res = await fetch(`${WORKER_PROXY_URL}${ENDPOINTS.commsSession}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getSyncHeaders(),
         body: JSON.stringify({ active: newActive }),
       })
       if (res.ok) {
@@ -45,8 +46,8 @@ export default function StandUpTab() {
 
   const fetchMessages = useCallback(async () => {
     try {
-      const res = await fetch('/api/comms/room?topic=standup&limit=100', {
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`${WORKER_PROXY_URL}${ENDPOINTS.commsRoom}?topic=standup&limit=100`, {
+        headers: getSyncHeaders(),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
@@ -88,10 +89,10 @@ export default function StandUpTab() {
     // Optimistic update — show immediately
     actions.updateStandUp([...(state.standUpMessages || []), optimistic])
     try {
-      await fetch('/api/comms/send', {
+      await fetch(`${WORKER_PROXY_URL}${ENDPOINTS.commsRoom}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: 'dano', to: 'standup', message: text.trim(), topic: 'standup' }),
+        headers: getSyncHeaders(),
+        body: JSON.stringify({ sender: 'dano', message: text.trim() }),
       })
       // Pull confirmed messages after send
       setTimeout(fetchMessages, 500)
@@ -242,7 +243,18 @@ export default function StandUpTab() {
             <button onClick={fetchMessages} style={{ fontSize: '11px', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Retry</button>
           </div>
         )}
-        <MessageFeed messages={state.standUpMessages} />
+        <MessageFeed messages={(state.standUpMessages || []).filter(m => {
+          const msg = m.message || ''
+          const from = m.from || ''
+          if (from === 'dano') return true // always show Boss
+          const isHeartbeat =
+            msg.includes('daemon online') ||
+            msg.includes('idle — no pending tasks') ||
+            msg.includes('💤') ||
+            (msg.startsWith('🟢') && msg.includes('online')) ||
+            (msg.startsWith('🔄') && msg.includes('working on:'))
+          return !isHeartbeat
+        })} />
         <RoomInput onSend={handleSend} disabled={sending} />
       </div>
     </div>
