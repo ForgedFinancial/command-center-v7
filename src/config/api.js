@@ -27,6 +27,7 @@ export const ENDPOINTS = {
   commsSend: '/api/comms/send',
   commsMessages: '/api/comms/messages',
   commsRead: '/api/comms/read',
+  commsRoom: '/api/comms/room',
 
   // Dashboard Data
   dashboardEmail: '/api/dashboard/email',

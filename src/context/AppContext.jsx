@@ -78,6 +78,9 @@ const initialState = {
   // Build Info
   buildInfo: null,
 
+  // Stand-Up Room
+  standUpMessages: [],
+
   // Initial load
   isInitialLoad: true,
 }
@@ -107,6 +110,7 @@ const ActionTypes = {
   SET_BUILD_INFO: 'SET_BUILD_INFO',
   UPDATE_SYSTEM_HEALTH: 'UPDATE_SYSTEM_HEALTH',
   SYNC_STATE: 'SYNC_STATE',
+  UPDATE_STANDUP: 'UPDATE_STANDUP',
   SET_INITIAL_LOAD: 'SET_INITIAL_LOAD',
 }
 
@@ -188,6 +192,9 @@ function appReducer(state, action) {
 
     case ActionTypes.UPDATE_SYSTEM_HEALTH:
       return { ...state, systemHealth: action.payload }
+
+    case ActionTypes.UPDATE_STANDUP:
+      return { ...state, standUpMessages: action.payload }
 
     case ActionTypes.SET_INITIAL_LOAD:
       return { ...state, isInitialLoad: action.payload }
@@ -309,6 +316,10 @@ export function AppProvider({ children }) {
 
     syncState: useCallback((newState) => {
       dispatch({ type: ActionTypes.SYNC_STATE, payload: newState })
+    }, []),
+
+    updateStandUp: useCallback((messages) => {
+      dispatch({ type: ActionTypes.UPDATE_STANDUP, payload: messages })
     }, []),
 
     setInitialLoad: useCallback((val) => {

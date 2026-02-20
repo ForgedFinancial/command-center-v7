@@ -18,6 +18,7 @@ import OrgChart from '../tabs/OrgChart'
 import Workspaces from '../tabs/Workspaces'
 import TaskBoardTab from '../tabs/task-board/TaskBoardTab'
 import CRMTab from '../tabs/crm/CRMTab'
+import StandUpTab from '../tabs/stand-up/StandUpTab'
 import AgentDetailPanel from '../shared/AgentDetailPanel'
 import ErrorBoundary from '../shared/ErrorBoundary'
 import HealthPanel from '../shared/HealthPanel'
@@ -254,6 +255,8 @@ function TabContent({ activeTab }) {
       return <ErrorBoundary><Workspaces /></ErrorBoundary>
     case TABS.CRM:
       return <ErrorBoundary><CRMTab /></ErrorBoundary>
+    case TABS.STAND_UP:
+      return <ErrorBoundary><StandUpTab /></ErrorBoundary>
     default:
       return null
   }

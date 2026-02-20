@@ -145,6 +145,27 @@ class SyncClient {
     })
   }
 
+  // Stand-Up Room — uses relative URLs (same-origin proxy)
+  async getRoomMessages(topic = 'standup', limit = 100, since = null) {
+    const params = new URLSearchParams({ topic, limit: String(limit) })
+    if (since) params.append('since', since)
+    const res = await fetch(`/api/comms/room?${params}`, {
+      headers: { 'Content-Type': 'application/json' },
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    return res.json()
+  }
+
+  async sendRoomMessage(from, message) {
+    const res = await fetch('/api/comms/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from, to: 'standup', message, topic: 'standup' }),
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    return res.json()
+  }
+
   // Dashboard Data
   async getDashboardEmail() {
     return this.request(ENDPOINTS.dashboardEmail)

@@ -8,6 +8,7 @@ export const TABS = {
   ORG_CHART: 'org-chart',
   WORKSPACES: 'workspaces',
   CRM: 'crm',
+  STAND_UP: 'stand-up',
 }
 
 export const TAB_LABELS = {
@@ -15,6 +16,16 @@ export const TAB_LABELS = {
   [TABS.ORG_CHART]: 'Org Chart',
   [TABS.WORKSPACES]: 'Workspaces',
   [TABS.CRM]: 'CRM',
+  [TABS.STAND_UP]: 'Stand-Up',
+}
+
+export const AGENT_COLORS = {
+  dano: '#3b82f6',
+  clawd: '#8b5cf6',
+  kyle: '#f59e0b',
+  soren: '#10b981',
+  mason: '#ef4444',
+  sentinel: '#06b6d4',
 }
 
 export const AGENT_HIERARCHY = {
