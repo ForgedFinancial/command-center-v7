@@ -1,21 +1,15 @@
 import { useState, useCallback } from 'react'
 
-export default function RoomInput({ onSend }) {
+export default function RoomInput({ onSend, disabled }) {
   const [text, setText] = useState('')
-  const [sending, setSending] = useState(false)
   const [focused, setFocused] = useState(false)
 
-  const handleSend = useCallback(async () => {
+  const handleSend = useCallback(() => {
     const trimmed = text.trim()
-    if (!trimmed || sending) return
-    setSending(true)
+    if (!trimmed || disabled) return
+    onSend(trimmed)
     setText('')
-    try {
-      await onSend(trimmed)
-    } finally {
-      setSending(false)
-    }
-  }, [text, sending, onSend])
+  }, [text, disabled, onSend])
 
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -23,8 +17,6 @@ export default function RoomInput({ onSend }) {
       handleSend()
     }
   }, [handleSend])
-
-  const disabled = !text.trim() || sending
 
   return (
     <div style={{
@@ -58,17 +50,17 @@ export default function RoomInput({ onSend }) {
       />
       <button
         onClick={handleSend}
-        disabled={disabled}
+        disabled={!text.trim() || disabled}
         style={{
           backgroundColor: 'var(--accent)',
           color: 'white',
           border: 'none',
           borderRadius: '6px',
           padding: '8px 16px',
-          cursor: disabled ? 'default' : 'pointer',
+          cursor: (!text.trim() || disabled) ? 'default' : 'pointer',
           fontWeight: 600,
           alignSelf: 'flex-end',
-          opacity: disabled ? 0.5 : 1,
+          opacity: (!text.trim() || disabled) ? 0.5 : 1,
           transition: 'opacity 0.15s',
         }}
       >
