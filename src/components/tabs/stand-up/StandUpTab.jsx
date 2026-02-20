@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useApp } from '../../../context/AppContext'
 import { TABS, AGENT_COLORS } from '../../../config/constants'
-import { syncClient } from '../../../api/syncClient'
 import MessageFeed from './MessageFeed'
 import RoomInput from './RoomInput'
 
@@ -16,45 +15,65 @@ const AGENTS_LIST = [
 export default function StandUpTab() {
   const { state, actions } = useApp()
   const [sending, setSending] = useState(false)
+  const [error, setError] = useState(null)
+  const pollRef = useRef(null)
 
   const fetchMessages = useCallback(async () => {
     try {
-      const res = await syncClient.getRoomMessages('standup', 100)
-      const msgs = res?.messages || res || []
+      const res = await fetch('/api/comms/room?topic=standup&limit=100', {
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      const msgs = data?.messages || []
       if (Array.isArray(msgs)) {
         actions.updateStandUp(msgs)
+        setError(null)
       }
     } catch (e) {
-      // silent
+      setError('Could not load messages: ' + e.message)
     }
   }, [actions])
 
   useEffect(() => {
-    if (state.activeTab !== TABS.STAND_UP) return
+    if (state.activeTab !== TABS.STAND_UP) {
+      if (pollRef.current) clearInterval(pollRef.current)
+      return
+    }
     fetchMessages()
-    const id = setInterval(fetchMessages, 15000)
-    return () => clearInterval(id)
-  }, [state.activeTab, fetchMessages])
+    pollRef.current = setInterval(fetchMessages, 10000)
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current)
+    }
+  }, [state.activeTab]) // eslint-disable-line
 
   const handleSend = useCallback(async (text) => {
+    if (!text || !text.trim()) return
     setSending(true)
     const optimistic = {
       id: 'opt-' + Date.now(),
       from: 'dano',
       to: 'standup',
-      message: text,
+      message: text.trim(),
       topic: 'standup',
       ts: new Date().toISOString(),
       read: false,
     }
-    actions.updateStandUp([...state.standUpMessages, optimistic])
+    // Optimistic update — show immediately
+    actions.updateStandUp([...(state.standUpMessages || []), optimistic])
     try {
-      await syncClient.sendRoomMessage('dano', text)
+      await fetch('/api/comms/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: 'dano', to: 'standup', message: text.trim(), topic: 'standup' }),
+      })
+      // Pull confirmed messages after send
+      setTimeout(fetchMessages, 500)
     } catch (e) {
-      // keep optimistic
+      // optimistic stays
     }
     setSending(false)
-  }, [state.standUpMessages, actions])
+  }, [state.standUpMessages, actions, fetchMessages])
 
   const getAgentStatus = (agentId) => {
     if (!state.agents || typeof state.agents !== 'object') return 'offline'
@@ -135,6 +154,21 @@ export default function StandUpTab() {
         flexDirection: 'column',
         overflow: 'hidden',
       }}>
+        {error && (
+          <div style={{
+            padding: '8px 16px',
+            backgroundColor: 'rgba(239,68,68,0.12)',
+            color: 'var(--status-error, #ef4444)',
+            fontSize: '12px',
+            borderBottom: '1px solid var(--border-color)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+            <span>{error}</span>
+            <button onClick={fetchMessages} style={{ fontSize: '11px', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Retry</button>
+          </div>
+        )}
         <MessageFeed messages={state.standUpMessages} />
         <RoomInput onSend={handleSend} disabled={sending} />
       </div>
