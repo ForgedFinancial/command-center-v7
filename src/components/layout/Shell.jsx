@@ -167,7 +167,6 @@ export default function Shell() {
             CC v7
           </span>
           <TabBar />
-          <div style={{ flex: 1 }} />
           {/* Notification Center */}
           <NotificationCenter />
           {/* Connection indicator */}

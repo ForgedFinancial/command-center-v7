@@ -61,14 +61,19 @@ export default function TabBar() {
     <nav
       style={{
         display: 'flex',
-        gap: '4px',
-        overflowX: 'auto',
-        whiteSpace: 'nowrap',
+        alignItems: 'center',
         flex: 1,
+        minWidth: 0,
       }}
     >
-      {leftTabs.map(tabButton)}
-      <div style={{ marginLeft: 'auto' }}>
+      {/* Left tabs */}
+      <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+        {leftTabs.map(tabButton)}
+      </div>
+      {/* Spacer */}
+      <div style={{ flex: 1 }} />
+      {/* Stand-Up — right side */}
+      <div style={{ flexShrink: 0, borderLeft: '1px solid var(--border-color)', paddingLeft: '8px', marginLeft: '4px' }}>
         {tabButton(TABS.STAND_UP)}
       </div>
     </nav>
