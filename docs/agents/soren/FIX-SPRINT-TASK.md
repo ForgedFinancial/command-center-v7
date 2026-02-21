@@ -63,7 +63,7 @@ Group by system so Mason can stay in one context:
 
 ## OUTPUT
 Write your full spec to:
-/home/clawd/.openclaw/workspace/agents/architect/plans/CC-V7-FIX-SPRINT-SPEC.md
+/home/clawd/.openclaw/workspace/agents/soren/plans/CC-V7-FIX-SPRINT-SPEC.md
 
 Format each fix group with:
 - Group name + task IDs covered
@@ -88,5 +88,5 @@ done
 ```bash
 curl -s -X POST "https://api.telegram.org/bot8549625129:AAF0CSoyXFdFru5eEWQ0mflFZJmdquQ1z-k/sendMessage" \
   -H "Content-Type: application/json" \
-  -d '{"chat_id":"5317054921","text":"📐 Soren — CC v7 Fix Sprint spec COMPLETE.\n\n22 fixes grouped into 7 build batches. Spec at: agents/architect/plans/CC-V7-FIX-SPRINT-SPEC.md\n\nHanding to Mason."}'
+  -d '{"chat_id":"5317054921","text":"📐 Soren — CC v7 Fix Sprint spec COMPLETE.\n\n22 fixes grouped into 7 build batches. Spec at: agents/soren/plans/CC-V7-FIX-SPRINT-SPEC.md\n\nHanding to Mason."}'
 ```

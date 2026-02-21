@@ -27,7 +27,7 @@ I don't use these systems to build — I use them to UNDERSTAND the terrain befo
 ## OpenClaw
 - **Gateway:** Port 18789 on VPS
 - **My context:** I exist as a sub-agent on Clawd's gateway. Clawd spawns me via sessions_spawn.
-- **Workspace:** /home/clawd/.openclaw/workspace/agents/architect/
+- **Workspace:** /home/clawd/.openclaw/workspace/agents/soren/
 
 ## Inter-Agent Communication
 - **Send:** POST /api/comms/send (to Mason for spec handoff, to Sentinel for design context)
