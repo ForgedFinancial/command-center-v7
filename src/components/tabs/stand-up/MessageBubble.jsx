@@ -4,6 +4,15 @@ import { AGENT_COLORS } from '../../../config/constants'
 const MENTION_REGEX = /@(dano|clawd|kyle|soren|mason|sentinel)\b/gi
 const ROUTABLE_AGENTS = ['soren', 'mason', 'sentinel', 'kyle']
 
+const AGENT_ICONS = {
+  clawd:    '🔨',
+  kyle:     '🖥️',
+  soren:    '📐',
+  mason:    '⚒️',
+  sentinel: '🔍',
+  dano:     '👤',
+}
+
 function formatTimestamp(ts) {
   const d = new Date(ts)
   const now = new Date()
@@ -18,8 +27,23 @@ function renderMessage(text) {
   if (parts.length === 1) return text
   return parts.map((part, i) => {
     if (i % 2 === 1) {
+      const icon = AGENT_ICONS[part.toLowerCase()]
       return (
-        <span key={i} style={{ color: 'var(--accent)', fontWeight: 600 }}>
+        <span
+          key={i}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '3px',
+            color: 'var(--accent)',
+            fontWeight: 600,
+            backgroundColor: 'rgba(var(--accent-rgb, 99,102,241), 0.12)',
+            borderRadius: '4px',
+            padding: '0 5px',
+            fontSize: '13px',
+          }}
+        >
+          {icon && <span style={{ fontSize: '12px' }}>{icon}</span>}
           @{part}
         </span>
       )
