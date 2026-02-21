@@ -106,6 +106,11 @@ export default function ProjectCanvas() {
   const [showCreate, setShowCreate] = useState(false)
   const [activeId, setActiveId] = useState(null)
   const [dragDelta, setDragDelta] = useState(null)
+  const [canvasBg, setCanvasBg] = useState(() => localStorage.getItem('projecthub-bg') || '#0a0a0f')
+  const [gridStyle, setGridStyle] = useState(() => localStorage.getItem('projecthub-grid') || 'dots')
+
+  const handleBgChange = (color) => { setCanvasBg(color); localStorage.setItem('projecthub-bg', color) }
+  const handleGridChange = (style) => { setGridStyle(style); localStorage.setItem('projecthub-grid', style) }
   const isPanning = useRef(false)
   const panStart = useRef({ x: 0, y: 0 })
   const panStartOffset = useRef({ x: 0, y: 0 })
@@ -208,7 +213,7 @@ export default function ProjectCanvas() {
       style={{
         height: '100%',
         overflow: 'auto',
-        background: 'linear-gradient(180deg, #0d0d14 0%, #0a0a0f 100%)',
+        background: canvasBg,
         position: 'relative',
         userSelect: 'none',
       }}
@@ -221,6 +226,10 @@ export default function ProjectCanvas() {
         zoom={zoom}
         onZoomChange={setZoom}
         onNewProject={() => setShowCreate(true)}
+        canvasBg={canvasBg}
+        onBgChange={handleBgChange}
+        gridStyle={gridStyle}
+        onGridStyleChange={handleGridChange}
       />
 
       {projects.length === 0 && <EmptyCanvas onNewProject={() => setShowCreate(true)} />}
@@ -235,7 +244,7 @@ export default function ProjectCanvas() {
           minHeight: `${maxY + 200}px`,
         }}
       >
-        <CanvasGrid gridSize={GRID_SIZE} snap={snap} />
+        <CanvasGrid gridSize={GRID_SIZE} snap={snap} gridStyle={gridStyle} canvasBg={canvasBg} />
 
         <DndContext
           sensors={sensors}
