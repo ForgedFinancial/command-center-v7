@@ -4,7 +4,7 @@ import { CSS } from '@dnd-kit/utilities'
 import taskboardClient from '../../../../api/taskboardClient'
 import { useTaskBoard } from '../../../../context/TaskBoardContext'
 
-export default function CanvasTextLabel({ obj, isDragging = false, isOverlay = false, canvasBg, onContextMenu }) {
+export default function CanvasTextLabel({ obj, isDragging = false, isOverlay = false, canvasBg, onContextMenu, isSelected = false, onClick }) {
   const { actions } = useTaskBoard()
   const [editing, setEditing] = useState(false)
   const [hovered, setHovered] = useState(false)
@@ -38,7 +38,7 @@ export default function CanvasTextLabel({ obj, isDragging = false, isOverlay = f
     top: isOverlay ? undefined : pos.y,
     cursor: isDragging ? 'grabbing' : editing ? 'text' : 'grab',
     transform: CSS.Translate.toString(transform) || undefined,
-    zIndex: isDragging ? 1000 : (obj.zIndex || 1),
+    zIndex: isDragging ? 1000 : isSelected ? 9 : (obj.zIndex || 1),
     userSelect: editing ? 'text' : 'none',
   }
 
@@ -50,6 +50,7 @@ export default function CanvasTextLabel({ obj, isDragging = false, isOverlay = f
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onDoubleClick={(e) => { e.stopPropagation(); setEditing(true) }}
+      onClick={onClick}
       onContextMenu={(e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -68,7 +69,7 @@ export default function CanvasTextLabel({ obj, isDragging = false, isOverlay = f
           fontSize: `${fontSize}px`,
           fontWeight: 700,
           color: textColor,
-          outline: editing ? '2px dashed var(--theme-accent)' : hovered ? '1px dashed rgba(255,255,255,0.15)' : 'none',
+          outline: editing ? '2px dashed var(--theme-accent)' : isSelected ? '2px dashed rgba(0,212,255,0.8)' : hovered ? '1px dashed rgba(255,255,255,0.15)' : 'none',
           outlineOffset: '4px',
           borderRadius: '4px',
           padding: '4px 8px',

@@ -4,7 +4,7 @@ import { CSS } from '@dnd-kit/utilities'
 import taskboardClient from '../../../../api/taskboardClient'
 import { useTaskBoard } from '../../../../context/TaskBoardContext'
 
-export default function CanvasStickyNote({ obj, isDragging = false, isOverlay = false, onContextMenu }) {
+export default function CanvasStickyNote({ obj, isDragging = false, isOverlay = false, onContextMenu, isSelected = false, onClick }) {
   const { actions } = useTaskBoard()
   const [editing, setEditing] = useState(false)
   const [hovered, setHovered] = useState(false)
@@ -63,7 +63,9 @@ export default function CanvasStickyNote({ obj, isDragging = false, isOverlay = 
       : hovered
         ? '0 4px 16px rgba(0,0,0,0.4)'
         : '0 2px 8px rgba(0,0,0,0.3)',
-    zIndex: isDragging ? 1000 : (obj.zIndex || 2),
+    zIndex: isDragging ? 1000 : isSelected ? 9 : (obj.zIndex || 2),
+    outline: isSelected ? '2px dashed rgba(0,212,255,0.8)' : 'none',
+    outlineOffset: '2px',
     userSelect: editing ? 'text' : 'none',
     display: 'flex',
     flexDirection: 'column',
@@ -78,6 +80,7 @@ export default function CanvasStickyNote({ obj, isDragging = false, isOverlay = 
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onDoubleClick={(e) => { e.stopPropagation(); setEditing(true) }}
+      onClick={onClick}
       onContextMenu={(e) => {
         e.preventDefault()
         e.stopPropagation()

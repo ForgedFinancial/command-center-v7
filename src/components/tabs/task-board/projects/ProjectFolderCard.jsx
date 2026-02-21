@@ -3,7 +3,7 @@ import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import { useTaskBoard } from '../../../../context/TaskBoardContext'
 
-export default function ProjectFolderCard({ project, dimmed = false, isDragging = false, isOverlay = false, onContextMenu }) {
+export default function ProjectFolderCard({ project, dimmed = false, isDragging = false, isOverlay = false, onContextMenu, isSelected = false, isConnectSource = false, onClick }) {
   const { state, actions } = useTaskBoard()
   const [hovered, setHovered] = useState(false)
 
@@ -29,7 +29,7 @@ export default function ProjectFolderCard({ project, dimmed = false, isDragging 
     minHeight: '160px',
     borderRadius: '12px',
     background: 'var(--theme-surface)',
-    border: `1px solid ${isDragging || isOverlay ? (project.color || 'var(--theme-accent)') : hovered ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)'}`,
+    border: `${isSelected ? '2px dashed var(--theme-accent)' : isConnectSource ? '2px solid var(--theme-accent)' : `1px solid ${isDragging || isOverlay ? (project.color || 'var(--theme-accent)') : hovered ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)'}`}`,
     borderLeft: `4px solid ${project.color || '#71717a'}`,
     padding: '16px',
     cursor: isDragging ? 'grabbing' : 'pointer',
@@ -41,7 +41,9 @@ export default function ProjectFolderCard({ project, dimmed = false, isDragging 
       : hovered
         ? '0 4px 12px rgba(0,0,0,0.4)'
         : '0 2px 8px rgba(0,0,0,0.3)',
-    zIndex: isDragging ? 1000 : 1,
+    zIndex: isDragging ? 1000 : isSelected ? 8 : 5,
+    boxSizing: 'border-box',
+    filter: isConnectSource ? 'drop-shadow(0 0 8px rgba(0,212,255,0.6))' : isSelected ? 'drop-shadow(0 0 4px rgba(0,212,255,0.3))' : 'none',
     opacity: dimmed ? 0.3 : 1,
     userSelect: 'none',
   }
@@ -54,6 +56,7 @@ export default function ProjectFolderCard({ project, dimmed = false, isDragging 
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onDoubleClick={handleOpen}
+      onClick={onClick}
       onContextMenu={onContextMenu}
       {...attributes}
       {...listeners}

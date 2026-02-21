@@ -66,8 +66,10 @@ export default function CanvasContextMenu({ x, y, target, onClose, onAction }) {
       { icon: '📝', label: 'Add Sticky Note', action: 'addSticky' },
       { icon: '📋', label: 'Add Frame', action: 'addFrame' },
       { icon: '✏️', label: 'Add Text Label', action: 'addText' },
+      { icon: '🔗', label: 'Draw Connector', action: 'addConnector' },
       { icon: '', label: SEP },
       { icon: '📁', label: 'New Project', action: 'newProject' },
+      { icon: '🔲', label: 'Select All', action: 'selectAll' },
     ]
   } else if (target.type === 'project') {
     items = [
@@ -91,6 +93,20 @@ export default function CanvasContextMenu({ x, y, target, onClose, onAction }) {
       { icon: '✏️', label: 'Edit', action: 'editText' },
       { icon: '🗑️', label: 'Delete', action: 'deleteObject', color: '#ef4444' },
     ]
+  } else if (target.type === 'connector') {
+    const connData = target.data?.data || {}
+    items = [
+      {
+        icon: '〰', label: `Style: ${connData.style || 'curved'}`, action: 'showStyleSubmenu',
+        submenu: 'connectorStyle',
+      },
+      {
+        icon: '➡', label: `Arrows: ${connData.arrow || 'end'}`, action: 'showArrowSubmenu',
+        submenu: 'connectorArrow',
+      },
+      { icon: '', label: SEP },
+      { icon: '🗑️', label: 'Delete Connector', action: 'deleteObject', color: '#ef4444' },
+    ]
   }
 
   const clampX = Math.min(x, window.innerWidth - 210)
@@ -108,6 +124,40 @@ export default function CanvasContextMenu({ x, y, target, onClose, onAction }) {
         {items.map((item, i) => {
           if (item.label === SEP) return <MenuItem key={i} label={SEP} />
           if (item.submenu) {
+            // Connector style submenu
+            if (item.submenu === 'connectorStyle') {
+              return (
+                <div key={i}>
+                  <MenuItem icon={item.icon} label={item.label}
+                    onClick={() => setSubmenu(submenu === item.submenu ? null : item.submenu)} />
+                  {submenu === item.submenu && (
+                    <div style={{ paddingLeft: '14px', paddingBottom: '4px' }}>
+                      {['straight', 'curved', 'step'].map(s => (
+                        <MenuItem key={s} icon="→" label={s.charAt(0).toUpperCase() + s.slice(1)}
+                          onClick={() => handle('updateConnector', { style: s })} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            }
+            if (item.submenu === 'connectorArrow') {
+              return (
+                <div key={i}>
+                  <MenuItem icon={item.icon} label={item.label}
+                    onClick={() => setSubmenu(submenu === item.submenu ? null : item.submenu)} />
+                  {submenu === item.submenu && (
+                    <div style={{ paddingLeft: '14px', paddingBottom: '4px' }}>
+                      {[{ val: 'none', label: 'No arrows' }, { val: 'end', label: 'Arrow at end →' }, { val: 'both', label: '↔ Both ends' }].map(opt => (
+                        <MenuItem key={opt.val} icon="•" label={opt.label}
+                          onClick={() => handle('updateConnector', { arrow: opt.val })} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            }
+            // Color submenus
             return (
               <div key={i}>
                 <MenuItem icon={item.icon} label={item.label}

@@ -4,7 +4,7 @@ import { CSS } from '@dnd-kit/utilities'
 import taskboardClient from '../../../../api/taskboardClient'
 import { useTaskBoard } from '../../../../context/TaskBoardContext'
 
-export default function CanvasFrame({ obj, isDragging = false, isOverlay = false, canvasBg, onContextMenu }) {
+export default function CanvasFrame({ obj, isDragging = false, isOverlay = false, canvasBg, onContextMenu, isSelected = false, onClick }) {
   const { actions } = useTaskBoard()
   const [editingTitle, setEditingTitle] = useState(false)
   const [title, setTitle] = useState(obj.data?.title || 'Untitled Section')
@@ -37,7 +37,7 @@ export default function CanvasFrame({ obj, isDragging = false, isOverlay = false
     height: size.height,
     borderRadius: '12px',
     background: bgColor,
-    border: `2px dashed ${hovered ? 'rgba(0,212,255,0.3)' : borderColor}`,
+    border: isSelected ? '2px dashed rgba(0,212,255,0.9)' : `2px dashed ${hovered ? 'rgba(0,212,255,0.3)' : borderColor}`,
     cursor: isDragging ? 'grabbing' : 'grab',
     transition: isDragging || isOverlay ? 'none' : 'border-color 0.15s',
     transform: CSS.Translate.toString(transform) || undefined,
@@ -53,6 +53,7 @@ export default function CanvasFrame({ obj, isDragging = false, isOverlay = false
       style={style}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={onClick}
       onContextMenu={(e) => {
         e.preventDefault()
         e.stopPropagation()

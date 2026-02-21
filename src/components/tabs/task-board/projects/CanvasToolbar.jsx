@@ -22,6 +22,8 @@ export default function CanvasToolbar({
   onNewProject,
   canvasBg, onBgChange,
   gridStyle, onGridStyleChange,
+  showMinimap, onToggleMinimap,
+  connectMode, onToggleConnect,
 }) {
   const [showBgPicker, setShowBgPicker] = useState(false)
   const [showGridPicker, setShowGridPicker] = useState(false)
@@ -167,6 +169,34 @@ export default function CanvasToolbar({
         </span>
         <button onClick={() => onZoomChange(Math.min(2, zoom + 0.1))} style={controlStyle}>+</button>
       </div>
+
+      {/* Connect mode toggle */}
+      <button
+        onClick={onToggleConnect}
+        style={{
+          ...controlStyle,
+          background: connectMode ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.04)',
+          color: connectMode ? 'var(--theme-accent)' : 'var(--theme-text-secondary)',
+          borderColor: connectMode ? 'rgba(0,212,255,0.4)' : 'rgba(255,255,255,0.1)',
+        }}
+        title="Draw connector line (L)"
+      >
+        🔗 Connect
+      </button>
+
+      {/* Minimap toggle */}
+      <button
+        onClick={onToggleMinimap}
+        style={{
+          ...controlStyle,
+          background: showMinimap ? 'var(--theme-accent-muted)' : 'rgba(255,255,255,0.04)',
+          color: showMinimap ? 'var(--theme-accent)' : 'var(--theme-text-secondary)',
+          borderColor: showMinimap ? 'rgba(0,212,255,0.3)' : 'rgba(255,255,255,0.1)',
+        }}
+        title="Toggle minimap (M)"
+      >
+        🗺 Map
+      </button>
 
       <div style={{ flex: 1 }} />
 
