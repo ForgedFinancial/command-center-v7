@@ -54,6 +54,7 @@ const initialState = {
   loading: false,
   error: null,
   lastFetch: null,
+  canvasObjects: [],
 }
 
 const ActionTypes = {
@@ -81,6 +82,10 @@ const ActionTypes = {
   ADD_DOCUMENT: 'TB_ADD_DOCUMENT',
   UPDATE_DOCUMENT: 'TB_UPDATE_DOCUMENT',
   REMOVE_DOCUMENT: 'TB_REMOVE_DOCUMENT',
+  SET_CANVAS_OBJECTS: 'TB_SET_CANVAS_OBJECTS',
+  ADD_CANVAS_OBJECT: 'TB_ADD_CANVAS_OBJECT',
+  UPDATE_CANVAS_OBJECT: 'TB_UPDATE_CANVAS_OBJECT',
+  REMOVE_CANVAS_OBJECT: 'TB_REMOVE_CANVAS_OBJECT',
 }
 
 function reducer(state, action) {
@@ -133,6 +138,14 @@ function reducer(state, action) {
       return { ...state, documents: state.documents.map(d => d.id === action.payload.id ? { ...d, ...action.payload } : d) }
     case ActionTypes.REMOVE_DOCUMENT:
       return { ...state, documents: state.documents.filter(d => d.id !== action.payload) }
+    case ActionTypes.SET_CANVAS_OBJECTS:
+      return { ...state, canvasObjects: action.payload }
+    case ActionTypes.ADD_CANVAS_OBJECT:
+      return { ...state, canvasObjects: [...state.canvasObjects, action.payload] }
+    case ActionTypes.UPDATE_CANVAS_OBJECT:
+      return { ...state, canvasObjects: state.canvasObjects.map(o => o.id === action.payload.id ? { ...o, ...action.payload } : o) }
+    case ActionTypes.REMOVE_CANVAS_OBJECT:
+      return { ...state, canvasObjects: state.canvasObjects.filter(o => o.id !== action.payload) }
     default:
       return state
   }
@@ -185,6 +198,10 @@ export function TaskBoardProvider({ children }) {
     addDocument: useCallback((doc) => dispatch({ type: ActionTypes.ADD_DOCUMENT, payload: doc }), []),
     updateDocument: useCallback((doc) => dispatch({ type: ActionTypes.UPDATE_DOCUMENT, payload: doc }), []),
     removeDocument: useCallback((id) => dispatch({ type: ActionTypes.REMOVE_DOCUMENT, payload: id }), []),
+    setCanvasObjects: useCallback((objs) => dispatch({ type: ActionTypes.SET_CANVAS_OBJECTS, payload: objs }), []),
+    addCanvasObject: useCallback((obj) => dispatch({ type: ActionTypes.ADD_CANVAS_OBJECT, payload: obj }), []),
+    updateCanvasObject: useCallback((obj) => dispatch({ type: ActionTypes.UPDATE_CANVAS_OBJECT, payload: obj }), []),
+    removeCanvasObject: useCallback((id) => dispatch({ type: ActionTypes.REMOVE_CANVAS_OBJECT, payload: id }), []),
   }
 
   return (

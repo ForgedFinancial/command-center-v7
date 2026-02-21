@@ -149,6 +149,31 @@ class TaskboardClient {
     return res.json()
   }
 
+  // Canvas Objects (sticky notes, frames, text labels, connectors)
+  async getCanvasObjects() {
+    return this.request('/api/taskboard/canvas-objects')
+  }
+
+  async createCanvasObject(obj) {
+    return this.request('/api/taskboard/canvas-objects', {
+      method: 'POST',
+      body: JSON.stringify(obj),
+    })
+  }
+
+  async updateCanvasObject(id, updates) {
+    return this.request(`/api/taskboard/canvas-objects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    })
+  }
+
+  async deleteCanvasObject(id) {
+    return this.request(`/api/taskboard/canvas-objects/${id}`, {
+      method: 'DELETE',
+    })
+  }
+
   // Lessons
   async getLessons(query = {}) {
     const params = new URLSearchParams(Object.entries(query).filter(([, v]) => v))

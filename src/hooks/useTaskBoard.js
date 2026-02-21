@@ -9,17 +9,20 @@ export function useTaskBoardData() {
   const { state, actions } = useTaskBoard()
 
   const fetchAll = useCallback(async () => {
-    if (appState.activeTab !== TABS.TASK_BOARD) return
+    const validTabs = [TABS.TASK_BOARD, TABS.PROJECTS]
+    if (!validTabs.includes(appState.activeTab)) return
     actions.setLoading(true)
     try {
-      const [tasksRes, projectsRes, docsRes] = await Promise.all([
+      const [tasksRes, projectsRes, docsRes, canvasRes] = await Promise.all([
         taskboardClient.getTasks(),
         taskboardClient.getProjects(),
         taskboardClient.getDocuments(),
+        taskboardClient.getCanvasObjects(),
       ])
       if (tasksRes.ok) actions.setTasks(tasksRes.data)
       if (projectsRes.ok) actions.setProjects(projectsRes.data)
       if (docsRes.ok) actions.setDocuments(docsRes.data)
+      if (canvasRes.ok) actions.setCanvasObjects(canvasRes.data)
     } catch (err) {
       actions.setError(err.message)
       appActions.addToast({ type: 'error', message: `Task Board: ${err.message}` })
@@ -30,7 +33,8 @@ export function useTaskBoardData() {
 
   // Fetch on tab activation
   useEffect(() => {
-    if (appState.activeTab === TABS.TASK_BOARD && !state.lastFetch) {
+    const validTabs = [TABS.TASK_BOARD, TABS.PROJECTS]
+    if (validTabs.includes(appState.activeTab) && !state.lastFetch) {
       fetchAll()
     }
   }, [appState.activeTab, state.lastFetch, fetchAll])

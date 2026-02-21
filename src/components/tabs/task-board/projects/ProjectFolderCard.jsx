@@ -3,7 +3,7 @@ import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import { useTaskBoard } from '../../../../context/TaskBoardContext'
 
-export default function ProjectFolderCard({ project, dimmed = false, isDragging = false, isOverlay = false }) {
+export default function ProjectFolderCard({ project, dimmed = false, isDragging = false, isOverlay = false, onContextMenu }) {
   const { state, actions } = useTaskBoard()
   const [hovered, setHovered] = useState(false)
 
@@ -54,6 +54,7 @@ export default function ProjectFolderCard({ project, dimmed = false, isDragging 
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onDoubleClick={handleOpen}
+      onContextMenu={onContextMenu}
       {...attributes}
       {...listeners}
     >
