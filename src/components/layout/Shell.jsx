@@ -17,13 +17,13 @@ import ConnectionBanner from '../shared/ConnectionBanner'
 import OrgChart from '../tabs/OrgChart'
 import Workspaces from '../tabs/Workspaces'
 import TaskBoardTab from '../tabs/task-board/TaskBoardTab'
-import ProjectsView from '../tabs/task-board/projects/ProjectsView'
+import ProjectHub from '../tabs/task-board/projects/ProjectHub'
 import { useTaskBoardData } from '../../hooks/useTaskBoard'
 
 // Standalone Projects tab — loads taskboard data without the full TaskBoardTab
 function ProjectsTab() {
   useTaskBoardData()
-  return <ProjectsView />
+  return <ProjectHub />
 }
 import CRMTab from '../tabs/crm/CRMTab'
 import StandUpTab from '../tabs/stand-up/StandUpTab'
