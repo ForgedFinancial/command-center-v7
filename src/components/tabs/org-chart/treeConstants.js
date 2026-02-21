@@ -35,6 +35,8 @@ export const MODEL_DISPLAY = {
   'codex-5.3': 'Codex 5.3',
   'openai-o3': 'OpenAI o3',
   'gpt-5.3-codex': 'Codex 5.3',
+  'gpt-4o': 'GPT-4o',
+  'gpt-3.5-turbo': 'GPT-3.5 Turbo',
 };
 
 export const STATUS_COLORS = {
