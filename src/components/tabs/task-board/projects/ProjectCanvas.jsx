@@ -7,6 +7,96 @@ import CanvasGrid from './CanvasGrid'
 import ProjectFolderCard from './ProjectFolderCard'
 import ProjectCreateModal from './ProjectCreateModal'
 
+function EmptyCanvas({ onNewProject }) {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      pointerEvents: 'none', zIndex: 5,
+    }}>
+      <div style={{
+        background: 'rgba(255,255,255,0.03)',
+        border: '2px dashed rgba(255,255,255,0.08)',
+        borderRadius: '20px',
+        padding: '48px 56px',
+        maxWidth: '560px',
+        textAlign: 'center',
+        pointerEvents: 'auto',
+      }}>
+        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🗂️</div>
+        <h2 style={{
+          margin: '0 0 8px', fontSize: '20px', fontWeight: 700,
+          color: 'var(--theme-text-primary)',
+        }}>
+          Welcome to Project Hub
+        </h2>
+        <p style={{
+          margin: '0 0 24px', fontSize: '13px', lineHeight: 1.7,
+          color: 'var(--theme-text-secondary)',
+        }}>
+          This is your visual workspace — like a digital whiteboard for organizing projects. 
+          Create project folders, drag them anywhere on the canvas, and open each one 
+          to reveal its own custom kanban board, files, and notes.
+        </p>
+
+        <div style={{
+          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px',
+          marginBottom: '28px', textAlign: 'left',
+        }}>
+          {[
+            { icon: '📁', title: 'Create Projects', desc: 'Choose from industry templates (Sales, Recruiting, Onboarding) or start blank' },
+            { icon: '🖱️', title: 'Drag & Arrange', desc: 'Position project cards anywhere on the canvas — snap-to-grid keeps things tidy' },
+            { icon: '📊', title: 'Custom Boards', desc: 'Each project has its own kanban with custom columns you define' },
+            { icon: '📎', title: 'Files & Notes', desc: 'Upload documents, write notes — everything organized per project' },
+          ].map((item, i) => (
+            <div key={i} style={{
+              padding: '12px', borderRadius: '10px',
+              background: 'rgba(255,255,255,0.02)',
+              border: '1px solid rgba(255,255,255,0.05)',
+            }}>
+              <div style={{ fontSize: '20px', marginBottom: '6px' }}>{item.icon}</div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--theme-text-primary)', marginBottom: '4px' }}>
+                {item.title}
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', lineHeight: 1.5 }}>
+                {item.desc}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={onNewProject}
+          style={{
+            padding: '12px 32px',
+            borderRadius: '10px',
+            border: 'none',
+            background: 'var(--theme-accent)',
+            color: '#fff',
+            fontSize: '14px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            transition: 'all 0.15s',
+            boxShadow: '0 4px 16px rgba(0,212,255,0.3)',
+          }}
+          onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(0,212,255,0.4)' }}
+          onMouseOut={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,212,255,0.3)' }}
+        >
+          + Create Your First Project
+        </button>
+
+        <p style={{
+          margin: '16px 0 0', fontSize: '11px',
+          color: 'rgba(255,255,255,0.25)',
+        }}>
+          Tip: Use Ctrl+Scroll to zoom • Click & drag empty space to pan
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export default function ProjectCanvas() {
   const { state, actions } = useTaskBoard()
   const [zoom, setZoom] = useState(1)
@@ -46,7 +136,6 @@ export default function ProjectCanvas() {
 
   // Background pan
   const handleMouseDown = useCallback((e) => {
-    // Only pan when clicking empty canvas
     if (e.target !== e.currentTarget && !e.target.closest('.canvas-content-inner')) return
     if (e.target.closest('.folder-card')) return
     isPanning.current = true
@@ -119,7 +208,7 @@ export default function ProjectCanvas() {
       style={{
         height: '100%',
         overflow: 'auto',
-        background: '#0a0a0f',
+        background: 'linear-gradient(180deg, #0d0d14 0%, #0a0a0f 100%)',
         position: 'relative',
         userSelect: 'none',
       }}
@@ -133,6 +222,8 @@ export default function ProjectCanvas() {
         onZoomChange={setZoom}
         onNewProject={() => setShowCreate(true)}
       />
+
+      {projects.length === 0 && <EmptyCanvas onNewProject={() => setShowCreate(true)} />}
 
       <div
         className="canvas-content-inner"

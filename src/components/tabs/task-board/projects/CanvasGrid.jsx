@@ -1,25 +1,26 @@
 export default function CanvasGrid({ gridSize = 20, snap = false }) {
-  const dotColor = snap ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)'
+  const dotColor = snap ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.03)'
+  const dotSize = snap ? 1.5 : 1
 
   return (
     <svg
       style={{
         position: 'absolute',
-        top: 0,
-        left: 0,
+        inset: 0,
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
+        zIndex: 0,
       }}
     >
       <defs>
         <pattern
           id="canvas-grid"
-          width={gridSize}
-          height={gridSize}
+          x="0" y="0"
+          width={gridSize} height={gridSize}
           patternUnits="userSpaceOnUse"
         >
-          <circle cx={gridSize / 2} cy={gridSize / 2} r="1" fill={dotColor} />
+          <circle cx={gridSize / 2} cy={gridSize / 2} r={dotSize} fill={dotColor} />
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#canvas-grid)" />
