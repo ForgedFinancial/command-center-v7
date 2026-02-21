@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { AGENTS, TASK_TYPES, PRIORITIES, TIERS, AGENT_STAGE_ROUTING } from './pipelineConstants'
+import { WORKER_PROXY_URL, SYNC_API_KEY, ENDPOINTS } from '../../../../config/api'
 
 export default function NewTaskForm({ onClose, onCreate }) {
   const [name, setName]               = useState('')
@@ -13,8 +14,68 @@ export default function NewTaskForm({ onClose, onCreate }) {
   const [submitting, setSubmitting]   = useState(false)
   const [error, setError]             = useState(null)
 
+  // Attachments state
+  const [pendingFiles, setPendingFiles]   = useState([]) // [{file, comment, previewUrl}]
+  const [dragOver, setDragOver]           = useState(false)
+  const fileInputRef                      = useRef(null)
+
   const canSubmit = name.trim().length > 0 && !submitting
   const routedStage = AGENT_STAGE_ROUTING[assignee] || 'INTAKE'
+
+  // ── Attachment helpers ──
+  const addFiles = useCallback((fileList) => {
+    const allowed = /jpeg|jpg|png|gif|webp|pdf|txt|md/i
+    const newEntries = Array.from(fileList)
+      .filter(f => {
+        const ext = f.name.split('.').pop().toLowerCase()
+        return allowed.test(ext) || f.type.startsWith('image/') || f.type === 'application/pdf'
+      })
+      .slice(0, 5 - pendingFiles.length) // max 5 total
+      .map(f => ({
+        file: f,
+        comment: '',
+        previewUrl: f.type.startsWith('image/') ? URL.createObjectURL(f) : null,
+        id: Math.random().toString(36).slice(2),
+      }))
+    if (newEntries.length) setPendingFiles(prev => [...prev, ...newEntries])
+  }, [pendingFiles.length])
+
+  const removeFile = (id) => {
+    setPendingFiles(prev => {
+      const entry = prev.find(e => e.id === id)
+      if (entry?.previewUrl) URL.revokeObjectURL(entry.previewUrl)
+      return prev.filter(e => e.id !== id)
+    })
+  }
+
+  const updateComment = (id, comment) => {
+    setPendingFiles(prev => prev.map(e => e.id === id ? { ...e, comment } : e))
+  }
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault()
+    setDragOver(false)
+    addFiles(e.dataTransfer.files)
+  }, [addFiles])
+
+  // ── Upload all pending files to a created task ──
+  const uploadAttachments = async (taskId) => {
+    for (const entry of pendingFiles) {
+      try {
+        const fd = new FormData()
+        fd.append('file', entry.file)
+        fd.append('comment', entry.comment)
+        fd.append('uploadedBy', 'dano')
+        await fetch(`${WORKER_PROXY_URL}${ENDPOINTS.opsPipelineTaskAttachments(taskId)}`, {
+          method: 'POST',
+          headers: { 'x-api-key': SYNC_API_KEY },
+          body: fd,
+        })
+      } catch (uploadErr) {
+        console.warn('[NewTaskForm] Attachment upload failed:', uploadErr.message)
+      }
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -22,7 +83,7 @@ export default function NewTaskForm({ onClose, onCreate }) {
     setSubmitting(true)
     setError(null)
     try {
-      await onCreate({
+      const task = await onCreate({
         name: name.trim(),
         description: description.trim(),
         assignee,
@@ -36,6 +97,10 @@ export default function NewTaskForm({ onClose, onCreate }) {
           ...(tags.trim() ? tags.split(',').map(t => t.trim()).filter(Boolean) : [])
         ],
       })
+      // Upload attachments after task is created (need the task ID)
+      if (pendingFiles.length > 0 && task?.id) {
+        await uploadAttachments(task.id)
+      }
     } catch (err) {
       setError('Failed to create task. Try again.')
       setSubmitting(false)
@@ -47,8 +112,10 @@ export default function NewTaskForm({ onClose, onCreate }) {
     backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid var(--theme-border)',
     borderRadius: '8px', padding: '9px 12px', fontFamily: 'inherit', outline: 'none',
   }
-  const label = { fontSize: '11px', fontWeight: 600, letterSpacing: '0.04em',
-    color: 'var(--theme-text-secondary)', marginBottom: '5px', display: 'block', textTransform: 'uppercase' }
+  const label = {
+    fontSize: '11px', fontWeight: 600, letterSpacing: '0.04em',
+    color: 'var(--theme-text-secondary)', marginBottom: '5px', display: 'block', textTransform: 'uppercase',
+  }
 
   const agentInfo = AGENTS[assignee] || { label: assignee, color: '#6b7280', icon: '👤' }
 
@@ -58,7 +125,7 @@ export default function NewTaskForm({ onClose, onCreate }) {
       display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
     }}>
       <form onClick={e => e.stopPropagation()} onSubmit={handleSubmit} style={{
-        width: '520px', maxHeight: '90vh', overflow: 'auto',
+        width: '540px', maxHeight: '90vh', overflow: 'auto',
         backgroundColor: 'var(--theme-bg, #0f0f1a)',
         border: '1px solid var(--theme-border)', borderRadius: '14px', padding: '28px',
         boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
@@ -172,6 +239,100 @@ export default function NewTaskForm({ onClose, onCreate }) {
             </div>
           </div>
 
+          {/* ── Attachments ── */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <label style={label}>Attachments <span style={{ fontWeight: 400, textTransform: 'none', opacity: 0.6 }}>(screenshots, docs — up to 5)</span></label>
+              <button type="button" onClick={() => fileInputRef.current?.click()} style={{
+                fontSize: '11px', fontWeight: 600, padding: '3px 10px',
+                backgroundColor: 'rgba(139,92,246,0.15)', color: 'var(--theme-accent)',
+                border: '1px solid rgba(139,92,246,0.3)', borderRadius: '5px', cursor: 'pointer',
+              }}>+ Add File</button>
+            </div>
+            <input
+              ref={fileInputRef} type="file" multiple accept="image/*,.pdf,.txt,.md"
+              style={{ display: 'none' }}
+              onChange={e => { addFiles(e.target.files); e.target.value = '' }}
+            />
+
+            {/* Drop zone */}
+            <div
+              onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              onClick={() => !pendingFiles.length && fileInputRef.current?.click()}
+              style={{
+                border: `2px dashed ${dragOver ? 'var(--theme-accent)' : 'rgba(255,255,255,0.1)'}`,
+                borderRadius: '8px',
+                padding: pendingFiles.length ? '10px' : '20px',
+                textAlign: pendingFiles.length ? 'left' : 'center',
+                cursor: pendingFiles.length ? 'default' : 'pointer',
+                transition: 'border-color 0.15s, background 0.15s',
+                backgroundColor: dragOver ? 'rgba(139,92,246,0.06)' : 'rgba(255,255,255,0.01)',
+                minHeight: pendingFiles.length ? 'auto' : '70px',
+                display: 'flex',
+                flexDirection: pendingFiles.length ? 'column' : 'row',
+                alignItems: pendingFiles.length ? 'stretch' : 'center',
+                justifyContent: pendingFiles.length ? 'flex-start' : 'center',
+                gap: '8px',
+              }}
+            >
+              {pendingFiles.length === 0 ? (
+                <span style={{ fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
+                  📎 Drop screenshots or files here, or click to browse
+                </span>
+              ) : (
+                pendingFiles.map(entry => (
+                  <div key={entry.id} style={{
+                    display: 'flex', gap: '10px', alignItems: 'flex-start',
+                    padding: '8px', borderRadius: '6px',
+                    backgroundColor: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                  }}>
+                    {/* Thumbnail or icon */}
+                    <div style={{ flexShrink: 0, width: '48px', height: '48px', borderRadius: '4px', overflow: 'hidden', backgroundColor: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {entry.previewUrl
+                        ? <img src={entry.previewUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : <span style={{ fontSize: '20px' }}>{entry.file.type === 'application/pdf' ? '📄' : '📎'}</span>
+                      }
+                    </div>
+                    {/* File info + comment */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {entry.file.name}
+                      </div>
+                      <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', marginBottom: '5px' }}>
+                        {(entry.file.size / 1024).toFixed(0)} KB
+                      </div>
+                      <input
+                        value={entry.comment}
+                        onChange={e => updateComment(entry.id, e.target.value)}
+                        placeholder="Add a comment for context…"
+                        onClick={e => e.stopPropagation()}
+                        style={{
+                          width: '100%', fontSize: '11px', color: 'var(--theme-text-primary)',
+                          backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                          borderRadius: '4px', padding: '4px 8px', fontFamily: 'inherit', outline: 'none',
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                    </div>
+                    {/* Remove */}
+                    <button type="button" onClick={() => removeFile(entry.id)} style={{
+                      background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: '14px',
+                      cursor: 'pointer', padding: '0', flexShrink: 0, lineHeight: 1,
+                    }}>✕</button>
+                  </div>
+                ))
+              )}
+            </div>
+            {pendingFiles.length > 0 && pendingFiles.length < 5 && (
+              <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', marginTop: '4px', textAlign: 'right' }}>
+                {pendingFiles.length}/5 files — drop more to add
+              </div>
+            )}
+          </div>
+
           {/* Routing preview */}
           <div style={{
             padding: '10px 12px', borderRadius: '8px',
@@ -179,6 +340,7 @@ export default function NewTaskForm({ onClose, onCreate }) {
             fontSize: '11px', color: 'var(--theme-text-secondary)', lineHeight: '1.5',
           }}>
             {agentInfo.icon} Assigned to <strong style={{ color: agentInfo.color }}>{agentInfo.label}</strong> → routes to <strong style={{ color: 'var(--theme-text-primary)' }}>{routedStage}</strong> stage
+            {pendingFiles.length > 0 && <span style={{ marginLeft: '8px', color: 'var(--theme-accent)' }}>· {pendingFiles.length} attachment{pendingFiles.length > 1 ? 's' : ''} will upload</span>}
           </div>
         </div>
 
@@ -198,7 +360,7 @@ export default function NewTaskForm({ onClose, onCreate }) {
             cursor: canSubmit ? 'pointer' : 'not-allowed',
             opacity: submitting ? 0.6 : 1,
           }}>
-            {submitting ? 'Creating…' : 'Create Task'}
+            {submitting ? (pendingFiles.length > 0 ? 'Creating + Uploading…' : 'Creating…') : 'Create Task'}
           </button>
         </div>
       </form>

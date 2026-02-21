@@ -32,6 +32,8 @@ export const MODEL_DISPLAY = {
   'claude-opus-4-6': 'Claude Opus 4.6',
   'claude-sonnet-4': 'Claude Sonnet 4',
   'codex-5.3': 'Codex 5.3',
+  'openai-o3': 'OpenAI o3',
+  'gpt-5.3-codex': 'Codex 5.3',
 };
 
 export const STATUS_COLORS = {

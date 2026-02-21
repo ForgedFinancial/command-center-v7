@@ -11,7 +11,7 @@ import { TABS, TAB_LABELS } from '../../config/constants'
 export default function TabBar() {
   const { state, actions } = useApp()
 
-  const leftTabs = [TABS.ORG_CHART, TABS.WORKSPACES, TABS.OPS, TABS.CRM]
+  const leftTabs = [TABS.ORG_CHART, TABS.WORKSPACES, TABS.OPS, TABS.CRM, TABS.PROJECTS]
 
   const tabButton = (tab) => (
     <button

@@ -2,10 +2,11 @@ import { useTaskBoard } from '../../../../context/TaskBoardContext'
 import ProjectDetailHeader from './ProjectDetailHeader'
 import ProjectOverview from './ProjectOverview'
 import ProjectTaskList from './ProjectTaskList'
-import ProjectDocuments from './ProjectDocuments'
+import ProjectFiles from './ProjectFiles'
 import ProjectNotes from './ProjectNotes'
+import ProjectActivity from './ProjectActivity'
 
-const TABS = ['Overview', 'Tasks', 'Documents', 'Notes']
+const TABS = ['Overview', 'Tasks', 'Files', 'Notes', 'Activity']
 
 export default function ProjectDetailView() {
   const { state, actions } = useTaskBoard()
@@ -55,8 +56,9 @@ export default function ProjectDetailView() {
       <div style={{ flex: 1, overflow: 'auto' }}>
         {activeTab === 'overview' && <ProjectOverview project={project} />}
         {activeTab === 'tasks' && <ProjectTaskList project={project} />}
-        {activeTab === 'documents' && <ProjectDocuments project={project} />}
+        {activeTab === 'files' && <ProjectFiles project={project} />}
         {activeTab === 'notes' && <ProjectNotes project={project} />}
+        {activeTab === 'activity' && <ProjectActivity project={project} />}
       </div>
     </div>
   )

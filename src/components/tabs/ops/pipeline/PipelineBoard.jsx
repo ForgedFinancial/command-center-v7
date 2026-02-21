@@ -86,7 +86,11 @@ export default function PipelineBoard({ tasks, loading, filters, onFiltersChange
       {showNewForm && (
         <NewTaskForm
           onClose={() => setShowNewForm(false)}
-          onCreate={async (data) => { await onCreateTask(data); setShowNewForm(false) }}
+          onCreate={async (data) => {
+            const created = await onCreateTask(data)
+            setShowNewForm(false)
+            return created  // pass back so NewTaskForm can upload attachments to the real task ID
+          }}
         />
       )}
     </div>

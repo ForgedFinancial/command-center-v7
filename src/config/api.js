@@ -61,6 +61,7 @@ export const ENDPOINTS = {
   taskboardDocuments: '/api/taskboard/documents',
   taskboardDocument: (id) => `/api/taskboard/documents/${id}`,
   taskboardDocumentUpload: '/api/taskboard/documents/upload',
+  taskboardDocumentDownload: (id) => `/api/taskboard/documents/download/${id}`,
   taskboardLessons: '/api/taskboard/lessons',
 
   // Notifications
@@ -79,6 +80,10 @@ export const ENDPOINTS = {
   opsPipelineTask: (id) => `/api/ops/pipeline/tasks/${id}`,
   opsPipelineTaskComments: (id) => `/api/ops/pipeline/tasks/${id}/comments`,
   opsPipelineTaskReviews: (id) => `/api/ops/pipeline/tasks/${id}/reviews`,
+  opsPipelineTaskAdvance: (id) => `/api/ops/pipeline/tasks/${id}/advance`,
+  opsPipelineTaskAttachments: (id) => `/api/ops/pipeline/tasks/${id}/attachments`,
+  opsPipelineTaskAttachment: (taskId, attId) => `/api/ops/pipeline/tasks/${taskId}/attachments/${attId}`,
+  opsAttachmentFile: (taskId, filename) => `/api/ops/attachments/${taskId}/${filename}`,
   opsPipelineArchive: '/api/ops/pipeline/tasks/archive',
   opsPipelineBoard: '/api/ops/pipeline/board',
   opsKnowledgeEntries: '/api/ops/knowledge/entries',

@@ -5,8 +5,7 @@ import KanbanHeader from './kanban/KanbanHeader'
 import KanbanBoard from './kanban/KanbanBoard'
 import TaskDetailModal from './modal/TaskDetailModal'
 import TaskCreateModal from './modal/TaskCreateModal'
-import ProjectsView from './projects/ProjectsView'
-import ProjectCreateModal from './projects/ProjectCreateModal'
+import ProjectHub from './projects/ProjectHub'
 import TasksListView from './tasks/TasksListView'
 import DocumentsView from './documents/DocumentsView'
 import CalendarView from './calendar/CalendarView'
@@ -23,7 +22,7 @@ export default function TaskBoardTab() {
       <ViewContent view={state.activeView} loading={state.loading} />
       {state.selectedTask && <TaskDetailModal />}
       <TaskCreateModal />
-      <ProjectCreateModal />
+      {/* ProjectCreateModal is now rendered inside ProjectCanvas */}
     </>
   )
 }
@@ -88,7 +87,7 @@ function ViewContent({ view, loading }) {
         return <MessagesView />
       case TASK_BOARD_VIEWS.PROJECTS:
       case 'projects':
-        return <ProjectsView />
+        return <ProjectHub />
       case TASK_BOARD_VIEWS.TASKS:
       case 'tasks':
         return <TasksListView />

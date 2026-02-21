@@ -89,33 +89,71 @@ export default function TaskCard({ task, stageIdx, onClick, onMoveTask }) {
         {/* Stage move buttons */}
         {!isDone && (
           <div style={{ display: 'flex', gap: '4px', marginTop: '8px' }} onClick={e => e.stopPropagation()}>
-            {prevStage && (
-              <button
-                onClick={() => onMoveTask(task.id, prevStage)}
-                title={`Move to ${STAGE_CONFIG[prevStage].label}`}
-                style={{
-                  padding: '2px 8px', fontSize: '10px', fontWeight: 500,
-                  backgroundColor: 'rgba(255,255,255,0.05)', color: 'var(--theme-text-secondary)',
-                  border: '1px solid var(--theme-border, rgba(255,255,255,0.08))',
-                  borderRadius: '4px', cursor: 'pointer', transition: 'all 0.15s',
-                }}
-                onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--theme-accent)'; e.currentTarget.style.color = 'var(--theme-text-primary)' }}
-                onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--theme-border, rgba(255,255,255,0.08))'; e.currentTarget.style.color = 'var(--theme-text-secondary)' }}
-              >← {STAGE_CONFIG[prevStage].icon}</button>
-            )}
-            {nextStage && (
-              <button
-                onClick={() => onMoveTask(task.id, nextStage)}
-                title={`Move to ${STAGE_CONFIG[nextStage].label}`}
-                style={{
-                  padding: '2px 8px', fontSize: '10px', fontWeight: 500,
-                  backgroundColor: 'rgba(255,255,255,0.05)', color: 'var(--theme-text-secondary)',
-                  border: '1px solid var(--theme-border, rgba(255,255,255,0.08))',
-                  borderRadius: '4px', cursor: 'pointer', transition: 'all 0.15s', marginLeft: 'auto',
-                }}
-                onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--theme-accent)'; e.currentTarget.style.color = 'var(--theme-text-primary)' }}
-                onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--theme-border, rgba(255,255,255,0.08))'; e.currentTarget.style.color = 'var(--theme-text-secondary)' }}
-              >{STAGE_CONFIG[nextStage].icon} →</button>
+            {task.stage === 'BOSS_REVIEW' ? (
+              <div style={{ display: 'flex', gap: '4px', width: '100%' }}>
+                <button
+                  onClick={() => onMoveTask(task.id, 'DONE')}
+                  style={{
+                    flex: 1, padding: '5px 0', fontSize: '10px', fontWeight: 700,
+                    backgroundColor: '#10b981', color: '#fff',
+                    border: 'none', borderRadius: '5px', cursor: 'pointer',
+                    boxShadow: '0 0 8px rgba(16,185,129,0.3)', transition: 'all 0.15s',
+                  }}
+                  onMouseOver={e => e.currentTarget.style.backgroundColor = '#059669'}
+                  onMouseOut={e => e.currentTarget.style.backgroundColor = '#10b981'}
+                >✓ Approve</button>
+                <button
+                  onClick={onClick}
+                  style={{
+                    flex: 1, padding: '5px 0', fontSize: '10px', fontWeight: 700,
+                    backgroundColor: 'rgba(245,158,11,0.15)', color: '#f59e0b',
+                    border: '1px solid rgba(245,158,11,0.3)', borderRadius: '5px', cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                  onMouseOver={e => e.currentTarget.style.backgroundColor = 'rgba(245,158,11,0.25)'}
+                  onMouseOut={e => e.currentTarget.style.backgroundColor = 'rgba(245,158,11,0.15)'}
+                >✏ Modify</button>
+                <button
+                  onClick={onClick}
+                  style={{
+                    flex: 1, padding: '5px 0', fontSize: '10px', fontWeight: 700,
+                    backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444',
+                    border: '1px solid rgba(239,68,68,0.25)', borderRadius: '5px', cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                  onMouseOver={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.22)'}
+                  onMouseOut={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.12)'}
+                >✗ Decline</button>
+              </div>
+            ) : (
+              <>
+                {prevStage && (
+                  <button
+                    onClick={() => onMoveTask(task.id, prevStage)}
+                    title={`Move to ${STAGE_CONFIG[prevStage].label}`}
+                    style={{
+                      padding: '2px 8px', fontSize: '10px', fontWeight: 500,
+                      backgroundColor: 'rgba(255,255,255,0.05)', color: 'var(--theme-text-secondary)',
+                      border: '1px solid var(--theme-border, rgba(255,255,255,0.08))',
+                      borderRadius: '4px', cursor: 'pointer', transition: 'all 0.15s',
+                    }}
+                    onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--theme-accent)'; e.currentTarget.style.color = 'var(--theme-text-primary)' }}
+                    onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--theme-border, rgba(255,255,255,0.08))'; e.currentTarget.style.color = 'var(--theme-text-secondary)' }}
+                  >← {STAGE_CONFIG[prevStage].icon}</button>
+                )}
+                {nextStage && (
+                  <button
+                    onClick={() => onMoveTask(task.id, nextStage)}
+                    title={`Move to ${STAGE_CONFIG[nextStage].label}`}
+                    style={{
+                      padding: '2px 8px', fontSize: '10px', fontWeight: 500,
+                      backgroundColor: 'rgba(255,255,255,0.05)', color: 'var(--theme-text-secondary)',
+                      border: '1px solid var(--theme-border, rgba(255,255,255,0.08))',
+                      borderRadius: '4px', cursor: 'pointer', transition: 'all 0.15s', marginLeft: 'auto',
+                    }}
+                    onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--theme-accent)'; e.currentTarget.style.color = 'var(--theme-text-primary)' }}
+                    onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--theme-border, rgba(255,255,255,0.08))'; e.currentTarget.style.color = 'var(--theme-text-secondary)' }}
+                  >{STAGE_CONFIG[nextStage].icon} →</button>
+                )}
+              </>
             )}
           </div>
         )}

@@ -125,6 +125,30 @@ class TaskboardClient {
     return this.request(ENDPOINTS.taskboardDocument(id), { method: 'DELETE' })
   }
 
+  async batchUpdateCanvasPositions(positions) {
+    return this.request('/api/taskboard/projects/canvas-positions', {
+      method: 'PUT',
+      body: JSON.stringify({ positions }),
+    })
+  }
+
+  async uploadFile(file, projectId) {
+    const formData = new FormData()
+    formData.append('file', file)
+    if (projectId) formData.append('projectId', projectId)
+    const token = sessionStorage.getItem('forged-os-token') || ''
+    const res = await fetch(`${this.baseUrl}${ENDPOINTS.taskboardDocumentUpload}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'x-api-key': import.meta.env.VITE_SYNC_API_KEY || import.meta.env.VITE_WORKER_API_KEY || '',
+      },
+      body: formData,
+    })
+    if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
+    return res.json()
+  }
+
   // Lessons
   async getLessons(query = {}) {
     const params = new URLSearchParams(Object.entries(query).filter(([, v]) => v))

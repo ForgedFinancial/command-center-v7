@@ -1,19 +1,88 @@
+import { useState } from 'react'
 import { useTaskBoard } from '../../../../context/TaskBoardContext'
+import { useApp } from '../../../../context/AppContext'
 import { STAGE_CONFIG, PRIORITY_CONFIG, AGENT_COLORS } from '../../../../config/taskboard'
+import taskboardClient from '../../../../api/taskboardClient'
 import EmptyState from '../../../shared/EmptyState'
+
+function AddTaskInline({ project, onDone }) {
+  const { actions } = useTaskBoard()
+  const { actions: appActions } = useApp()
+  const [title, setTitle] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const handleSubmit = async () => {
+    if (!title.trim()) return
+    setSaving(true)
+    try {
+      const res = await taskboardClient.createTask({ title: title.trim(), projectId: project.id })
+      if (res.ok) {
+        actions.addTask(res.data)
+        appActions.addToast({ type: 'success', message: 'Task added to project' })
+        setTitle('')
+        onDone()
+      }
+    } catch (err) {
+      appActions.addToast({ type: 'error', message: `Failed: ${err.message}` })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+      <input
+        type="text" value={title} onChange={(e) => setTitle(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); if (e.key === 'Escape') onDone() }}
+        placeholder="Task title..." autoFocus
+        style={{
+          flex: 1, padding: '8px 12px', borderRadius: '8px',
+          border: '1px solid var(--theme-accent)', background: 'rgba(255,255,255,0.04)',
+          color: 'var(--theme-text-primary)', fontSize: '12px', outline: 'none', fontFamily: 'inherit',
+        }}
+      />
+      <button onClick={handleSubmit} disabled={saving || !title.trim()}
+        style={{
+          padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--theme-accent)',
+          background: 'var(--theme-accent-muted)', color: 'var(--theme-accent)',
+          fontSize: '11px', fontWeight: 600, cursor: 'pointer', opacity: !title.trim() ? 0.5 : 1,
+        }}>{saving ? '...' : 'Add'}</button>
+      <button onClick={onDone} style={{
+        padding: '8px 10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
+        background: 'transparent', color: 'var(--theme-text-secondary)',
+        fontSize: '11px', cursor: 'pointer',
+      }}>Cancel</button>
+    </div>
+  )
+}
 
 export default function ProjectTaskList({ project }) {
   const { state, actions } = useTaskBoard()
+  const [showAdd, setShowAdd] = useState(false)
   const projectTasks = state.tasks
     .filter(t => t.projectId === project.id)
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
-  if (projectTasks.length === 0) {
-    return <EmptyState icon="✅" title="No Tasks" message="No tasks are linked to this project yet." />
-  }
-
   return (
     <div>
+      {/* Add Task button */}
+      <div style={{ marginBottom: '12px' }}>
+        {showAdd ? (
+          <AddTaskInline project={project} onDone={() => setShowAdd(false)} />
+        ) : (
+          <button onClick={() => setShowAdd(true)}
+            style={{
+              padding: '7px 14px', borderRadius: '8px',
+              border: '1px solid rgba(0,212,255,0.3)', background: 'var(--theme-accent-muted)',
+              color: 'var(--theme-accent)', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+            }}>+ Add Task</button>
+        )}
+      </div>
+
+      {projectTasks.length === 0 && !showAdd ? (
+        <EmptyState icon="✅" title="No Tasks" message="No tasks are linked to this project yet." />
+      ) : (
+        <div>
       {projectTasks.map(task => {
         const stageConf = STAGE_CONFIG[task.stage] || {}
         const priorityConf = PRIORITY_CONFIG[task.priority] || {}
@@ -100,6 +169,8 @@ export default function ProjectTaskList({ project }) {
           </div>
         )
       })}
+        </div>
+      )}
     </div>
   )
 }

@@ -17,6 +17,14 @@ import ConnectionBanner from '../shared/ConnectionBanner'
 import OrgChart from '../tabs/OrgChart'
 import Workspaces from '../tabs/Workspaces'
 import TaskBoardTab from '../tabs/task-board/TaskBoardTab'
+import ProjectsView from '../tabs/task-board/projects/ProjectsView'
+import { useTaskBoardData } from '../../hooks/useTaskBoard'
+
+// Standalone Projects tab — loads taskboard data without the full TaskBoardTab
+function ProjectsTab() {
+  useTaskBoardData()
+  return <ProjectsView />
+}
 import CRMTab from '../tabs/crm/CRMTab'
 import StandUpTab from '../tabs/stand-up/StandUpTab'
 import OpsTab from '../tabs/ops/OpsTab'
@@ -257,6 +265,8 @@ function TabContent({ activeTab }) {
       return <ErrorBoundary><CRMTab /></ErrorBoundary>
     case TABS.OPS:
       return <ErrorBoundary><OpsTab /></ErrorBoundary>
+    case TABS.PROJECTS:
+      return <ErrorBoundary><ProjectsTab /></ErrorBoundary>
     case TABS.STAND_UP:
       return <ErrorBoundary><StandUpTab /></ErrorBoundary>
     default:
