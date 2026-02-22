@@ -26,7 +26,7 @@ function notifyTaskWebhook(task) {
       },
       body: JSON.stringify({
         taskId: task.id,
-        title: task.name || task.title,
+        title: task.name,
         description: task.description,
         priority: task.priority,
         startTime: task.startTime || null,
@@ -175,7 +175,7 @@ export function TaskBoardProvider({ children }) {
     setError: useCallback((error) => dispatch({ type: ActionTypes.SET_ERROR, payload: error }), []),
     updateTask: useCallback((task) => {
       dispatch({ type: ActionTypes.UPDATE_TASK, payload: task })
-      notifyTelegram('task_updated', task.name || task.title || task.id, { stage: task.stage, priority: task.priority })
+      notifyTelegram('task_updated', task.name || task.id, { stage: task.stage, priority: task.priority })
       // Feature 3: webhook when task moves to new-task
       if (task.stage === 'new_task') {
         notifyTaskWebhook(task)
@@ -183,7 +183,7 @@ export function TaskBoardProvider({ children }) {
     }, []),
     addTask: useCallback((task) => {
       dispatch({ type: ActionTypes.ADD_TASK, payload: task })
-      notifyTelegram('task_created', task.name || task.title || 'New Task', { stage: task.stage, priority: task.priority })
+      notifyTelegram('task_created', task.name || 'New Task', { stage: task.stage, priority: task.priority })
       // Feature 3: webhook when task enters new-task
       if (task.stage === 'new_task' || !task.stage) {
         notifyTaskWebhook(task)
