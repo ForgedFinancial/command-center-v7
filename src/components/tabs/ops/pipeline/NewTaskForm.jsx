@@ -1,15 +1,12 @@
 import { useState, useRef, useCallback } from 'react'
-import { AGENTS, TASK_TYPES, PRIORITIES, TIERS, AGENT_STAGE_ROUTING } from './pipelineConstants'
+import { PRIORITIES, AGENT_STAGE_ROUTING } from './pipelineConstants'
 import { WORKER_PROXY_URL, SYNC_API_KEY, ENDPOINTS } from '../../../../config/api'
 
 export default function NewTaskForm({ onClose, onCreate }) {
   const [name, setName]               = useState('')
   const [description, setDescription] = useState('')
-  const [type, setType]               = useState('build')
   const [taskType, setTaskType]       = useState('frontend')
   const [priority, setPriority]       = useState('normal')
-  const [assignee, setAssignee]       = useState('clawd')
-  const [tier, setTier]               = useState('build')
   const [specRef, setSpecRef]         = useState('')
   const [tags, setTags]               = useState('')
   const [submitting, setSubmitting]   = useState(false)
@@ -22,6 +19,7 @@ export default function NewTaskForm({ onClose, onCreate }) {
   const fileInputRef                      = useRef(null)
 
   const canSubmit = name.trim().length > 0 && !submitting
+  const assignee = 'clawd'
   const routedStage = AGENT_STAGE_ROUTING[assignee] || 'INTAKE'
 
   // ── Attachment helpers ──
@@ -92,12 +90,12 @@ export default function NewTaskForm({ onClose, onCreate }) {
         createdBy: 'dano',
         stage: isBacklog ? 'INTAKE' : routedStage,
         isBacklog,
-        type,
+        type: 'build',
         taskType,
         priority,
         specRef: specRef.trim() || null,
         tags: [
-          type, tier,
+          taskType,
           ...(tags.trim() ? tags.split(',').map(t => t.trim()).filter(Boolean) : [])
         ],
       })
@@ -120,8 +118,6 @@ export default function NewTaskForm({ onClose, onCreate }) {
     fontSize: '11px', fontWeight: 600, letterSpacing: '0.04em',
     color: 'var(--theme-text-secondary)', marginBottom: '5px', display: 'block', textTransform: 'uppercase',
   }
-
-  const agentInfo = AGENTS[assignee] || { label: assignee, color: '#6b7280', icon: '👤' }
 
   return (
     <div onClick={onClose} style={{
@@ -157,24 +153,6 @@ export default function NewTaskForm({ onClose, onCreate }) {
               placeholder="Context, requirements, anything the agent needs…" style={{ ...base, resize: 'vertical' }} />
           </div>
 
-          {/* Assignee picker */}
-          <div>
-            <label style={label}>Assign To</label>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              {Object.entries(AGENTS).map(([id, a]) => (
-                <button key={id} type="button" onClick={() => setAssignee(id)} style={{
-                  padding: '6px 12px', fontSize: '12px', fontWeight: assignee === id ? 700 : 400,
-                  backgroundColor: assignee === id ? a.color + '25' : 'transparent',
-                  color: assignee === id ? a.color : 'var(--theme-text-secondary)',
-                  border: `1px solid ${assignee === id ? a.color : 'var(--theme-border, rgba(255,255,255,0.08))'}`,
-                  borderRadius: '6px', cursor: 'pointer', transition: 'all 0.12s',
-                }}>
-                  {a.icon} {a.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Workstream */}
           <div>
             <label style={label}>Workstream</label>
@@ -208,59 +186,23 @@ export default function NewTaskForm({ onClose, onCreate }) {
             </div>
           </div>
 
-          {/* Tier + Type + Priority */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-            <div>
-              <label style={label}>Tier</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                {TIERS.map(t => (
-                  <label key={t.value} style={{
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                    padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px',
-                    backgroundColor: tier === t.value ? 'rgba(139,92,246,0.15)' : 'transparent',
-                    color: tier === t.value ? 'var(--theme-accent)' : 'var(--theme-text-secondary)',
-                    fontWeight: tier === t.value ? 600 : 400,
-                  }}>
-                    <input type="radio" name="tier" value={t.value} checked={tier === t.value} onChange={() => setTier(t.value)} style={{ display: 'none' }} />
-                    {t.label}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label style={label}>Type</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                {TASK_TYPES.map(t => (
-                  <label key={t.value} style={{
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                    padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px',
-                    backgroundColor: type === t.value ? 'rgba(139,92,246,0.15)' : 'transparent',
-                    color: type === t.value ? 'var(--theme-accent)' : 'var(--theme-text-secondary)',
-                    fontWeight: type === t.value ? 600 : 400,
-                  }}>
-                    <input type="radio" name="type" value={t.value} checked={type === t.value} onChange={() => setType(t.value)} style={{ display: 'none' }} />
-                    {t.label}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label style={label}>Priority</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                {PRIORITIES.map(p => (
-                  <label key={p.value} style={{
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                    padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px',
-                    backgroundColor: priority === p.value ? 'rgba(255,255,255,0.06)' : 'transparent',
-                    color: priority === p.value ? p.color : 'var(--theme-text-secondary)',
-                    border: priority === p.value ? `1px solid ${p.color}` : '1px solid transparent',
-                    fontWeight: priority === p.value ? 600 : 400,
-                  }}>
-                    <input type="radio" name="priority" value={p.value} checked={priority === p.value} onChange={() => setPriority(p.value)} style={{ display: 'none' }} />
-                    {p.label}
-                  </label>
-                ))}
-              </div>
+          {/* Priority */}
+          <div>
+            <label style={label}>Priority</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
+              {PRIORITIES.map(p => (
+                <label key={p.value} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  padding: '6px 8px', borderRadius: '6px', cursor: 'pointer', fontSize: '11px',
+                  backgroundColor: priority === p.value ? 'rgba(255,255,255,0.06)' : 'transparent',
+                  color: priority === p.value ? p.color : 'var(--theme-text-secondary)',
+                  border: priority === p.value ? `1px solid ${p.color}` : '1px solid var(--theme-border)',
+                  fontWeight: priority === p.value ? 600 : 400,
+                }}>
+                  <input type="radio" name="priority" value={p.value} checked={priority === p.value} onChange={() => setPriority(p.value)} style={{ display: 'none' }} />
+                  {p.label}
+                </label>
+              ))}
             </div>
           </div>
 
