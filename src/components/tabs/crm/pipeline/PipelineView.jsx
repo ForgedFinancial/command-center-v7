@@ -20,6 +20,7 @@ import CardFieldSettings from './CardFieldSettings'
 import TransferModal from './TransferModal'
 import BatchActions from './BatchActions'
 import UploadLeadsModal from './UploadLeadsModal'
+import toast from 'react-hot-toast'
 
 // Shimmer skeleton for loading state
 function SkeletonCard() {
@@ -165,6 +166,7 @@ export default function PipelineView() {
   const executeStageMove = async (lead, fromStageId, toStageId, fieldUpdates) => {
     const leadId = lead.id
     const now = new Date().toISOString()
+    const originalLeads = [...state.leads]
     const updateData = { id: leadId, stage_id: toStageId, stageId: toStageId, updated_at: now, updatedAt: now, ...fieldUpdates }
     actions.updateLead(updateData)
     try {
@@ -174,7 +176,8 @@ export default function PipelineView() {
       await crmClient.moveLead(leadId, currentPipelineId, toStageId, lead.pipeline_id || lead.pipelineId, fromStageId)
     } catch (err) {
       console.error('Failed to update stage:', err)
-      actions.updateLead({ id: leadId, stage_id: fromStageId, stageId: fromStageId })
+      toast.error('Failed to update lead. Please try again.')
+      actions.setLeads(originalLeads)
     }
   }
 

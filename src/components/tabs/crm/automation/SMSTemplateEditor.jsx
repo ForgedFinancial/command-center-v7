@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import crmClient from '../../../../api/crmClient'
 import { DEFAULT_TEMPLATES } from '../../../../config/automationDefaults'
+import toast from 'react-hot-toast'
 
 const SAMPLE_LEAD = {
   name: 'John Smith', first_name: 'John', last_name: 'Smith',
@@ -54,16 +55,22 @@ export default function SMSTemplateEditor() {
       setSaveStatus({ [t.id]: { type: 'warn', msg: `Missing required variables: ${missing.map(v => `{{${v}}}`).join(', ')}` } })
       return
     }
-    try {
-      await crmClient.request(`/sms-templates/${t.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ content: editContent }),
+
+    crmClient.request(`/sms-templates/${t.id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ content: editContent }),
+    })
+      .then(() => {
+        toast.success('Template saved successfully')
+        setTemplates(prev => prev.map(tp => tp.id === t.id ? { ...tp, content: editContent } : tp))
+        setSaveStatus({ [t.id]: { type: 'success', msg: 'Saved!' } })
+        setEditingId(null)
+        setTimeout(() => setSaveStatus({}), 2000)
       })
-    } catch {}
-    setTemplates(prev => prev.map(tp => tp.id === t.id ? { ...tp, content: editContent } : tp))
-    setSaveStatus({ [t.id]: { type: 'success', msg: 'Saved!' } })
-    setEditingId(null)
-    setTimeout(() => setSaveStatus({}), 2000)
+      .catch(err => {
+        console.error(err)
+        toast.error('Failed to save template. Please try again.')
+      })
   }
 
   const resetTemplate = async (t) => {

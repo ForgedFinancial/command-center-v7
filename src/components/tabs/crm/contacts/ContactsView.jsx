@@ -9,6 +9,7 @@ import PipelineModeToggle, { filterByPipelineMode } from '../PipelineModeToggle'
 import DataSourceToggle from '../../../shared/DataSourceToggle'
 import { useDataSource } from '../../../../hooks/useDataSource'
 import { LEAD_TYPES } from '../../../../config/leadTypes'
+import toast from 'react-hot-toast'
 
 function formatPhone(phone) {
   if (!phone) return ''
@@ -136,12 +137,31 @@ export default function ContactsView() {
       return next
     })
   }, [])
+
+  const refreshContacts = useCallback(async () => {
+    try {
+      const res = await crmClient.getLeads()
+      const leads = Array.isArray(res) ? res : res.leads || res.data || []
+      actions.setLeads(leads)
+    } catch (err) {
+      console.error(err)
+    }
+  }, [actions])
+
   const handleDeleteLead = useCallback((leadId, leadName, e) => {
     if (e) { e.stopPropagation(); e.preventDefault() }
     if (!confirm(`Delete ${leadName || 'this lead'}?`)) return
-    actions.removeLead(leadId)
-    crmClient.deleteLead(leadId).catch(() => {})
-  }, [actions])
+
+    crmClient.deleteLead(leadId)
+      .then(() => {
+        toast.success('Contact deleted successfully')
+        refreshContacts()
+      })
+      .catch(err => {
+        console.error(err)
+        toast.error('Failed to delete contact. Please try again.')
+      })
+  }, [refreshContacts])
   const [expandedContact, setExpandedContact] = useState(null)
   const [detailTab, setDetailTab] = useState('info')
   // Discover custom columns from lead data

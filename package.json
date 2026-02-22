@@ -22,7 +22,8 @@
     "@twilio/voice-sdk": "^2.18.0",
     "react": "^19.0.0",
     "react-d3-tree": "^3.6.2",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-hot-toast": "^2.6.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.4",

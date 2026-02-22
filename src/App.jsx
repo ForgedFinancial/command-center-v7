@@ -9,6 +9,7 @@ import FloatingCallBar from './components/shared/FloatingCallBar'
 import { IncomingCallBanner } from './components/tabs/crm/phone/RingingSystem'
 import CallScriptPanel from './components/tabs/crm/phone/CallScriptPanel'
 import DialerModal from './components/shared/DialerModal'
+import { Toaster } from 'react-hot-toast'
 
 const UI_SCALE_KEY = 'cc7-ui-scale'
 const DEFAULT_SCALE = 100
@@ -75,6 +76,7 @@ function App() {
         <PhoneProvider>
           <TaskBoardProvider>
             <CRMProvider>
+              <Toaster position="top-right" />
               <Shell />
               <FloatingCallBar />
               <IncomingCallBanner />
