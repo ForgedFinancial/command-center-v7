@@ -18,6 +18,52 @@
   height: calc(100% / var(--ui-scale, 1));
 }
 
+[data-theme="matrix"] {
+  --theme-bg-primary: #000000;
+  --theme-bg-secondary: #001a00;
+  --theme-bg-tertiary: #002600;
+  --theme-bg-hover: #003300;
+  --theme-text-primary: #00ff00;
+  --theme-text-secondary: #00cc00;
+  --theme-text-muted: #006600;
+  --theme-text-disabled: #004400;
+  --theme-accent: #00ff00;
+  --theme-accent-hover: #00cc00;
+  --theme-accent-active: #00aa00;
+  --theme-border: #003300;
+  --theme-border-hover: #00ff00;
+  --theme-border-focus: #00ff00;
+  --theme-card-bg: #001100;
+  --theme-card-hover: #002200;
+  --theme-card-selected: #003300;
+  --theme-success: #00ff00;
+  --theme-success-bg: #001a00;
+  --theme-error: #ff0000;
+  --theme-error-bg: #1a0000;
+  --theme-warning: #ffff00;
+  --theme-warning-bg: #1a1a00;
+  --theme-info: #00ffff;
+  --theme-info-bg: #001a1a;
+  --theme-modal-overlay: rgba(0, 255, 0, 0.1);
+  --theme-modal-bg: #000000;
+  --theme-input-bg: #001100;
+  --theme-input-border: #003300;
+  --theme-input-focus: #00ff00;
+  --theme-input-text: #00ff00;
+  --theme-button-primary-bg: #003300;
+  --theme-button-primary-hover: #004400;
+  --theme-button-primary-text: #00ff00;
+  --theme-button-secondary-bg: #001100;
+  --theme-button-secondary-hover: #002200;
+  --theme-button-secondary-text: #00cc00;
+  --theme-scrollbar-track: #000000;
+  --theme-scrollbar-thumb: #003300;
+  --theme-scrollbar-thumb-hover: #00ff00;
+  --theme-shadow-sm: 0 1px 2px 0 rgba(0,255,0,0.05);
+  --theme-shadow-md: 0 4px 6px -1px rgba(0,255,0,0.1);
+  --theme-shadow-lg: 0 10px 15px -3px rgba(0,255,0,0.2);
+}
+
 :root,
 [data-theme="obsidian"] {
   --theme-bg:              #0f172a;
