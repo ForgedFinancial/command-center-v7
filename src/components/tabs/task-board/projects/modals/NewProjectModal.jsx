@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import Modal from '../../../shared/Modal'
+import Modal from '../../../../shared/Modal'
 import { useTaskBoard } from '../../../../../context/TaskBoardContext'
 import { useApp } from '../../../../../context/AppContext'
 import taskboardClient from '../../../../../api/taskboardClient'
