@@ -7,7 +7,6 @@ export default function NewTaskForm({ onClose, onCreate }) {
   const [description, setDescription] = useState('')
   const [taskType, setTaskType]       = useState('frontend')
   const [priority, setPriority]       = useState('normal')
-  const [specRef, setSpecRef]         = useState('')
   const [tags, setTags]               = useState('')
   const [submitting, setSubmitting]   = useState(false)
   const [error, setError]             = useState(null)
@@ -89,7 +88,7 @@ export default function NewTaskForm({ onClose, onCreate }) {
         isBacklog,
         taskType,
         priority,
-        specRef: specRef.trim() || null,
+        specRef: null,
         tags: [
           taskType,
           ...(tags.trim() ? tags.split(',').map(t => t.trim()).filter(Boolean) : [])
@@ -191,16 +190,10 @@ export default function NewTaskForm({ onClose, onCreate }) {
             </div>
           </div>
 
-          {/* Spec ref + Tags */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            <div>
-              <label style={label}>Spec Reference <span style={{ fontWeight: 400, textTransform: 'none', opacity: 0.6 }}>(optional)</span></label>
-              <input value={specRef} onChange={e => setSpecRef(e.target.value)} placeholder="plans/SPEC.md" style={base} />
-            </div>
-            <div>
-              <label style={label}>Tags <span style={{ fontWeight: 400, textTransform: 'none', opacity: 0.6 }}>(comma-sep)</span></label>
-              <input value={tags} onChange={e => setTags(e.target.value)} placeholder="cc-v7, urgent" style={base} />
-            </div>
+          {/* Tags */}
+          <div>
+            <label style={label}>Tags <span style={{ fontWeight: 400, textTransform: 'none', opacity: 0.6 }}>(comma-sep)</span></label>
+            <input value={tags} onChange={e => setTags(e.target.value)} placeholder="cc-v7, urgent" style={base} />
           </div>
 
           {/* Attachments */}
