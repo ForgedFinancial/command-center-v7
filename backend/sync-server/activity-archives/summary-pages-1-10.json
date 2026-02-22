@@ -1,0 +1,123 @@
+{
+  "compiledAt": "2026-02-16T13:00:02.130Z",
+  "fromPage": 1,
+  "toPage": 10,
+  "period": {
+    "from": "2026-02-16T13:00:02.087Z",
+    "to": "2026-02-10T02:38:51.754Z"
+  },
+  "totalEntries": 926,
+  "byType": {
+    "system": 838,
+    "security": 87,
+    "alert": 1
+  },
+  "byOperator": {
+    "system": 771,
+    "openclaw": 155
+  },
+  "alerts": 1,
+  "errors": 1,
+  "highlights": [
+    {
+      "ts": "2026-02-10T03:00:01.257Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T04:00:01.532Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T05:00:01.886Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T06:00:01.219Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T07:00:01.752Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T08:00:02.293Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T09:00:01.622Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T10:00:01.205Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T11:00:01.525Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T12:00:02.253Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T13:00:01.602Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T14:00:02.076Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T15:00:01.403Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T16:00:01.730Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T17:00:01.453Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T18:00:01.806Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T19:00:02.284Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T20:00:01.709Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T21:00:02.328Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    },
+    {
+      "ts": "2026-02-10T22:00:01.796Z",
+      "txt": "⚙️ Services Check",
+      "sub": "ff-sync: active | cc-watcher: active | gateway: inactive"
+    }
+  ]
+}

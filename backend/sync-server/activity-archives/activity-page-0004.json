@@ -1,0 +1,965 @@
+[
+  {
+    "id": "sys-health-mlie9s0n",
+    "ts": "2026-02-11T19:00:01.175Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: 1h 19m | Updates: 954 | Last: 2/11/26 - 6:31 pm",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlie9s1i",
+    "ts": "2026-02-11T19:00:01.206Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-access-mlie9s1k",
+    "ts": "2026-02-11T19:00:01.208Z",
+    "type": "security",
+    "op": "system",
+    "txt": "🔍 3 new access log entries",
+    "sub": "Devices: 5 known | Latest: 180.191.223.114 (2ea348bd)",
+    "ico": "info"
+  },
+  {
+    "id": "sys-audit-mlie9s1l",
+    "ts": "2026-02-11T19:00:01.209Z",
+    "type": "security",
+    "op": "system",
+    "txt": "📋 36 audit events",
+    "sub": "1 logins | 17 pushes | 15 state saves",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlie9s2e",
+    "ts": "2026-02-11T19:00:01.238Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 11% | RAM: 25% (2007MB/7940MB) | Load: 0.05 0.08 0.09",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlie9s3o",
+    "ts": "2026-02-11T19:00:01.284Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: active | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-sync-mlie9s3y",
+    "ts": "2026-02-11T19:00:01.294Z",
+    "type": "system",
+    "op": "system",
+    "txt": "🔄 20 sync updates since last check",
+    "sub": "log: 4 | document: 3 | ai_request: 2 | systems: 11",
+    "ico": "info"
+  },
+  {
+    "id": "sys-backup-mlie9s44",
+    "ts": "2026-02-11T19:00:01.300Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 27 | Activity archives: 3 | Logger pages: 4",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mligey2k",
+    "ts": "2026-02-11T20:00:01.532Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: 0h 7m | Updates: 993 | Last: 2/11/26 - 7:52 pm",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mligey33",
+    "ts": "2026-02-11T20:00:01.551Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-access-mligey3a",
+    "ts": "2026-02-11T20:00:01.558Z",
+    "type": "security",
+    "op": "system",
+    "txt": "🔍 16 new access log entries",
+    "sub": "Devices: 5 known | Latest: 74.119.158.42 (706b9371)",
+    "ico": "info"
+  },
+  {
+    "id": "sys-audit-mligey3e",
+    "ts": "2026-02-11T20:00:01.562Z",
+    "type": "security",
+    "op": "system",
+    "txt": "📋 58 audit events",
+    "sub": "2 logins | 31 pushes | 7 state saves",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mligey4b",
+    "ts": "2026-02-11T20:00:01.595Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 11% | RAM: 26% (2082MB/7940MB) | Load: 0.74 0.65 0.55",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mligey89",
+    "ts": "2026-02-11T20:00:01.737Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: active | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-secscan-mligeydi",
+    "ts": "2026-02-11T20:00:01.926Z",
+    "type": "security",
+    "op": "system",
+    "txt": "🛡️ Security Scan: 85/100",
+    "sub": "2FA (TOTP): warn, IP Allowlist: warn, SSH Root Login: warn",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-sync-mligeydo",
+    "ts": "2026-02-11T20:00:01.933Z",
+    "type": "system",
+    "op": "system",
+    "txt": "🔄 31 sync updates since last check",
+    "sub": "connectedSystems: 23 | logs: 2 | log: 2 | document: 3 | workflow: 1",
+    "ico": "info"
+  },
+  {
+    "id": "sys-backup-mligeyds",
+    "ts": "2026-02-11T20:00:01.936Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 27 | Activity archives: 4 | Logger pages: 4",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mliik3nh",
+    "ts": "2026-02-11T21:00:01.277Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: 0h 48m | Updates: 1032 | Last: 2/11/26 - 8:11 pm",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mliik3oj",
+    "ts": "2026-02-11T21:00:01.315Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-access-mliik3ol",
+    "ts": "2026-02-11T21:00:01.317Z",
+    "type": "security",
+    "op": "system",
+    "txt": "🔍 10 new access log entries",
+    "sub": "Devices: 5 known | Latest: 74.119.158.40 (6bbe549e)",
+    "ico": "info"
+  },
+  {
+    "id": "sys-audit-mliik3op",
+    "ts": "2026-02-11T21:00:01.321Z",
+    "type": "security",
+    "op": "system",
+    "txt": "📋 48 audit events",
+    "sub": "2 logins | 30 pushes | 4 state saves",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mliik3ph",
+    "ts": "2026-02-11T21:00:01.349Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 13% | RAM: 32% (2561MB/7940MB) | Load: 0.24 0.24 0.30",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mliik3r0",
+    "ts": "2026-02-11T21:00:01.404Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: active | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-sync-mliik3r9",
+    "ts": "2026-02-11T21:00:01.413Z",
+    "type": "system",
+    "op": "system",
+    "txt": "🔄 33 sync updates since last check",
+    "sub": "log: 3 | document: 6 | connectedSystems: 22 | logs: 2",
+    "ico": "info"
+  },
+  {
+    "id": "sys-backup-mliik3re",
+    "ts": "2026-02-11T21:00:01.418Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 27 | Activity archives: 4 | Logger pages: 4",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlikp9pa",
+    "ts": "2026-02-11T22:00:01.630Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: 0h 18m | Updates: 1080 | Last: 2/11/26 - 9:41 pm",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlikp9q2",
+    "ts": "2026-02-11T22:00:01.658Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-access-mlikp9q4",
+    "ts": "2026-02-11T22:00:01.660Z",
+    "type": "security",
+    "op": "system",
+    "txt": "🔍 11 new access log entries",
+    "sub": "Devices: 5 known | Latest: 74.119.158.42 (706b9371)",
+    "ico": "info"
+  },
+  {
+    "id": "sys-audit-mlikp9q6",
+    "ts": "2026-02-11T22:00:01.662Z",
+    "type": "security",
+    "op": "system",
+    "txt": "📋 73 audit events",
+    "sub": "2 logins | 40 pushes | 17 state saves",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlikp9qz",
+    "ts": "2026-02-11T22:00:01.691Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 13% | RAM: 33% (2637MB/7940MB) | Load: 0.04 0.10 0.16",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlikp9sc",
+    "ts": "2026-02-11T22:00:01.740Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: active | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-sync-mlikp9sk",
+    "ts": "2026-02-11T22:00:01.748Z",
+    "type": "system",
+    "op": "system",
+    "txt": "🔄 44 sync updates since last check",
+    "sub": "log: 5 | document: 3 | connectedSystems: 33 | logs: 3",
+    "ico": "info"
+  },
+  {
+    "id": "sys-backup-mlikp9ss",
+    "ts": "2026-02-11T22:00:01.756Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 27 | Activity archives: 4 | Logger pages: 4",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlimufsg",
+    "ts": "2026-02-11T23:00:02.032Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: 0h 32m | Updates: 1100 | Last: 2/11/26 - 10:27 pm",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlimuft0",
+    "ts": "2026-02-11T23:00:02.053Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-audit-mlimuft5",
+    "ts": "2026-02-11T23:00:02.057Z",
+    "type": "security",
+    "op": "system",
+    "txt": "📋 16 audit events",
+    "sub": "12 pushes | 3 state saves",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlimufuq",
+    "ts": "2026-02-11T23:00:02.114Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 13% | RAM: 34% (2700MB/7940MB) | Load: 0.32 0.33 0.29",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlimufvt",
+    "ts": "2026-02-11T23:00:02.153Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: active | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-sync-mlimufvy",
+    "ts": "2026-02-11T23:00:02.158Z",
+    "type": "system",
+    "op": "system",
+    "txt": "🔄 15 sync updates since last check",
+    "sub": "log: 3 | connectedSystems: 11 | logs: 1",
+    "ico": "info"
+  },
+  {
+    "id": "sys-backup-mlimufw8",
+    "ts": "2026-02-11T23:00:02.168Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 27 | Activity archives: 4 | Logger pages: 4",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mliozlxg",
+    "ts": "2026-02-12T00:00:02.500Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: 1h 32m | Updates: 1107 | Last: 2/11/26 - 11:00 pm",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mliozm0t",
+    "ts": "2026-02-12T00:00:02.621Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-audit-mliozm1j",
+    "ts": "2026-02-12T00:00:02.647Z",
+    "type": "security",
+    "op": "system",
+    "txt": "📋 3 audit events",
+    "sub": "3 state saves",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mliozm3a",
+    "ts": "2026-02-12T00:00:02.710Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 13% | RAM: 11% (874MB/7940MB) | Load: 0.88 0.77 0.76",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mliozm46",
+    "ts": "2026-02-12T00:00:02.742Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: active | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mliozm4o",
+    "ts": "2026-02-12T00:00:02.760Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 27 | Activity archives: 4 | Logger pages: 4",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlir4r3q",
+    "ts": "2026-02-12T01:00:01.718Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: 0h 36m | Updates: 1136 | Last: 2/12/26 - 12:40 am",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlir4r4h",
+    "ts": "2026-02-12T01:00:01.745Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-access-mlir4r4p",
+    "ts": "2026-02-12T01:00:01.753Z",
+    "type": "security",
+    "op": "system",
+    "txt": "🔍 4 new access log entries",
+    "sub": "Devices: 5 known | Latest: 74.119.158.42 (706b9371)",
+    "ico": "info"
+  },
+  {
+    "id": "sys-audit-mlir4r4r",
+    "ts": "2026-02-12T01:00:01.755Z",
+    "type": "security",
+    "op": "system",
+    "txt": "📋 32 audit events",
+    "sub": "1 logins | 23 pushes | 3 state saves",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlir4r73",
+    "ts": "2026-02-12T01:00:01.839Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 14% | RAM: 28% (2208MB/7940MB) | Load: 1.03 1.08 1.15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlir4r8e",
+    "ts": "2026-02-12T01:00:01.886Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: active | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-sync-mlir4r8h",
+    "ts": "2026-02-12T01:00:01.889Z",
+    "type": "system",
+    "op": "system",
+    "txt": "🔄 23 sync updates since last check",
+    "sub": "connectedSystems: 11 | logs: 1 | activity: 1 | system: 10",
+    "ico": "info"
+  },
+  {
+    "id": "sys-backup-mlir4r90",
+    "ts": "2026-02-12T01:00:01.908Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 27 | Activity archives: 4 | Logger pages: 4",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlit9wg3",
+    "ts": "2026-02-12T02:00:01.155Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: 1h 36m | Updates: 1170 | Last: 2/12/26 - 1:41 am",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlit9wgt",
+    "ts": "2026-02-12T02:00:01.181Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-access-mlit9wgu",
+    "ts": "2026-02-12T02:00:01.182Z",
+    "type": "security",
+    "op": "system",
+    "txt": "🔍 5 new access log entries",
+    "sub": "Devices: 5 known | Latest: 74.119.158.42 (706b9371)",
+    "ico": "info"
+  },
+  {
+    "id": "sys-audit-mlit9wgv",
+    "ts": "2026-02-12T02:00:01.183Z",
+    "type": "security",
+    "op": "system",
+    "txt": "📋 40 audit events",
+    "sub": "1 logins | 26 pushes | 8 state saves",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlit9whp",
+    "ts": "2026-02-12T02:00:01.213Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 14% | RAM: 27% (2149MB/7940MB) | Load: 1.20 0.83 0.76",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlit9wjd",
+    "ts": "2026-02-12T02:00:01.273Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: active | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-sync-mlit9wle",
+    "ts": "2026-02-12T02:00:01.346Z",
+    "type": "system",
+    "op": "system",
+    "txt": "🔄 28 sync updates since last check",
+    "sub": "log: 2 | task: 1 | document: 25",
+    "ico": "info"
+  },
+  {
+    "id": "sys-backup-mlit9wm8",
+    "ts": "2026-02-12T02:00:01.376Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 27 | Activity archives: 4 | Logger pages: 4",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlivf2m6",
+    "ts": "2026-02-12T03:00:01.662Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: 2h 36m | Updates: 1178 | Last: 2/12/26 - 2:00 am",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlivf2mu",
+    "ts": "2026-02-12T03:00:01.686Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-access-mlivf2mx",
+    "ts": "2026-02-12T03:00:01.689Z",
+    "type": "security",
+    "op": "system",
+    "txt": "🔍 1 new access log entries",
+    "sub": "Devices: 5 known | Latest: 74.119.158.42 (706b9371)",
+    "ico": "info"
+  },
+  {
+    "id": "sys-audit-mlivf2n1",
+    "ts": "2026-02-12T03:00:01.693Z",
+    "type": "security",
+    "op": "system",
+    "txt": "📋 4 audit events",
+    "sub": "3 state saves",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlivf2ny",
+    "ts": "2026-02-12T03:00:01.726Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 14% | RAM: 29% (2293MB/7940MB) | Load: 1.67 1.35 1.17",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlivf2or",
+    "ts": "2026-02-12T03:00:01.755Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: active | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-secscan-mlivf2xk",
+    "ts": "2026-02-12T03:00:02.072Z",
+    "type": "security",
+    "op": "system",
+    "txt": "🛡️ Security Scan: 85/100",
+    "sub": "2FA (TOTP): warn, IP Allowlist: warn, SSH Root Login: warn",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlivf2xs",
+    "ts": "2026-02-12T03:00:02.080Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 27 | Activity archives: 4 | Logger pages: 4",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlixk8du",
+    "ts": "2026-02-12T04:00:01.650Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: 0h 1m | Updates: 1236 | Last: 2/12/26 - 3:59 am",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlixk8eo",
+    "ts": "2026-02-12T04:00:01.680Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-access-mlixk8ex",
+    "ts": "2026-02-12T04:00:01.689Z",
+    "type": "security",
+    "op": "system",
+    "txt": "🔍 16 new access log entries",
+    "sub": "Devices: 5 known | Latest: 74.119.158.42 (706b9371)",
+    "ico": "info"
+  },
+  {
+    "id": "sys-audit-mlixk8f5",
+    "ts": "2026-02-12T04:00:01.697Z",
+    "type": "security",
+    "op": "system",
+    "txt": "📋 87 audit events",
+    "sub": "2 logins | 50 pushes | 16 state saves",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlixk8g4",
+    "ts": "2026-02-12T04:00:01.732Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 14% | RAM: 37% (2937MB/7940MB) | Load: 0.88 1.09 1.27",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlixk8hg",
+    "ts": "2026-02-12T04:00:01.780Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: active | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-sync-mlixk8i9",
+    "ts": "2026-02-12T04:00:01.809Z",
+    "type": "system",
+    "op": "system",
+    "txt": "🔄 51 sync updates since last check",
+    "sub": "log: 2 | connectedSystems: 33 | logs: 3 | document: 13",
+    "ico": "info"
+  },
+  {
+    "id": "sys-backup-mlixk8ie",
+    "ts": "2026-02-12T04:00:01.814Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 27 | Activity archives: 4 | Logger pages: 4",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlizpdri",
+    "ts": "2026-02-12T05:00:01.134Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: 0h 7m | Updates: 1260 | Last: 2/12/26 - 4:59 am",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlizpdsf",
+    "ts": "2026-02-12T05:00:01.167Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-access-mlizpdsg",
+    "ts": "2026-02-12T05:00:01.168Z",
+    "type": "security",
+    "op": "system",
+    "txt": "🔍 17 new access log entries",
+    "sub": "Devices: 5 known | Latest: 74.119.158.42 (706b9371)",
+    "ico": "info"
+  },
+  {
+    "id": "sys-audit-mlizpdsi",
+    "ts": "2026-02-12T05:00:01.170Z",
+    "type": "security",
+    "op": "system",
+    "txt": "📋 45 audit events",
+    "sub": "2 logins | 16 pushes | 9 state saves",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlizpdta",
+    "ts": "2026-02-12T05:00:01.198Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 14% | RAM: 38% (3014MB/7940MB) | Load: 1.58 1.32 1.20",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlizpdtz",
+    "ts": "2026-02-12T05:00:01.223Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: active | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-sync-mlizpdu3",
+    "ts": "2026-02-12T05:00:01.227Z",
+    "type": "system",
+    "op": "system",
+    "txt": "🔄 16 sync updates since last check",
+    "sub": "log: 4 | connectedSystems: 11 | logs: 1",
+    "ico": "info"
+  },
+  {
+    "id": "sys-backup-mlizpdu7",
+    "ts": "2026-02-12T05:00:01.231Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 27 | Activity archives: 4 | Logger pages: 4",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlj1ujuf",
+    "ts": "2026-02-12T06:00:01.527Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: 0h 12m | Updates: 1322 | Last: 2/12/26 - 5:52 am",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlj1ujv2",
+    "ts": "2026-02-12T06:00:01.550Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-access-mlj1ujv4",
+    "ts": "2026-02-12T06:00:01.552Z",
+    "type": "security",
+    "op": "system",
+    "txt": "🔍 3 new access log entries",
+    "sub": "Devices: 5 known | Latest: 74.119.158.42 (706b9371)",
+    "ico": "info"
+  },
+  {
+    "id": "sys-audit-mlj1ujvb",
+    "ts": "2026-02-12T06:00:01.559Z",
+    "type": "security",
+    "op": "system",
+    "txt": "📋 70 audit events",
+    "sub": "3 logins | 54 pushes | 6 state saves",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlj1ujxo",
+    "ts": "2026-02-12T06:00:01.644Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 14% | RAM: 31% (2501MB/7940MB) | Load: 0.77 1.02 0.99",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlj1ujze",
+    "ts": "2026-02-12T06:00:01.706Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: active | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-sync-mlj1ujzo",
+    "ts": "2026-02-12T06:00:01.716Z",
+    "type": "system",
+    "op": "system",
+    "txt": "🔄 55 sync updates since last check",
+    "sub": "log: 4 | connectedSystems: 44 | logs: 4 | document: 3",
+    "ico": "info"
+  },
+  {
+    "id": "sys-backup-mlj1ujzu",
+    "ts": "2026-02-12T06:00:01.722Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 29 | Activity archives: 4 | Logger pages: 4",
+    "ico": "success"
+  },
+  {
+    "id": "sys-err-mlj3zq0c",
+    "ts": "2026-02-12T07:00:02.028Z",
+    "type": "alert",
+    "op": "system",
+    "txt": "🔴 Health check failed",
+    "sub": "write EPROTO C00C090D7B7D0000:error:0A0000C6:SSL routines:tls_get_more_records:packet length too long:../deps/openssl/openssl/ssl/record/methods/tls_common.c:662:\n",
+    "ico": "error"
+  },
+  {
+    "id": "sys-resources-mlj3zq14",
+    "ts": "2026-02-12T07:00:02.056Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 14% | RAM: 32% (2510MB/7940MB) | Load: 1.31 1.15 1.05",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlj3zq1t",
+    "ts": "2026-02-12T07:00:02.081Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: active | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-health-mlj64v8n",
+    "ts": "2026-02-12T08:00:01.319Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlj64v8u",
+    "ts": "2026-02-12T08:00:01.326Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlj64vab",
+    "ts": "2026-02-12T08:00:01.379Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 14% | RAM: 32% (2569MB/7940MB) | Load: 0.60 0.61 0.73",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlj64vbe",
+    "ts": "2026-02-12T08:00:01.418Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: inactive | cc-watcher: active | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlj64vbo",
+    "ts": "2026-02-12T08:00:01.429Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 4 | Logger pages: 4",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlj8a1b9",
+    "ts": "2026-02-12T09:00:01.701Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlj8a1bb",
+    "ts": "2026-02-12T09:00:01.703Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlj8a1c7",
+    "ts": "2026-02-12T09:00:01.735Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 14% | RAM: 35% (2758MB/7940MB) | Load: 0.62 0.78 0.78",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlj8a1cq",
+    "ts": "2026-02-12T09:00:01.754Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: inactive | cc-watcher: active | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlj8a1cv",
+    "ts": "2026-02-12T09:00:01.759Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 4 | Logger pages: 4",
+    "ico": "success"
+  }
+]

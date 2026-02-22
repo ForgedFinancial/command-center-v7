@@ -1,0 +1,25 @@
+{
+  "name": "ff-sync-server",
+  "version": "1.0.0",
+  "description": "Forged Financial Command Center sync bridge",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.6.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.4",
+    "express": "^4.21.0",
+    "googleapis": "^171.4.0",
+    "http-proxy": "^1.18.1",
+    "multer": "^2.0.2",
+    "otplib": "^13.2.1",
+    "proper-lockfile": "^4.1.2",
+    "qrcode": "^1.5.4",
+    "twilio": "^5.12.2",
+    "ws": "^8.19.0"
+  }
+}

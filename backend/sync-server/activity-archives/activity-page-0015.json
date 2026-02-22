@@ -1,0 +1,911 @@
+[
+  {
+    "id": "sys-health-mlv4y558",
+    "ts": "2026-02-20T17:00:02.060Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlv4y55m",
+    "ts": "2026-02-20T17:00:02.074Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlv4y592",
+    "ts": "2026-02-20T17:00:02.198Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 38% (3010MB/7940MB) | Load: 1.16 1.07 0.97",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlv4y5ax",
+    "ts": "2026-02-20T17:00:02.265Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlv4y5be",
+    "ts": "2026-02-20T17:00:02.282Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 15 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlv73aqn",
+    "ts": "2026-02-20T18:00:01.823Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlv73aqx",
+    "ts": "2026-02-20T18:00:01.833Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlv73asn",
+    "ts": "2026-02-20T18:00:01.895Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 18% (1391MB/7940MB) | Load: 1.28 0.92 0.88",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlv73au6",
+    "ts": "2026-02-20T18:00:01.950Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlv73av2",
+    "ts": "2026-02-20T18:00:01.982Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlv98gnf",
+    "ts": "2026-02-20T19:00:01.995Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlv98gno",
+    "ts": "2026-02-20T19:00:02.004Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlv98gr1",
+    "ts": "2026-02-20T19:00:02.125Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 21% (1637MB/7940MB) | Load: 0.50 0.70 0.76",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlv98gsl",
+    "ts": "2026-02-20T19:00:02.181Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlv98gt0",
+    "ts": "2026-02-20T19:00:02.196Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlvbdmbz",
+    "ts": "2026-02-20T20:00:01.871Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlvbdmce",
+    "ts": "2026-02-20T20:00:01.886Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlvbdmg8",
+    "ts": "2026-02-20T20:00:02.024Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 27% (2181MB/7940MB) | Load: 1.04 0.85 0.84",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlvbdmif",
+    "ts": "2026-02-20T20:00:02.103Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlvbdmir",
+    "ts": "2026-02-20T20:00:02.115Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlvdis3n",
+    "ts": "2026-02-20T21:00:01.859Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlvdis3u",
+    "ts": "2026-02-20T21:00:01.866Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlvdis5a",
+    "ts": "2026-02-20T21:00:01.918Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 42% (3336MB/7940MB) | Load: 2.01 1.35 1.10",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlvdis6h",
+    "ts": "2026-02-20T21:00:01.961Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-sync-mlvdis6m",
+    "ts": "2026-02-20T21:00:01.966Z",
+    "type": "system",
+    "op": "system",
+    "txt": "🔄 2 sync updates since last check",
+    "sub": "task: 1 | log: 1",
+    "ico": "info"
+  },
+  {
+    "id": "sys-backup-mlvdis6t",
+    "ts": "2026-02-20T21:00:01.973Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlvfnxl2",
+    "ts": "2026-02-20T22:00:01.478Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlvfnxle",
+    "ts": "2026-02-20T22:00:01.490Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlvfnxnm",
+    "ts": "2026-02-20T22:00:01.570Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 34% (2677MB/7940MB) | Load: 0.72 0.81 0.85",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlvfnxol",
+    "ts": "2026-02-20T22:00:01.605Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlvfnxox",
+    "ts": "2026-02-20T22:00:01.617Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlvht3kw",
+    "ts": "2026-02-20T23:00:01.760Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlvht3l5",
+    "ts": "2026-02-20T23:00:01.769Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlvht3mk",
+    "ts": "2026-02-20T23:00:01.820Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 52% (4093MB/7940MB) | Load: 0.59 0.80 0.98",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlvht3nd",
+    "ts": "2026-02-20T23:00:01.849Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlvht3ow",
+    "ts": "2026-02-20T23:00:01.904Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlvjyaaj",
+    "ts": "2026-02-21T00:00:02.971Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlvjyai2",
+    "ts": "2026-02-21T00:00:03.256Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlvjyazm",
+    "ts": "2026-02-21T00:00:03.875Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 23% (1835MB/7940MB) | Load: 1.84 1.78 1.29",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlvjyb0q",
+    "ts": "2026-02-21T00:00:03.914Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlvjyb1b",
+    "ts": "2026-02-21T00:00:03.935Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlvm3epu",
+    "ts": "2026-02-21T01:00:01.218Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlvm3eq2",
+    "ts": "2026-02-21T01:00:01.226Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlvm3erg",
+    "ts": "2026-02-21T01:00:01.276Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 38% (3032MB/7940MB) | Load: 0.88 0.75 0.81",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlvm3es8",
+    "ts": "2026-02-21T01:00:01.304Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlvm3esl",
+    "ts": "2026-02-21T01:00:01.317Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlvo8kw5",
+    "ts": "2026-02-21T02:00:01.733Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlvo8kwz",
+    "ts": "2026-02-21T02:00:01.763Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlvo8l2w",
+    "ts": "2026-02-21T02:00:01.976Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 35% (2817MB/7940MB) | Load: 0.77 0.85 0.90",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlvo8l71",
+    "ts": "2026-02-21T02:00:02.125Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlvo8l9f",
+    "ts": "2026-02-21T02:00:02.211Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlvqdqgy",
+    "ts": "2026-02-21T03:00:01.474Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlvqdqh3",
+    "ts": "2026-02-21T03:00:01.479Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlvqdqi7",
+    "ts": "2026-02-21T03:00:01.519Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 30% (2390MB/7940MB) | Load: 0.75 1.04 1.08",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlvqdqj5",
+    "ts": "2026-02-21T03:00:01.553Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlvqdqje",
+    "ts": "2026-02-21T03:00:01.562Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlvsiw1d",
+    "ts": "2026-02-21T04:00:01.201Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlvsiw1j",
+    "ts": "2026-02-21T04:00:01.207Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlvsiw2j",
+    "ts": "2026-02-21T04:00:01.243Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 32% (2546MB/7940MB) | Load: 0.43 0.64 0.95",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlvsiw35",
+    "ts": "2026-02-21T04:00:01.265Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlvsiw3g",
+    "ts": "2026-02-21T04:00:01.276Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlvuo23f",
+    "ts": "2026-02-21T05:00:01.563Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlvuo23m",
+    "ts": "2026-02-21T05:00:01.570Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlvuo24j",
+    "ts": "2026-02-21T05:00:01.603Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 26% (2093MB/7940MB) | Load: 1.03 0.98 0.83",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlvuo258",
+    "ts": "2026-02-21T05:00:01.628Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlvuo25l",
+    "ts": "2026-02-21T05:00:01.641Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlvwt86q",
+    "ts": "2026-02-21T06:00:01.970Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlvwt86w",
+    "ts": "2026-02-21T06:00:01.976Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlvwt89j",
+    "ts": "2026-02-21T06:00:02.071Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 37% (2964MB/7940MB) | Load: 1.14 0.86 0.84",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlvwt8b6",
+    "ts": "2026-02-21T06:00:02.130Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlvwt8c4",
+    "ts": "2026-02-21T06:00:02.164Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlvyydk5",
+    "ts": "2026-02-21T07:00:01.445Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlvyydk8",
+    "ts": "2026-02-21T07:00:01.448Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlvyydl4",
+    "ts": "2026-02-21T07:00:01.480Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 33% (2602MB/7940MB) | Load: 1.24 1.19 1.00",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlvyydlq",
+    "ts": "2026-02-21T07:00:01.502Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlvyydm3",
+    "ts": "2026-02-21T07:00:01.515Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlw13jns",
+    "ts": "2026-02-21T08:00:01.864Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlw13jny",
+    "ts": "2026-02-21T08:00:01.870Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlw13jqe",
+    "ts": "2026-02-21T08:00:01.958Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 39% (3076MB/7940MB) | Load: 0.46 0.59 0.67",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlw13jt7",
+    "ts": "2026-02-21T08:00:02.059Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlw13jth",
+    "ts": "2026-02-21T08:00:02.069Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlw38p0i",
+    "ts": "2026-02-21T09:00:01.314Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlw38p0w",
+    "ts": "2026-02-21T09:00:01.328Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlw38p2t",
+    "ts": "2026-02-21T09:00:01.397Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 34% (2726MB/7940MB) | Load: 0.59 0.73 0.72",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlw38p3o",
+    "ts": "2026-02-21T09:00:01.428Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlw38p3z",
+    "ts": "2026-02-21T09:00:01.439Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlw5dv2f",
+    "ts": "2026-02-21T10:00:01.671Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlw5dv2n",
+    "ts": "2026-02-21T10:00:01.679Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlw5dv3v",
+    "ts": "2026-02-21T10:00:01.723Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 30% (2408MB/7940MB) | Load: 0.58 0.65 0.66",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlw5dv57",
+    "ts": "2026-02-21T10:00:01.771Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlw5dv5n",
+    "ts": "2026-02-21T10:00:01.787Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlw7j171",
+    "ts": "2026-02-21T11:00:02.125Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlw7j176",
+    "ts": "2026-02-21T11:00:02.130Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlw7j18p",
+    "ts": "2026-02-21T11:00:02.185Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 27% (2144MB/7940MB) | Load: 1.36 1.20 1.12",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlw7j1a4",
+    "ts": "2026-02-21T11:00:02.236Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlw7j1aq",
+    "ts": "2026-02-21T11:00:02.258Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  },
+  {
+    "id": "sys-health-mlw9o6lu",
+    "ts": "2026-02-21T12:00:01.650Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💚 System Health Check",
+    "sub": "Uptime: NaNh NaNm | Updates: undefined | Last: none",
+    "ico": "success"
+  },
+  {
+    "id": "sys-agent-mlw9o6m9",
+    "ts": "2026-02-21T12:00:01.665Z",
+    "type": "system",
+    "op": "openclaw",
+    "txt": "🤖 Agent Status: idle",
+    "sub": "No active task",
+    "ico": "info"
+  },
+  {
+    "id": "sys-resources-mlw9o6om",
+    "ts": "2026-02-21T12:00:01.750Z",
+    "type": "system",
+    "op": "system",
+    "txt": "📊 Server Resources",
+    "sub": "Disk: 24% | RAM: 28% (2259MB/7940MB) | Load: 2.06 1.62 1.29",
+    "ico": "success"
+  },
+  {
+    "id": "sys-services-mlw9o6qb",
+    "ts": "2026-02-21T12:00:01.812Z",
+    "type": "system",
+    "op": "system",
+    "txt": "⚙️ Services Check",
+    "sub": "ff-sync: active | cc-watcher: inactive | gateway: inactive",
+    "ico": "warning"
+  },
+  {
+    "id": "sys-backup-mlw9o6r1",
+    "ts": "2026-02-21T12:00:01.837Z",
+    "type": "system",
+    "op": "system",
+    "txt": "💾 Backup Status",
+    "sub": "CC backups: 0 | Activity archives: 16 | Logger pages: 15",
+    "ico": "success"
+  }
+]

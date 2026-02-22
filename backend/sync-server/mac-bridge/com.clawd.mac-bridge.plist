@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.clawd.mac-bridge</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/bin/node</string>
+    <string>/Users/danielruhffl/mac-bridge.js</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>MAC_BRIDGE_TOKEN</key>
+    <string>mac-bridge-2026</string>
+  </dict>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/tmp/mac-bridge.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/mac-bridge.err</string>
+</dict>
+</plist>
