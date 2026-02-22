@@ -33,7 +33,7 @@ export async function onRequest(context) {
 
   const originalUrl = new URL(request.url);
   const path = params.path?.join("/") || "";
-  const target = `https://api.forgedfinancial.us/api/ops/${path}${originalUrl.search}`;
+  const target = `https://api.forgedfinancial.us/api/auth/${path}${originalUrl.search}`;
 
   const apiKey = env.SYNC_API_KEY;
   if (!apiKey) return jsonResponse({ error: "SYNC_API_KEY not configured" }, 500, corsHeaders);

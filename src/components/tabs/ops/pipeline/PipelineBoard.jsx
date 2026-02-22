@@ -59,7 +59,7 @@ export default function PipelineBoard({ tasks, loading, filters, onFiltersChange
         <div style={{
           flex: 1, display: 'grid',
           gridTemplateColumns: `repeat(${STAGES.length}, minmax(180px, 1fr))`,
-          gap: '10px', minHeight: 0, overflow: 'auto',
+          gap: '10px', minHeight: 0, overflow: 'auto', alignItems: 'stretch',
         }}>
           {STAGES.map(stage => (
             <StageColumn
@@ -68,7 +68,6 @@ export default function PipelineBoard({ tasks, loading, filters, onFiltersChange
               config={STAGE_CONFIG[stage]}
               tasks={filtered.filter(t => t.stage === stage)}
               onSelectTask={(t) => setSelectedTask(t)}
-              onMoveTask={(id, newStage) => onUpdateTask(id, { stage: newStage })}
             />
           ))}
         </div>
