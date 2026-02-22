@@ -1,6 +1,7 @@
 var ALLOWED_ORIGINS = [
   "https://cc.forgedfinancial.us",
   "https://command-center-v7.pages.dev",
+  "https://staging.command-center-v7.pages.dev",
   "http://localhost:5173",
 ];
 

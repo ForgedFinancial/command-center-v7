@@ -5,6 +5,7 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 var ALLOWED_ORIGINS = [
   "https://cc.forgedfinancial.us",
   "https://command-center-v7.pages.dev",
+  "https://staging.command-center-v7.pages.dev",
   "http://localhost:5173",
 ];
 function getCorsHeaders(request) {
