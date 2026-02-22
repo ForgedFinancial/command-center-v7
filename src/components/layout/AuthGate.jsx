@@ -182,6 +182,8 @@ function WelcomeScreen({ onComplete }) {
 }
 
 export default function AuthGate({ onAuth }) {
+  const [accessCode, setAccessCode] = useState('')
+  const [showAccessCode, setShowAccessCode] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -231,13 +233,13 @@ export default function AuthGate({ onAuth }) {
     setError('')
 
     if (lockoutRemaining > 0) return
-    if (!username.trim() || !password.trim()) {
+    if (!accessCode.trim() || !username.trim() || !password.trim()) {
       setError('All fields are required')
       return
     }
 
     try {
-      await syncClient.auth.login(username, password)
+      await syncClient.auth.login(accessCode, username, password)
       sessionStorage.setItem('forged-os-session', 'true')
       setPhase('welcome')
     } catch (err) {
@@ -331,13 +333,40 @@ export default function AuthGate({ onAuth }) {
         </div>
 
         <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '12px', position: 'relative' }}>
+            <input
+              type={showAccessCode ? 'text' : 'password'}
+              value={accessCode}
+              onChange={(e) => setAccessCode(e.target.value)}
+              placeholder="Access Code"
+              autoFocus
+              disabled={lockoutRemaining > 0}
+              style={{
+                width: '100%',
+                padding: '14px 18px',
+                paddingRight: '48px',
+                fontSize: '16px',
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                border: `1px solid ${error ? '#ef4444' : 'rgba(255,255,255,0.1)'}`,
+                borderRadius: '10px',
+                color: '#ffffff',
+                outline: 'none',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                animation: shake ? 'shake 0.5s' : 'none',
+                opacity: lockoutRemaining > 0 ? 0.5 : 1,
+              }}
+            />
+            <button type="button" onClick={() => setShowAccessCode(!showAccessCode)} style={{
+              position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
+              background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '16px', padding: '4px',
+            }}>{showAccessCode ? '🙈' : '👁️'}</button>
+          </div>
           <div style={{ marginBottom: '12px' }}>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Username"
-              autoFocus
               disabled={lockoutRemaining > 0}
               autoComplete="username"
               style={{
