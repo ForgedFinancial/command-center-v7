@@ -27,7 +27,7 @@ export default function TransferModal({ lead, pipelines, currentPipelineId, onTr
     <div style={{
       position: 'fixed', inset: 0, background: 'var(--theme-modal-overlay)', display: 'flex',
       alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-    }} onClick={onClose}>
+    }}>
       <div onClick={e => e.stopPropagation()} style={{
         width: '420px', background: 'var(--theme-surface)', borderRadius: '16px',
         border: '1px solid var(--theme-border)', padding: '24px',

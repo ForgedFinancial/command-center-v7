@@ -57,7 +57,7 @@ export default function StageTransitionModal({
     <div style={{
       position: 'fixed', inset: 0, background: 'var(--theme-modal-overlay)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100,
-    }} onClick={onCancel}>
+    }}>
       <div onClick={e => e.stopPropagation()} style={{
         width: '480px', maxHeight: '80vh', overflow: 'auto',
         background: 'var(--theme-surface)', borderRadius: '16px',
