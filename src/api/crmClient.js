@@ -162,14 +162,11 @@ class CRMClient {
     return this.request(`/pipelines/${pipelineId}/stages/reorder`, { method: 'PUT', body: JSON.stringify({ order: orderedIds }) })
   }
 
-  async moveLead(leadId, toPipelineId, toStageId, fromPipelineId, fromStageId, reason) {
-    // Update the lead
-    const updateRes = await this.request(`/leads/${leadId}`, {
-      method: 'PUT',
-      body: JSON.stringify({ pipeline_id: toPipelineId, stage_id: toStageId }),
+  async moveLead(leadId, pipelineId, stageId) {
+    return this.request(`/leads/${leadId}/move`, {
+      method: 'POST',
+      body: JSON.stringify({ pipeline_id: pipelineId, stage_id: stageId }),
     })
-    // History is logged server-side by the worker's lead update handler
-    return updateRes
   }
 
   async getHistory(leadId) {
@@ -191,8 +188,11 @@ class CRMClient {
     return this.request('/leads/bulk-transfer', { method: 'POST', body: JSON.stringify({ ids, pipeline_id: pipelineId, stage_id: stageId }) })
   }
 
-  async transferLead(leadId, toPipelineId, toStageId) {
-    return this.moveLead(leadId, toPipelineId, toStageId)
+  async transferLead(leadId, agentId) {
+    return this.request(`/leads/${leadId}/transfer`, {
+      method: 'POST',
+      body: JSON.stringify({ agent_id: agentId }),
+    })
   }
 
   // Activity feed
