@@ -79,6 +79,7 @@ export default function CanvasMinimap({
   viewportH = window.innerHeight,
   onNavigate,
   visible = true,
+  position = 'bottom-right',
 }) {
   const svgRef = useRef(null)
   const isDragging = useRef(false)
@@ -149,16 +150,20 @@ export default function CanvasMinimap({
 
   return (
     <div
+      className="canvas-minimap"
       style={{
-        position: 'fixed',
-        bottom: '24px',
-        right: '24px',
-        zIndex: 50,
+        position: 'absolute',
+        left: position === 'bottom-left' ? 16 : 'auto',
+        right: position === 'bottom-left' ? 'auto' : 24,
+        bottom: 56,
+        zIndex: 35,
+        width: MAP_W,
+        height: MAP_H + 24,
         borderRadius: '10px',
         overflow: 'hidden',
         boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
-        border: '1px solid rgba(255,255,255,0.12)',
-        background: 'rgba(10,10,15,0.88)',
+        border: '1px solid rgba(154,167,188,0.24)',
+        background: 'rgba(12,16,24,0.82)',
         backdropFilter: 'blur(8px)',
         userSelect: 'none',
       }}
@@ -237,10 +242,9 @@ export default function CanvasMinimap({
           y={Math.max(0, vpMapY)}
           width={Math.min(MAP_W - Math.max(0, vpMapX), vpMapW)}
           height={Math.min(MAP_H - Math.max(0, vpMapY), vpMapH)}
-          fill="rgba(255,255,255,0.06)"
-          stroke="rgba(255,255,255,0.5)"
+          fill="rgba(0,212,255,0.12)"
+          stroke="#00D4FF"
           strokeWidth={1}
-          strokeDasharray="3 2"
           rx={1}
           style={{ pointerEvents: 'none' }}
         />

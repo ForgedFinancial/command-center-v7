@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { DndContext, DragOverlay, PointerSensor, useDraggable, useSensor, useSensors } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import { useTaskBoard } from '../../../../context/TaskBoardContext'
@@ -8,16 +8,242 @@ import CanvasGrid from './CanvasGrid'
 import CanvasMinimap from './CanvasMinimap'
 import CanvasToolbar from './CanvasToolbar'
 import InnerCanvasToolbar from './InnerCanvasToolbar'
-import PlacementManager from './tools/PlacementManager'
-import AgentSuggestionModal from './modals/AgentSuggestionModal'
-import TemplatePickerModal from './modals/TemplatePickerModal'
+import KeyboardShortcutPanel from './components/KeyboardShortcutPanel'
 
-function DraggableItem({ obj, isDragging }) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: obj.id })
+const TOOL_TO_TYPE = {
+  task: 'task',
+  note: 'note',
+  shape: 'shape',
+  metric: 'metric',
+  checklist: 'checklist',
+}
+
+function createPayloadForTool(tool, position) {
+  const type = TOOL_TO_TYPE[tool] || 'note'
+  switch (type) {
+    case 'task':
+      return {
+        type,
+        position,
+        size: { width: 240, height: 120 },
+        data: { title: 'New Task', assignee: 'Unassigned', status: 'todo' },
+      }
+    case 'note':
+      return {
+        type,
+        position,
+        size: { width: 220, height: 120 },
+        data: { title: 'Note', text: '' },
+      }
+    case 'shape':
+      return {
+        type,
+        position,
+        size: { width: 180, height: 110 },
+        data: { label: 'Shape' },
+      }
+    case 'metric':
+      return {
+        type,
+        position,
+        size: { width: 210, height: 110 },
+        data: { value: '0', label: 'Metric' },
+      }
+    case 'checklist':
+      return {
+        type,
+        position,
+        size: { width: 220, height: 120 },
+        data: { title: 'Checklist', items: [{ text: 'Item 1', checked: false }, { text: 'Item 2', checked: false }] },
+      }
+    default:
+      return {
+        type: 'note',
+        position,
+        size: { width: 220, height: 120 },
+        data: { title: 'Note', text: '' },
+      }
+  }
+}
+
+function taskStatusLabel(status) {
+  if (status === 'in_progress') return 'In Progress'
+  if (status === 'done') return 'Done'
+  return 'Todo'
+}
+
+function taskStatusColor(status) {
+  if (status === 'done') return '#22C55E'
+  if (status === 'in_progress') return '#EAB308'
+  return '#9AA7BC'
+}
+
+function ObjectCard({
+  object,
+  isDragging,
+  isOverlay,
+  isSelected,
+  isEditing,
+  draftValue,
+  onDraftChange,
+  onSelect,
+  onDoubleEdit,
+  onSave,
+  onCancel,
+  onDelete,
+  onDuplicate,
+  onTaskStatusCycle,
+}) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: object.id })
+  const position = object.position || { x: 0, y: 0 }
+  const size = object.size || { width: 220, height: 120 }
+  const noteText = object.data?.text || ''
+  const notePreview = noteText.length > 80 ? `${noteText.slice(0, 80)}…` : noteText
+
+  const checklistItems = Array.isArray(object.data?.items)
+    ? object.data.items
+    : Array.isArray(object.data?.checklist)
+      ? object.data.checklist.map((text) => ({ text, checked: false }))
+      : []
+  const checkedCount = checklistItems.filter((item) => item.checked).length
+
+  const renderBody = () => {
+    if (isEditing) {
+      const isNote = object.type === 'note'
+      if (isNote) {
+        return (
+          <textarea
+            autoFocus
+            value={draftValue}
+            onChange={(e) => onDraftChange(e.target.value)}
+            onBlur={onSave}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                e.preventDefault()
+                onCancel()
+              }
+            }}
+            rows={4}
+            style={{ width: '100%', border: '1px solid rgba(0,212,255,0.42)', borderRadius: 8, background: 'rgba(12,16,24,0.82)', color: '#E6EDF7', padding: 8, resize: 'none' }}
+          />
+        )
+      }
+
+      return (
+        <input
+          autoFocus
+          value={draftValue}
+          onChange={(e) => onDraftChange(e.target.value)}
+          onBlur={onSave}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              onSave()
+            }
+            if (e.key === 'Escape') {
+              e.preventDefault()
+              onCancel()
+            }
+          }}
+          style={{ width: '100%', height: 32, border: '1px solid rgba(0,212,255,0.42)', borderRadius: 8, background: 'rgba(12,16,24,0.82)', color: '#E6EDF7', padding: '0 8px' }}
+        />
+      )
+    }
+
+    if (object.type === 'note') {
+      return (
+        <>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#E6EDF7', marginBottom: 6 }}>Note</div>
+          <div style={{ fontSize: 11, color: '#9AA7BC', lineHeight: 1.4 }}>{notePreview || 'Double-click to add note content.'}</div>
+        </>
+      )
+    }
+
+    if (object.type === 'task' || object.type === 'taskcard' || object.type === 'task-card') {
+      const status = object.data?.status || 'todo'
+      return (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#E6EDF7' }}>{object.data?.title || 'Task'}</div>
+            <button
+              onClick={(e) => { e.stopPropagation(); onTaskStatusCycle(object) }}
+              onMouseDown={(e) => e.stopPropagation()}
+              style={{ borderRadius: 999, border: `1px solid ${taskStatusColor(status)}`, background: 'transparent', color: taskStatusColor(status), fontSize: 10, fontWeight: 700, padding: '2px 8px', cursor: 'pointer' }}
+            >
+              {taskStatusLabel(status)}
+            </button>
+          </div>
+          <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(0,212,255,0.16)', border: '1px solid rgba(0,212,255,0.35)', display: 'grid', placeItems: 'center', fontSize: 10, color: '#00D4FF' }}>
+              {(object.data?.assignee || 'U').split(' ').map((p) => p[0]).join('').slice(0, 2).toUpperCase()}
+            </div>
+            <span style={{ fontSize: 11, color: '#9AA7BC' }}>{object.data?.assignee || 'Unassigned'}</span>
+          </div>
+        </>
+      )
+    }
+
+    if (object.type === 'metric') {
+      return (
+        <>
+          <div style={{ fontSize: 20, lineHeight: 1, color: '#E6EDF7', fontFamily: 'JetBrains Mono, SFMono-Regular, Menlo, monospace' }}>{object.data?.value ?? '0'}</div>
+          <div style={{ marginTop: 6, fontSize: 11, color: '#9AA7BC' }}>{object.data?.label || 'Metric'}</div>
+        </>
+      )
+    }
+
+    if (object.type === 'shape') {
+      return <div style={{ fontSize: 12, color: '#E6EDF7' }}>{object.data?.label?.trim() || 'Shape'}</div>
+    }
+
+    if (object.type === 'checklist') {
+      return <div style={{ fontSize: 12, color: '#E6EDF7' }}>{checkedCount}/{checklistItems.length || 0} complete</div>
+    }
+
+    return <div style={{ fontSize: 12, color: '#E6EDF7' }}>{object.data?.title || object.type}</div>
+  }
+
   return (
-    <div ref={setNodeRef} {...attributes} {...listeners} style={{ position: 'absolute', left: obj.position?.x || obj.x || 0, top: obj.position?.y || obj.y || 0, width: obj.size?.width || 220, minHeight: 110, padding: 10, borderRadius: 10, border: '1px solid rgba(148,163,184,0.24)', background: '#0E1320', color: '#E2E8F0', transform: isDragging ? 'rotate(1.5deg) translateY(-2px) scale(1.02)' : CSS.Translate.toString(transform), boxShadow: isDragging ? '0 14px 34px rgba(0,0,0,0.5)' : 'none', transition: 'transform var(--motion-fast,120ms ease), box-shadow var(--motion-fast,120ms ease)' }}>
-      <div style={{ fontSize: 12, fontWeight: 600 }}>{obj.data?.title || obj.type}</div>
-      <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 4 }}>{obj.data?.text || ''}</div>
+    <div
+      ref={setNodeRef}
+      className="inner-object-card"
+      {...attributes}
+      {...(!isEditing ? listeners : {})}
+      onClick={(e) => {
+        e.stopPropagation()
+        onSelect(object.id)
+      }}
+      onDoubleClick={(e) => {
+        e.stopPropagation()
+        onDoubleEdit(object)
+      }}
+      style={{
+        position: isOverlay ? 'relative' : 'absolute',
+        left: isOverlay ? undefined : position.x,
+        top: isOverlay ? undefined : position.y,
+        width: size.width,
+        minHeight: size.height,
+        borderRadius: 12,
+        border: isSelected ? '1px solid rgba(0,212,255,0.62)' : '1px solid rgba(154,167,188,0.24)',
+        background: 'rgba(12,16,24,0.72)',
+        padding: 10,
+        color: '#E6EDF7',
+        boxShadow: isSelected ? '0 0 0 1px rgba(0,212,255,0.48), 0 0 18px rgba(0,212,255,0.28)' : '0 8px 24px rgba(0,0,0,0.34)',
+        transform: isDragging && !isOverlay ? undefined : (CSS.Translate.toString(transform) || undefined),
+        opacity: isDragging && !isOverlay ? 0.65 : 1,
+        zIndex: isDragging ? 1000 : isSelected ? 15 : 8,
+        cursor: isEditing ? 'text' : 'grab',
+      }}
+    >
+      {renderBody()}
+
+      {isSelected && !isEditing && (
+        <div style={{ position: 'absolute', top: 6, right: 6, display: 'flex', gap: 4 }}>
+          <button onClick={(e) => { e.stopPropagation(); onDoubleEdit(object) }} style={{ width: 22, height: 22, borderRadius: 6, border: '1px solid rgba(154,167,188,0.24)', background: '#0E1320', color: '#E6EDF7', cursor: 'pointer' }} title="Edit">✎</button>
+          <button onClick={(e) => { e.stopPropagation(); onDuplicate(object) }} style={{ width: 22, height: 22, borderRadius: 6, border: '1px solid rgba(154,167,188,0.24)', background: '#0E1320', color: '#E6EDF7', cursor: 'pointer' }} title="Duplicate">⧉</button>
+          <button onClick={(e) => { e.stopPropagation(); onDelete(object.id) }} style={{ width: 22, height: 22, borderRadius: 6, border: '1px solid rgba(239,68,68,0.45)', background: 'rgba(239,68,68,0.12)', color: '#fca5a5', cursor: 'pointer' }} title="Delete">🗑</button>
+        </div>
+      )}
     </div>
   )
 }
@@ -25,122 +251,443 @@ function DraggableItem({ obj, isDragging }) {
 export default function ProjectInnerCanvas({ project }) {
   const { state, actions } = useTaskBoard()
   const {
-    activeTool, setActiveTool, isPlacementMode, setIsPlacementMode, ghostPosition, setGhostPosition,
-    zoom, setZoom, pan, setPan, sidebarExpanded, setSidebarExpanded,
-    agentModalOpen, setAgentModalOpen, agentSuggestionText, setAgentSuggestionText,
-    templatePickerOpen, setTemplatePickerOpen,
+    activeTool,
+    setActiveTool,
+    isPlacementMode,
+    setIsPlacementMode,
+    ghostPosition,
+    setGhostPosition,
+    zoom,
+    setZoom,
+    pan,
+    setPan,
+    sidebarExpanded,
+    setSidebarExpanded,
   } = useProjectCanvas()
 
   const [activeId, setActiveId] = useState(null)
-  const [showMinimap, setShowMinimap] = useState(true)
-  const [search, setSearch] = useState('')
+  const [selectedObjectId, setSelectedObjectId] = useState(null)
+  const [editingObjectId, setEditingObjectId] = useState(null)
+  const [draftValue, setDraftValue] = useState('')
+  const [showShortcuts, setShowShortcuts] = useState(false)
   const [snap, setSnap] = useState(true)
-  const [bg, setBg] = useState('#07090F')
+  const [search, setSearch] = useState('')
+  const [canvasBg, setCanvasBg] = useState('#07090F')
   const [gridStyle, setGridStyle] = useState('dots')
-  const [agentLoading, setAgentLoading] = useState(false)
+  const [settlingObjectId, setSettlingObjectId] = useState(null)
+  const [showMinimap, setShowMinimap] = useState(() => {
+    const key = `projects:minimap:${project.id}`
+    const stored = localStorage.getItem(key)
+    return stored == null ? true : stored === '1'
+  })
 
   const canvasRef = useRef(null)
   const isPanning = useRef(false)
   const panStart = useRef({ x: 0, y: 0 })
   const panStartOffset = useRef({ x: 0, y: 0 })
+  const undoStack = useRef([])
+  const previousProgress = useRef(project.progress || 0)
+
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
-  const canvasObjects = useMemo(() => state.canvasObjects.filter(o => o.data?.canvasScope === 'inner' && o.data?.projectId === project.id), [state.canvasObjects, project.id])
+  const canvasObjects = useMemo(() => (
+    state.canvasObjects
+      .filter((obj) => obj.projectId === project.id || obj.data?.projectId === project.id)
+      .filter((obj) => !search || (obj.data?.title || obj.type).toLowerCase().includes(search.toLowerCase()))
+  ), [project.id, search, state.canvasObjects])
+
+  useEffect(() => {
+    localStorage.setItem(`projects:minimap:${project.id}`, showMinimap ? '1' : '0')
+  }, [project.id, showMinimap])
+
+  useEffect(() => {
+    const totalTasks = canvasObjects.filter((obj) => obj.type === 'task' || obj.type === 'taskcard' || obj.type === 'task-card').length
+    const doneTasks = canvasObjects.filter((obj) => (obj.type === 'task' || obj.type === 'taskcard' || obj.type === 'task-card') && obj.data?.status === 'done').length
+    const progress = totalTasks === 0 ? 0 : Math.round((doneTasks / totalTasks) * 100)
+
+    if (progress === previousProgress.current) return
+
+    previousProgress.current = progress
+    actions.updateProject({ id: project.id, progress })
+    taskboardClient.updateProject(project.id, { progress }).catch(() => {})
+  }, [actions, canvasObjects, project.id])
+
+  useEffect(() => {
+    const onEsc = (event) => {
+      if (event.key !== 'Escape') return
+      setActiveTool('select')
+      setIsPlacementMode(false)
+      setGhostPosition(null)
+      setEditingObjectId(null)
+      setDraftValue('')
+    }
+
+    window.addEventListener('keydown', onEsc)
+    return () => window.removeEventListener('keydown', onEsc)
+  }, [setActiveTool, setGhostPosition, setIsPlacementMode])
+
+  useEffect(() => {
+    const onShortcut = (event) => {
+      if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.isContentEditable) return
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
+        event.preventDefault()
+        const action = undoStack.current.pop()
+        if (action) action()
+        return
+      }
+
+      if (event.key === '?') {
+        event.preventDefault()
+        setShowShortcuts((open) => !open)
+      }
+
+      if (event.key.toLowerCase() === 'v') {
+        event.preventDefault()
+        setActiveTool('select')
+        setIsPlacementMode(false)
+      }
+      if (event.key.toLowerCase() === 't') {
+        event.preventDefault()
+        setActiveTool('task')
+        setIsPlacementMode(true)
+      }
+      if (event.key.toLowerCase() === 'n') {
+        event.preventDefault()
+        setActiveTool('note')
+        setIsPlacementMode(true)
+      }
+      if (event.key.toLowerCase() === 's') {
+        event.preventDefault()
+        setActiveTool('shape')
+        setIsPlacementMode(true)
+      }
+      if (event.key.toLowerCase() === 'g') {
+        event.preventDefault()
+        setSnap((value) => !value)
+      }
+      if (event.key.toLowerCase() === 'c') {
+        event.preventDefault()
+        setActiveTool((tool) => (tool === 'connect' ? 'select' : 'connect'))
+        setIsPlacementMode(false)
+      }
+      if (event.key === 'Delete' && selectedObjectId) {
+        event.preventDefault()
+        handleDelete(selectedObjectId)
+      }
+    }
+
+    window.addEventListener('keydown', onShortcut)
+    return () => window.removeEventListener('keydown', onShortcut)
+  }, [selectedObjectId])
 
   const screenToCanvas = (x, y) => {
     const rect = canvasRef.current?.getBoundingClientRect()
     if (!rect) return { x: 0, y: 0 }
-    return { x: (x - rect.left - pan.x) / zoom, y: (y - rect.top - pan.y) / zoom }
-  }
-
-  const exitPlacement = () => {
-    setIsPlacementMode(false)
-    setActiveTool('select')
-    setGhostPosition(null)
-  }
-
-  const mapTool = (toolId) => ({
-    note: 'note', shape: 'shape', text: 'text', image: 'image', file: 'file', metric: 'metric', checklist: 'checklist', taskcreate: 'taskcard', subproject: 'frame',
-  }[toolId] || 'note')
-
-  const placeObject = async (pos) => {
-    const type = mapTool(activeTool)
-    const payload = { type, position: pos, size: { width: 230, height: 120 }, projectId: project.id, canvasScope: 'inner', data: { title: `${type} object`, projectId: project.id, canvasScope: 'inner' } }
-    const res = await taskboardClient.createCanvasObject(payload)
-    if (res.ok) actions.addCanvasObject(res.data)
-    exitPlacement()
-  }
-
-  const handleToolSelect = async (tool) => {
-    if (tool === 'agentchat') {
-      setAgentModalOpen(true)
-      setAgentLoading(true)
-      try {
-        const out = await taskboardClient.request(`/api/taskboard/projects/${project.id}/agent-suggest`, { method: 'POST', body: JSON.stringify({ prompt: 'Suggest improvements.' }) })
-        setAgentSuggestionText(out?.data?.text || out?.text || 'No suggestion returned.')
-      } catch {
-        setAgentSuggestionText('Unable to generate suggestion right now.')
-      }
-      setAgentLoading(false)
-      return
+    return {
+      x: (x - rect.left - pan.x) / zoom,
+      y: (y - rect.top - pan.y) / zoom,
     }
-    if (tool === 'subproject') {
-      setTemplatePickerOpen(true)
-      return
-    }
+  }
+
+  const handleToolSelect = (tool) => {
     if (tool === 'connect') {
-      setActiveTool('connect')
+      setActiveTool((current) => (current === 'connect' ? 'select' : 'connect'))
       setIsPlacementMode(false)
+      setGhostPosition(null)
       return
     }
+
     setActiveTool(tool)
-    setIsPlacementMode(true)
+    setIsPlacementMode(tool !== 'select')
   }
 
-  const handleDragStart = (e) => setActiveId(e.active.id)
+  const handleCreateObject = async (event) => {
+    if (!isPlacementMode || activeTool === 'select') return
+
+    const position = screenToCanvas(event.clientX, event.clientY)
+    const payload = createPayloadForTool(activeTool, position)
+
+    try {
+      const res = await taskboardClient.createProjectObject(project.id, payload)
+      if (!res?.ok) throw new Error('Create object failed')
+      actions.addCanvasObject(res.data)
+      setSettlingObjectId(res.data.id)
+      setTimeout(() => setSettlingObjectId(null), 180)
+      undoStack.current.push(() => {
+        actions.removeCanvasObject(res.data.id)
+        taskboardClient.deleteProjectObject(project.id, res.data.id).catch(() => {})
+      })
+    } finally {
+      setActiveTool('select')
+      setIsPlacementMode(false)
+      setGhostPosition(null)
+    }
+  }
+
+  const handleDelete = async (objectId) => {
+    const object = state.canvasObjects.find((candidate) => candidate.id === objectId)
+    if (!object) return
+
+    actions.removeCanvasObject(objectId)
+    setSelectedObjectId(null)
+    setEditingObjectId(null)
+
+    await taskboardClient.deleteProjectObject(project.id, objectId).catch(() => {})
+
+    undoStack.current.push(() => {
+      actions.addCanvasObject(object)
+      taskboardClient.createProjectObject(project.id, object).catch(() => {})
+    })
+  }
+
+  const handleDuplicate = async (object) => {
+    const payload = {
+      ...object,
+      position: {
+        x: (object.position?.x || 0) + 20,
+        y: (object.position?.y || 0) + 20,
+      },
+      id: undefined,
+    }
+
+    const res = await taskboardClient.createProjectObject(project.id, payload).catch(() => null)
+    if (res?.ok) {
+      actions.addCanvasObject(res.data)
+      setSelectedObjectId(res.data.id)
+    }
+  }
+
+  const enterInlineEdit = (object) => {
+    setEditingObjectId(object.id)
+
+    if (object.type === 'note') {
+      setDraftValue(object.data?.text || '')
+      return
+    }
+
+    if (object.type === 'metric') {
+      setDraftValue(String(object.data?.value ?? '0'))
+      return
+    }
+
+    setDraftValue(object.data?.title || object.data?.label || '')
+  }
+
+  const saveInlineEdit = async () => {
+    const object = canvasObjects.find((candidate) => candidate.id === editingObjectId)
+    if (!object) {
+      setEditingObjectId(null)
+      return
+    }
+
+    const patch = { ...object.data }
+    if (object.type === 'note') patch.text = draftValue
+    else if (object.type === 'metric') patch.value = draftValue
+    else if (object.type === 'shape') patch.label = draftValue
+    else patch.title = draftValue
+
+    actions.updateCanvasObject({ id: object.id, data: patch })
+    await taskboardClient.updateProjectObject(project.id, object.id, { data: patch }).catch(() => {})
+
+    setEditingObjectId(null)
+    setDraftValue('')
+  }
+
+  const cancelInlineEdit = () => {
+    setEditingObjectId(null)
+    setDraftValue('')
+  }
+
+  const cycleTaskStatus = async (object) => {
+    const current = object.data?.status || 'todo'
+    const next = current === 'todo' ? 'in_progress' : current === 'in_progress' ? 'done' : 'todo'
+    const data = { ...object.data, status: next }
+    actions.updateCanvasObject({ id: object.id, data })
+    await taskboardClient.updateProjectObject(project.id, object.id, { data }).catch(() => {})
+  }
+
+  const handleDragStart = (event) => setActiveId(event.active.id)
+
   const handleDragEnd = async ({ active, delta }) => {
     setActiveId(null)
     if (!delta || (!delta.x && !delta.y)) return
-    const obj = canvasObjects.find(o => o.id === active.id)
-    if (!obj) return
-    const next = { x: Math.max(0, (obj.position?.x || 0) + delta.x / zoom), y: Math.max(0, (obj.position?.y || 0) + delta.y / zoom) }
-    actions.updateCanvasObject({ id: obj.id, position: next })
+
+    const object = canvasObjects.find((candidate) => candidate.id === active.id)
+    if (!object) return
+
+    const oldPosition = object.position || { x: 0, y: 0 }
+    const next = {
+      x: Math.max(0, oldPosition.x + delta.x / zoom),
+      y: Math.max(0, oldPosition.y + delta.y / zoom),
+    }
+
+    actions.updateCanvasObject({ id: object.id, position: next })
+
     try {
-      await taskboardClient.updateCanvasObject(obj.id, { position: next })
+      await taskboardClient.updateProjectObject(project.id, object.id, { position: next })
     } catch {
-      actions.updateCanvasObject({ id: obj.id, position: obj.position })
+      actions.updateCanvasObject({ id: object.id, position: oldPosition })
     }
   }
 
-  const zoomFit = () => setPan({ x: 40, y: 40 })
+  const activeObject = activeId ? canvasObjects.find((object) => object.id === activeId) : null
 
   return (
     <div style={{ display: 'flex', height: '100%', background: '#07090F' }}>
-      <InnerCanvasToolbar expanded={sidebarExpanded} onToggleExpand={() => setSidebarExpanded(v => !v)} activeTool={activeTool} onSelectTool={handleToolSelect} />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <CanvasToolbar search={search} onSearchChange={setSearch} snap={snap} onSnapToggle={() => setSnap(v => !v)} zoom={zoom} onZoomChange={setZoom} onZoomReset={() => setZoom(1)} onZoomFit={zoomFit} canvasBg={bg} onBgChange={setBg} gridStyle={gridStyle} onGridStyleChange={setGridStyle} showMinimap={showMinimap} onToggleMinimap={() => setShowMinimap(v => !v)} connectMode={activeTool === 'connect'} onToggleConnect={() => setActiveTool(activeTool === 'connect' ? 'select' : 'connect')} />
-        <div ref={canvasRef} onMouseMove={(e) => { if (isPanning.current) setPan({ x: panStartOffset.current.x + (e.clientX - panStart.current.x), y: panStartOffset.current.y + (e.clientY - panStart.current.y) }); if (isPlacementMode) setGhostPosition(screenToCanvas(e.clientX, e.clientY)) }} onMouseDown={(e) => { if (e.button !== 0 || e.target !== e.currentTarget) return; isPanning.current = true; panStart.current = { x: e.clientX, y: e.clientY }; panStartOffset.current = { ...pan } }} onMouseUp={() => { isPanning.current = false }} onWheel={(e) => { if (!e.ctrlKey && !e.metaKey) return; e.preventDefault(); setZoom(v => Math.max(0.25, Math.min(3, v - e.deltaY * 0.001))) }} onClick={(e) => { if (isPlacementMode) placeObject(screenToCanvas(e.clientX, e.clientY)) }} style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#07090F', cursor: isPlacementMode ? 'crosshair' : 'default' }}>
+      <InnerCanvasToolbar
+        expanded={sidebarExpanded}
+        activeTool={activeTool}
+        isPlacementMode={isPlacementMode}
+        onToggleExpand={() => setSidebarExpanded((value) => !value)}
+        onSelectTool={handleToolSelect}
+        onToggleShortcuts={() => setShowShortcuts((open) => !open)}
+      />
+
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <CanvasToolbar
+          mode="inner"
+          title="Inner Canvas"
+          search={search}
+          onSearchChange={setSearch}
+          snap={snap}
+          onSnapToggle={() => setSnap((value) => !value)}
+          zoom={zoom}
+          onZoomChange={setZoom}
+          onZoomReset={() => setZoom(1)}
+          onZoomFit={() => setPan({ x: 40, y: 40 })}
+          canvasBg={canvasBg}
+          onBgChange={setCanvasBg}
+          gridStyle={gridStyle}
+          onGridStyleChange={setGridStyle}
+          showMinimap={showMinimap}
+          onToggleMinimap={() => setShowMinimap((value) => !value)}
+          connectMode={activeTool === 'connect'}
+          onToggleConnect={() => handleToolSelect('connect')}
+        />
+
+        <div
+          ref={canvasRef}
+          className={isPlacementMode ? 'canvas--placement' : ''}
+          onMouseMove={(event) => {
+            if (isPanning.current) {
+              setPan({
+                x: panStartOffset.current.x + (event.clientX - panStart.current.x),
+                y: panStartOffset.current.y + (event.clientY - panStart.current.y),
+              })
+            }
+
+            if (isPlacementMode) {
+              setGhostPosition(screenToCanvas(event.clientX, event.clientY))
+            }
+          }}
+          onMouseDown={(event) => {
+            if (event.button !== 0) return
+            if (event.target.closest('.inner-object-card')) return
+            isPanning.current = true
+            panStart.current = { x: event.clientX, y: event.clientY }
+            panStartOffset.current = { ...pan }
+            setSelectedObjectId(null)
+          }}
+          onMouseUp={() => {
+            isPanning.current = false
+          }}
+          onClick={(event) => {
+            if (event.target.closest('.inner-object-card')) return
+            if (isPlacementMode) handleCreateObject(event)
+            else setSelectedObjectId(null)
+          }}
+          onWheel={(event) => {
+            if (!event.ctrlKey && !event.metaKey) return
+            event.preventDefault()
+            setZoom((value) => Math.max(0.25, Math.min(3, value - event.deltaY * 0.001)))
+          }}
+          style={{
+            position: 'relative',
+            flex: 1,
+            overflow: 'hidden',
+            background: canvasBg,
+            cursor: isPlacementMode ? 'crosshair' : 'default',
+          }}
+        >
+          {isPlacementMode && (
+            <div className="placement-instruction">
+              Click anywhere to place {activeTool.charAt(0).toUpperCase() + activeTool.slice(1)} — Esc to cancel
+            </div>
+          )}
+
           <div style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transformOrigin: '0 0', minWidth: 2200, minHeight: 1600, position: 'relative' }}>
-            <CanvasGrid gridSize={20} snap={snap} gridStyle={gridStyle} canvasBg={bg} />
+            <CanvasGrid gridSize={20} snap={snap} gridStyle={gridStyle} canvasBg={canvasBg} />
+
+            {isPlacementMode && ghostPosition && (
+              <div
+                className="canvas-ghost"
+                style={{
+                  left: ghostPosition.x,
+                  top: ghostPosition.y,
+                  transform: 'translate(-50%, -50%)',
+                }}
+              />
+            )}
+
             <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-              {canvasObjects.map(obj => <DraggableItem key={obj.id} obj={obj} isDragging={activeId === obj.id} />)}
-              <DragOverlay>{activeId ? <DraggableItem obj={canvasObjects.find(o => o.id === activeId)} isDragging /> : null}</DragOverlay>
+              {canvasObjects.map((object) => (
+                <ObjectCard
+                  key={object.id}
+                  object={object}
+                  isDragging={activeId === object.id}
+                  isSelected={selectedObjectId === object.id}
+                  isEditing={editingObjectId === object.id}
+                  draftValue={draftValue}
+                  onDraftChange={setDraftValue}
+                  onSelect={setSelectedObjectId}
+                  onDoubleEdit={enterInlineEdit}
+                  onSave={saveInlineEdit}
+                  onCancel={cancelInlineEdit}
+                  onDelete={handleDelete}
+                  onDuplicate={handleDuplicate}
+                  onTaskStatusCycle={cycleTaskStatus}
+                />
+              ))}
+
+              <DragOverlay>
+                {activeObject ? (
+                  <ObjectCard
+                    object={activeObject}
+                    isDragging
+                    isOverlay
+                    isSelected={selectedObjectId === activeObject.id}
+                    isEditing={false}
+                    draftValue=""
+                    onDraftChange={() => {}}
+                    onSelect={() => {}}
+                    onDoubleEdit={() => {}}
+                    onSave={() => {}}
+                    onCancel={() => {}}
+                    onDelete={() => {}}
+                    onDuplicate={() => {}}
+                    onTaskStatusCycle={() => {}}
+                  />
+                ) : null}
+              </DragOverlay>
             </DndContext>
-            {isPlacementMode && ghostPosition && <div style={{ position: 'absolute', left: ghostPosition.x, top: ghostPosition.y, width: 220, height: 110, border: '1px dashed rgba(0,212,255,0.55)', background: 'rgba(0,212,255,0.08)', borderRadius: 10, pointerEvents: 'none' }} />}
           </div>
-          <div style={{ position: 'absolute', top: 8, right: 8, width: 220, height: 2, background: 'rgba(148,163,184,0.24)' }}><div style={{ width: `${project.progress || 0}%`, height: '100%', background: 'linear-gradient(90deg,#00D4FF,#48E2FF)' }} /></div>
-          <CanvasMinimap projects={[]} canvasObjects={canvasObjects} pan={pan} zoom={zoom} viewportW={1200} viewportH={700} onNavigate={setPan} visible={showMinimap} />
+
+          <CanvasMinimap
+            projects={[]}
+            canvasObjects={canvasObjects}
+            pan={pan}
+            zoom={zoom}
+            viewportW={canvasRef.current?.clientWidth || 1200}
+            viewportH={canvasRef.current?.clientHeight || 700}
+            onNavigate={setPan}
+            visible={showMinimap}
+            position="bottom-left"
+          />
         </div>
       </div>
-      <PlacementManager active={isPlacementMode} onEsc={exitPlacement} />
-      <AgentSuggestionModal open={agentModalOpen} text={agentSuggestionText} loading={agentLoading} onApply={() => {}} onRegenerate={() => handleToolSelect('agentchat')} onClose={() => setAgentModalOpen(false)} />
-      <TemplatePickerModal open={templatePickerOpen} onClose={() => setTemplatePickerOpen(false)} onApply={async (template) => {
-        for (const obj of template.objects) {
-          const res = await taskboardClient.createCanvasObject({ ...obj, position: { x: obj.x, y: obj.y }, projectId: project.id, canvasScope: 'inner', data: { ...(obj.data || {}), projectId: project.id, canvasScope: 'inner' } })
-          if (res.ok) actions.addCanvasObject(res.data)
-        }
-        setTemplatePickerOpen(false)
-      }} />
+
+      <KeyboardShortcutPanel open={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </div>
   )
 }

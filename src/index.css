@@ -761,8 +761,9 @@ button, a, input, select, textarea {
 
 /* Focus rings — use theme accent */
 input:focus, select:focus, textarea:focus, button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--theme-ring), 0 0 12px rgba(0, 0, 0, 0.1);
+  outline: 2px solid var(--active, var(--theme-ring));
+  outline-offset: 2px;
+  box-shadow: none;
 }
 
 /* Status Animations */
@@ -829,4 +830,184 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
 @keyframes cc7-pulse {
   0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--theme-accent); }
   50% { opacity: 0.7; box-shadow: 0 0 12px var(--theme-accent); }
+}
+
+:root {
+  --bg-base: #07090F;
+  --surface: #0E1320;
+  --active: #00D4FF;
+  --complete-accent: #D4A574;
+  --text-primary: #E6EDF7;
+  --text-secondary: #9AA7BC;
+  --border: rgba(154,167,188,0.22);
+  --motion-fast: 160ms cubic-bezier(0.2,0.8,0.2,1);
+  --motion-base: 180ms cubic-bezier(0.22,1,0.36,1);
+  --motion-heavy: 200ms cubic-bezier(0.16,1,0.3,1);
+  --motion-instruction: 120ms cubic-bezier(0.3,0.7,0.4,1);
+}
+
+.project-workspace-root {
+  position: relative;
+  height: 100%;
+}
+
+.project-hub-shell {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  transition: opacity var(--motion-base), filter var(--motion-base);
+}
+
+.project-hub-shell.is-backgrounded {
+  opacity: 0.20;
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+.project-inner-shell {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  background: rgba(7, 9, 15, 0.80);
+  display: flex;
+  flex-direction: column;
+  animation: project-folder-fade var(--motion-base);
+}
+
+.workspace-breadcrumb-bar {
+  position: relative;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(154,167,188,0.20);
+  background: rgba(12,16,24,0.88);
+}
+
+.hub-back-btn {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(154,167,188,0.24);
+  background: rgba(12,16,24,0.72);
+  color: #9AA7BC;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.project-crumb-name {
+  color: #E6EDF7;
+}
+
+.crumb-sep {
+  color: #66758C;
+}
+
+.canvas--placement {
+  cursor: crosshair;
+}
+
+.canvas-ghost {
+  position: absolute;
+  width: 176px;
+  min-height: 56px;
+  pointer-events: none;
+  opacity: 0.40;
+  backdrop-filter: blur(8px);
+  background: rgba(230,237,247,0.10);
+  border: 1px solid rgba(0,212,255,0.44);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.32);
+  transition: transform var(--motion-fast), opacity var(--motion-fast);
+}
+
+.placement-instruction {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 40px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-left: 2px solid var(--active);
+  background: rgba(12,16,24,0.78);
+  border: 1px solid rgba(154,167,188,0.20);
+  backdrop-filter: blur(10px);
+  animation: instructionIn var(--motion-instruction);
+  z-index: 60;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+@keyframes instructionIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.tool-btn.is-active {
+  box-shadow: 0 0 0 1px rgba(0,212,255,0.68), 0 0 16px rgba(0,212,255,0.22);
+  animation: activePulse 1.4s ease-out infinite;
+}
+
+@keyframes activePulse {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 0.28; }
+}
+
+.template-card-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 1280px) {
+  .template-card-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .template-card-grid {
+    display: flex !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+  .template-card-grid > * {
+    min-width: 260px;
+    scroll-snap-align: start;
+  }
+}
+
+.workspace-header.status-active {
+  background-image: linear-gradient(90deg, rgba(34,197,94,0.08), transparent 24%);
+}
+
+.workspace-header.status-planning {
+  background-image: linear-gradient(90deg, rgba(234,179,8,0.08), transparent 24%);
+}
+
+.workspace-header.status-on-hold {
+  background-image: linear-gradient(90deg, rgba(249,115,22,0.08), transparent 24%);
+}
+
+.workspace-header.status-complete {
+  background-image: linear-gradient(90deg, rgba(0,212,255,0.08), transparent 24%);
+}
+
+.progress-fill.is-complete {
+  animation: progress-celebrate 600ms ease;
+}
+
+@keyframes progress-celebrate {
+  0% { transform: scale(1); filter: saturate(1); }
+  50% { transform: scale(1.02); filter: saturate(1.5); }
+  100% { transform: scale(1); filter: saturate(1); }
+}
+
+@keyframes project-folder-spawn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
 }

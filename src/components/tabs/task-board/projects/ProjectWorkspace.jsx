@@ -1,25 +1,11 @@
-import { useTaskBoard } from '../../../../context/TaskBoardContext'
 import WorkspaceHeader from './WorkspaceHeader'
 import ProjectInnerCanvas from './ProjectInnerCanvas'
 
-export default function ProjectWorkspace() {
-  const { state } = useTaskBoard()
-  const project = state.selectedProject
-
+export default function ProjectWorkspace({ project }) {
   if (!project) return null
 
   return (
-    <div className="project-folder-hero" style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      zIndex: 50,
-      background: '#07090F',
-      display: 'flex',
-      flexDirection: 'column',
-    }}>
+    <div className="project-folder-hero" style={{ display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%' }}>
       <WorkspaceHeader project={project} />
       <div style={{ flex: 1, minHeight: 0 }}>
         <ProjectInnerCanvas project={project} />
@@ -27,4 +13,3 @@ export default function ProjectWorkspace() {
     </div>
   )
 }
-

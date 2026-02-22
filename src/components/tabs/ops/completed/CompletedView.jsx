@@ -154,7 +154,7 @@ export default function CompletedView() {
     setLoadingReportId(task.id)
     const content = await fetchReport(task.id)
     setLoadingReportId(null)
-    setReportModal({ open: true, taskId: task.id, taskName: task.title || 'Task', content })
+    setReportModal({ open: true, taskId: task.id, taskName: task.name || task.title || 'Task', content })
   }, [fetchReport])
 
   const handlePageChange = (nextPage) => {
@@ -305,7 +305,7 @@ export default function CompletedView() {
             >
               <div style={{ padding: '16px', display: 'grid', gap: '10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', alignItems: 'flex-start' }}>
-                  <div style={{ color: '#E2E8F0', fontWeight: 700, fontSize: '16px', lineHeight: 1.35 }}>{task.title}</div>
+                  <div style={{ color: '#E2E8F0', fontWeight: 700, fontSize: '16px', lineHeight: 1.35 }}>{task.name || task.title}</div>
                   <span style={{ color: priorityStyle.color, background: priorityStyle.bg, border: `1px solid ${priorityStyle.border}`, borderRadius: '999px', height: '22px', padding: '0 10px', fontSize: '10px', fontWeight: 800, letterSpacing: '0.06em', display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}>
                     {priority}
                   </span>

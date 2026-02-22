@@ -6,7 +6,7 @@ import taskboardClient from '../../../../api/taskboardClient'
 import CanvasToolbar from './CanvasToolbar'
 import CanvasGrid from './CanvasGrid'
 import ProjectFolderCard from './ProjectFolderCard'
-import ProjectCreateModal from './ProjectCreateModal'
+import NewProjectModal from './modals/NewProjectModal'
 import CanvasContextMenu from './CanvasContextMenu'
 import CanvasStickyNote from './CanvasStickyNote'
 import CanvasFrame from './CanvasFrame'
@@ -150,6 +150,7 @@ export default function ProjectCanvas() {
   const [gridStyle, setGridStyle] = useState(() => localStorage.getItem('projecthub-grid') || 'dots')
   const [contextMenu, setContextMenu] = useState(null)
   const [showMinimap, setShowMinimap] = useState(true)
+  const [panMode, setPanMode] = useState(true)
   const [createParentId, setCreateParentId] = useState(null)
 
   // ── Multi-select state ──────────────────────────────────────────────────────
@@ -958,8 +959,9 @@ export default function ProjectCanvas() {
       }}
     >
       <CanvasToolbar
+        mode="hub"
+        title="Project Hub"
         search={search} onSearchChange={setSearch}
-        snap={snap} onSnapToggle={() => setSnap(s => !s)}
         zoom={zoom} onZoomChange={setZoom}
         onZoomReset={() => setZoom(1)}
         onZoomFit={() => setZoom(1)}
@@ -968,12 +970,9 @@ export default function ProjectCanvas() {
         showMinimap={showMinimap} onToggleMinimap={() => setShowMinimap(v => !v)}
         connectMode={connectMode.active}
         onToggleConnect={() => setConnectMode(m => m.active ? { active: false, sourceId: null } : { active: true, sourceId: null })}
-        placementTool={placementTool}
-        onSelectPlacementTool={(tool) => {
-          const same = placementTool === tool && isPlacementMode
-          setPlacementTool(same ? null : tool)
-          setIsPlacementMode(!same)
-        }}
+        onPanToggle={() => setPanMode((value) => !value)}
+        panMode={panMode}
+        onNewProject={() => setShowCreate(true)}
       />
 
       {/* Connect mode banner */}
@@ -1084,8 +1083,12 @@ export default function ProjectCanvas() {
                 isConnectSource={isConnectSource}
                 onCreateTaskFromProject={createTaskFromProject}
                 onClick={(e) => {
-                  if (connectMode.active) { handleObjectClick(p.id); return }
+                  if (connectMode.active) { e.preventDefault(); handleObjectClick(p.id); return }
                   handleCardShiftClick(e, p.id)
+                }}
+                onOpen={(projectToOpen) => {
+                  actions.setSelectedProject(projectToOpen)
+                  actions.setProjectTab('canvas')
                 }}
                 onContextMenu={(e) => {
                   e.preventDefault(); e.stopPropagation()
@@ -1154,10 +1157,12 @@ export default function ProjectCanvas() {
         viewportH={viewportSize.current.h || window.innerHeight}
         onNavigate={setPan}
         visible={showMinimap}
+        position="bottom-left"
       />
 
       {showCreate && (
-        <ProjectCreateModal
+        <NewProjectModal
+          open={showCreate}
           existingProjects={allProjects}
           parentProjectId={createParentId}
           onClose={() => { setShowCreate(false); setCreateParentId(null) }}
