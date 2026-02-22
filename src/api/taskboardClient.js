@@ -110,6 +110,42 @@ class TaskboardClient {
     return this.request(ENDPOINTS.taskboardProject(id), { method: 'DELETE' })
   }
 
+  async getProjectById(id) {
+    return this.request(`/api/taskboard/projects/${id}`)
+  }
+
+  async createProjectObject(projectId, data) {
+    try {
+      return await this.request(`/api/taskboard/projects/${projectId}/objects`, { method: 'POST', body: JSON.stringify(data) })
+    } catch {
+      return this.createCanvasObject({ ...data, projectId })
+    }
+  }
+
+  async updateProjectObject(projectId, objId, data) {
+    try {
+      return await this.request(`/api/taskboard/projects/${projectId}/objects/${objId}`, { method: 'PATCH', body: JSON.stringify(data) })
+    } catch {
+      return this.updateCanvasObject(objId, data)
+    }
+  }
+
+  async deleteProjectObject(projectId, objId) {
+    try {
+      return await this.request(`/api/taskboard/projects/${projectId}/objects/${objId}`, { method: 'DELETE' })
+    } catch {
+      return this.deleteCanvasObject(objId)
+    }
+  }
+
+  async getTemplates() {
+    return this.request('/api/taskboard/templates')
+  }
+
+  async createProjectFromTemplate(payload) {
+    return this.request('/api/taskboard/projects/from-template', { method: 'POST', body: JSON.stringify(payload) })
+  }
+
   // Documents
   async getDocuments(query = {}) {
     const params = new URLSearchParams(Object.entries(query).filter(([, v]) => v))

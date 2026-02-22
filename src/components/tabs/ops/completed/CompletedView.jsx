@@ -12,13 +12,39 @@ const AGENT_COLORS = {
   dano: '#f59e0b',
 }
 
+const PRIORITY_STYLES = {
+  CRITICAL: { color: '#FFD7A8', bg: 'rgba(127,29,29,0.55)', border: 'rgba(245,158,11,0.6)' },
+  HIGH: { color: '#FDE68A', bg: 'rgba(120,53,15,0.45)', border: 'rgba(245,158,11,0.45)' },
+  MEDIUM: { color: '#E2E8F0', bg: 'rgba(51,65,85,0.45)', border: 'rgba(148,163,184,0.35)' },
+  LOW: { color: '#C7D2FE', bg: 'rgba(49,46,129,0.35)', border: 'rgba(129,140,248,0.35)' },
+}
+
+const getPriority = (task) => {
+  const value = String(task.priority || task.severity || task.urgency || 'MEDIUM').toUpperCase()
+  return PRIORITY_STYLES[value] ? value : 'MEDIUM'
+}
+
+const getWorkstream = (task) => {
+  const source = `${task.workstream || task.stream || task.type || ''}`.toLowerCase()
+  if (source.includes('fe') || source.includes('front')) return 'FE'
+  if (source.includes('be') || source.includes('back')) return 'BE'
+  return 'OPS'
+}
+
+const workstreamStyles = {
+  FE: { color: '#c4b5fd', bg: 'rgba(196,181,253,0.16)', border: 'rgba(196,181,253,0.45)' },
+  BE: { color: '#67e8f9', bg: 'rgba(103,232,249,0.14)', border: 'rgba(103,232,249,0.45)' },
+  OPS: { color: '#cbd5e1', bg: 'rgba(148,163,184,0.14)', border: 'rgba(148,163,184,0.35)' },
+}
+
 export default function CompletedView() {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all') // all | soren | mason | sentinel
+  const [filter, setFilter] = useState('all')
   const [expanded, setExpanded] = useState(null)
   const [pageSize, setPageSize] = useState(50)
   const [page, setPage] = useState(1)
+  const [loadingReportId, setLoadingReportId] = useState(null)
   const listRef = useRef(null)
   const [reportModal, setReportModal] = useState({ open: false, taskId: null, taskName: '', content: '' })
 
@@ -27,17 +53,11 @@ export default function CompletedView() {
       const res = await fetch(`${WORKER_PROXY_URL}${ENDPOINTS.opsPipelineTask(taskId)}`, {
         headers: getSyncHeaders(),
       })
-      if (!res.ok) {
-        return 'No report available yet.'
-      }
+      if (!res.ok) return 'No report available yet.'
 
       const task = await res.json()
-      const reportComment = (task.comments || []).find(c =>
-        c.message?.startsWith('REPORT:') || c.message?.includes('report.md')
-      )
-      const reportLog = (task.pipeline_log || []).find(l =>
-        l.notes?.includes('report') || l.notes?.includes('Files Changed')
-      )
+      const reportComment = (task.comments || []).find(c => c.message?.startsWith('REPORT:') || c.message?.includes('report.md'))
+      const reportLog = (task.pipeline_log || []).find(l => l.notes?.includes('report') || l.notes?.includes('Files Changed'))
 
       return reportComment?.message || reportLog?.notes || task.description || 'No report available yet.'
     } catch {
@@ -46,7 +66,9 @@ export default function CompletedView() {
   }, [])
 
   const openReport = useCallback(async (task) => {
+    setLoadingReportId(task.id)
     const content = await fetchReport(task.id)
+    setLoadingReportId(null)
     setReportModal({ open: true, taskId: task.id, taskName: task.title || task.name || 'Task', content })
   }, [fetchReport])
 
@@ -56,10 +78,7 @@ export default function CompletedView() {
 
   const fetchCompleted = useCallback(async () => {
     try {
-      const res = await fetch(
-        `${WORKER_PROXY_URL}${ENDPOINTS.opsPipelineArchive}`,
-        { headers: getSyncHeaders() }
-      )
+      const res = await fetch(`${WORKER_PROXY_URL}${ENDPOINTS.opsPipelineArchive}`, { headers: getSyncHeaders() })
       if (res.ok) {
         const data = await res.json()
         const items = Array.isArray(data) ? data : (data.tasks || [])
@@ -67,7 +86,7 @@ export default function CompletedView() {
           id: t.id,
           title: t.name || t.title || 'Untitled',
           status: (t.stage === 'DONE') ? 'complete' : 'failed',
-          assigned_to: t.assignee,
+          assigned_to: String(t.assignee || t.assigned_to || 'unassigned').toLowerCase(),
           created_by: t.createdBy,
           created_at: t.createdAt,
           completed_at: t.stageEnteredAt || t.completedAt || t.createdAt,
@@ -76,12 +95,15 @@ export default function CompletedView() {
           error: t.error || null,
           comments: t.comments || [],
           ops_task_id: t.id,
-        })).sort((a, b) =>
-          new Date(b.completed_at || b.created_at) - new Date(a.completed_at || a.created_at)
-        )
+          priority: t.priority,
+          workstream: t.workstream,
+          type: t.type,
+        })).sort((a, b) => new Date(b.completed_at || b.created_at) - new Date(a.completed_at || a.created_at))
         setTasks(all)
       }
-    } catch { /* silent */ }
+    } catch {
+      // silent
+    }
     setLoading(false)
   }, [])
 
@@ -93,10 +115,7 @@ export default function CompletedView() {
   }, [fetchCompleted])
 
   const agents = ['soren', 'mason', 'sentinel']
-  const filteredTasks = useMemo(
-    () => (filter === 'all' ? tasks : tasks.filter(t => t.assigned_to === filter)),
-    [tasks, filter]
-  )
+  const filteredTasks = useMemo(() => (filter === 'all' ? tasks : tasks.filter(t => t.assigned_to === filter)), [tasks, filter])
 
   const total = filteredTasks.length
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
@@ -113,9 +132,7 @@ export default function CompletedView() {
   }, [filter, pageSize])
 
   useEffect(() => {
-    if (page > totalPages) {
-      setPage(totalPages)
-    }
+    if (page > totalPages) setPage(totalPages)
   }, [page, totalPages])
 
   const handlePageChange = (nextPage) => {
@@ -124,203 +141,228 @@ export default function CompletedView() {
     listRef.current?.scrollTo({ top: 0 })
   }
 
-  if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--theme-text-secondary)', fontSize: '13px' }}>
-      Loading completed tasks…
-    </div>
-  )
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0' }}>
+        {[...Array(5)].map((_, i) => (
+          <div key={i} style={{
+            minHeight: '78px',
+            borderRadius: '12px',
+            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))',
+          }} />
+        ))}
+        <div style={{ textAlign: 'center', color: 'rgba(245,231,196,0.72)', fontSize: '12px' }}>Loading completed tasks…</div>
+      </div>
+    )
+  }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, minHeight: 0 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, minHeight: 0, background: '#07090F' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: 'var(--theme-text-primary)' }}>
-            Completed Tasks
-          </h2>
-          <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--theme-text-secondary)' }}>
+          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, lineHeight: 1.2, color: '#F5E7C4' }}>Completed Tasks</h2>
+          <p style={{ margin: '2px 0 0', fontSize: '11px', fontWeight: 500, color: 'rgba(245,231,196,0.72)' }}>
             {total} task{total !== 1 ? 's' : ''} — what the team has shipped
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '4px' }}>
-          {['all', ...agents].map(a => (
-            <button key={a} onClick={() => setFilter(a)} style={{
-              padding: '5px 12px', fontSize: '11px', fontWeight: filter === a ? 700 : 400,
-              borderRadius: '6px', border: 'none', cursor: 'pointer',
-              backgroundColor: filter === a
-                ? (AGENT_COLORS[a] || 'var(--theme-accent)') + '25'
-                : 'rgba(255,255,255,0.04)',
-              color: filter === a
-                ? (AGENT_COLORS[a] || 'var(--theme-accent)')
-                : 'var(--theme-text-secondary)',
-              transition: 'all 0.15s',
-            }}>
-              {a === 'all' ? 'All' : a.charAt(0).toUpperCase() + a.slice(1)}
-            </button>
-          ))}
-          <button onClick={fetchCompleted} style={{
-            padding: '5px 10px', fontSize: '11px', borderRadius: '6px', border: 'none',
-            cursor: 'pointer', backgroundColor: 'rgba(255,255,255,0.04)',
-            color: 'var(--theme-text-secondary)', marginLeft: '4px',
-          }} title="Refresh">↻</button>
+
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          {['all', ...agents].map(a => {
+            const activeColor = AGENT_COLORS[a] || '#C9D1E5'
+            const active = filter === a
+            return (
+              <button
+                key={a}
+                onClick={() => setFilter(a)}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  borderRadius: '999px',
+                  border: `1px solid ${active ? `${activeColor}66` : 'rgba(255,255,255,0.10)'}`,
+                  background: active ? `${activeColor}22` : 'rgba(255,255,255,0.04)',
+                  color: active ? activeColor : '#C9D1E5',
+                  cursor: 'pointer',
+                  boxShadow: active ? `0 0 14px ${activeColor}22` : 'none',
+                }}
+              >
+                {a === 'all' ? 'All' : a.charAt(0).toUpperCase() + a.slice(1)}
+              </button>
+            )
+          })}
+
+          <button
+            onClick={fetchCompleted}
+            title='Refresh'
+            style={{
+              padding: '6px 12px',
+              fontSize: '11px',
+              fontWeight: 600,
+              borderRadius: '999px',
+              border: '1px solid rgba(255,255,255,0.10)',
+              background: 'rgba(255,255,255,0.04)',
+              color: '#67e8f9',
+              cursor: 'pointer',
+            }}
+          >
+            ↻
+          </button>
         </div>
       </div>
 
-      <div ref={listRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <div ref={listRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {paged.length === 0 && (
-          <div style={{ textAlign: 'center', color: 'var(--theme-text-secondary)', fontSize: '13px', marginTop: '40px', fontStyle: 'italic' }}>
-            No completed tasks yet
+          <div style={{
+            marginTop: '22px',
+            textAlign: 'center',
+            borderRadius: '12px',
+            border: '1px solid rgba(245,231,196,0.20)',
+            background: 'linear-gradient(160deg, rgba(19,24,38,0.92) 0%, rgba(10,13,22,0.94) 100%)',
+            padding: '24px 16px',
+          }}>
+            <div style={{ fontSize: '22px', color: 'rgba(245,231,196,0.45)', marginBottom: '6px' }}>◯✓</div>
+            <div style={{ color: '#F8FAFC', fontWeight: 700, fontSize: '14px' }}>
+              {filter === 'all' ? 'No completed tasks yet.' : `No completed tasks for ${filter.charAt(0).toUpperCase() + filter.slice(1)}.`}
+            </div>
+            <div style={{ color: 'rgba(201,209,229,0.82)', fontSize: '12px', marginTop: '4px' }}>
+              Shipped work will appear here once tasks reach DONE.
+            </div>
           </div>
         )}
 
         {paged.map(task => {
-          const done = task.status === 'complete'
           const isOpen = expanded === task.id
           const summary = task.result_summary || task.error || '—'
+          const priority = getPriority(task)
+          const priorityStyle = PRIORITY_STYLES[priority]
+          const workstream = getWorkstream(task)
+          const workstreamStyle = workstreamStyles[workstream]
+          const completedAt = task.completed_at || task.created_at
+          const agent = task.assigned_to || 'unassigned'
 
           return (
-            <div key={task.id}
+            <div
+              key={task.id}
               onClick={() => setExpanded(isOpen ? null : task.id)}
               style={{
-                borderRadius: '8px', cursor: 'pointer',
-                backgroundColor: 'var(--theme-bg, #0a0a0f)',
-                border: `1px solid ${done ? 'rgba(255,255,255,0.06)' : 'rgba(239,68,68,0.25)'}`,
-                overflow: 'hidden', transition: 'all 0.15s',
-                flexShrink: 0, minHeight: '52px', boxSizing: 'border-box',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                background: 'linear-gradient(160deg, rgba(19,24,38,0.92) 0%, rgba(10,13,22,0.94) 100%)',
+                border: '1px solid rgba(245,231,196,0.20)',
+                boxShadow: '0 6px 20px rgba(0,0,0,0.35)',
+                overflow: 'hidden',
+                minHeight: '78px',
+                transition: 'all 180ms cubic-bezier(0.22, 1, 0.36, 1)',
               }}
-              onMouseOver={e => e.currentTarget.style.borderColor = done ? 'rgba(255,255,255,0.2)' : '#ef444460'}
-              onMouseOut={e => e.currentTarget.style.borderColor = done ? 'rgba(255,255,255,0.06)' : 'rgba(239,68,68,0.25)'}
             >
-              <div style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, boxSizing: 'border-box' }}>
-                <span style={{ fontSize: '14px', flexShrink: 0 }}>{done ? '✅' : '❌'}</span>
+              <div style={{ padding: '12px 14px', display: 'grid', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <div style={{
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    lineHeight: 1.3,
+                    color: '#F8FAFC',
+                    minWidth: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: isOpen ? 'normal' : 'nowrap',
+                  }}>
+                    {task.title}
+                  </div>
 
-                <div style={{
-                  flex: 1,
-                  minWidth: 0,
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  color: 'var(--theme-text-primary)',
-                  lineHeight: 1.3,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}>
-                  {task.title}
+                  <span style={{
+                    height: '22px',
+                    borderRadius: '999px',
+                    padding: '0 10px',
+                    fontSize: '10px',
+                    fontWeight: 800,
+                    letterSpacing: '0.6px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    color: priorityStyle.color,
+                    border: `1px solid ${priorityStyle.border}`,
+                    background: priorityStyle.bg,
+                    flexShrink: 0,
+                  }}>
+                    {priority}
+                  </span>
                 </div>
 
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    openReport(task)
-                  }}
-                  style={{
-                    padding: '3px 10px', fontSize: '11px', borderRadius: '4px',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    background: 'rgba(255,255,255,0.05)',
-                    color: '#00d4ff', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
-                  }}
-                >
-                  📄 View Report
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(201,209,229,0.82)' }}>ASSIGNED</span>
+                  <span style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    padding: '2px 8px',
+                    borderRadius: '999px',
+                    border: `1px solid ${(AGENT_COLORS[agent] || '#64748b')}66`,
+                    background: `${AGENT_COLORS[agent] || '#64748b'}33`,
+                    color: '#F8FAFC',
+                  }}>
+                    {agent}
+                  </span>
 
-                <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', flexShrink: 0 }}>
-                  <TimeAgo date={task.completed_at || task.created_at} />
+                  <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(201,209,229,0.82)' }}>COMPLETED</span>
+                  <span title={completedAt ? new Date(completedAt).toLocaleString() : '—'} style={{ fontSize: '11px', color: '#F5E7C4' }}>
+                    <TimeAgo date={completedAt} />
+                  </span>
+
+                  <span style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    borderRadius: '999px',
+                    padding: '2px 8px',
+                    border: `1px solid ${workstreamStyle.border}`,
+                    background: workstreamStyle.bg,
+                    color: workstreamStyle.color,
+                  }}>
+                    {workstream}
+                  </span>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (!loadingReportId) openReport(task)
+                    }}
+                    disabled={loadingReportId === task.id}
+                    style={{
+                      marginLeft: 'auto',
+                      height: '30px',
+                      padding: '0 12px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(0,212,255,0.55)',
+                      background: 'linear-gradient(135deg, rgba(0,212,255,0.20), rgba(0,212,255,0.10))',
+                      color: '#9BEFFF',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: loadingReportId === task.id ? 'wait' : 'pointer',
+                      opacity: loadingReportId === task.id ? 0.75 : 1,
+                    }}
+                  >
+                    {loadingReportId === task.id ? 'Loading…' : 'View Report'}
+                  </button>
                 </div>
-
-                <span style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', flexShrink: 0, transition: 'transform 0.15s', transform: isOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
               </div>
 
-              {isOpen && (
-                <div style={{
-                  padding: '0 14px 14px',
-                  borderTop: '1px solid rgba(255,255,255,0.04)',
-                  boxSizing: 'border-box',
-                }}>
-                  {!done && task.error && (
-                    <div style={{ marginTop: '12px' }}>
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>
-                        ❌ Error
-                      </div>
-                      <div style={{
-                        fontSize: '12px', color: '#ef4444', lineHeight: 1.6,
-                        whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-                        maxHeight: '150px', overflowY: 'auto',
-                        backgroundColor: 'rgba(239,68,68,0.06)', borderRadius: '6px',
-                        padding: '8px 10px', border: '1px solid rgba(239,68,68,0.2)',
-                        boxSizing: 'border-box',
-                      }}>
-                        {task.error}
-                      </div>
-                    </div>
-                  )}
-
-                  {task.result_summary && (
-                    <div style={{ marginTop: '12px' }}>
-                      <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>
-                        📋 Summary
-                      </div>
-                      <div style={{
-                        fontSize: '12px', color: 'var(--theme-text-primary)', lineHeight: 1.6,
-                        whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-                        maxHeight: '180px', overflowY: 'auto',
-                        backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: '6px',
-                        padding: '8px 10px', boxSizing: 'border-box',
-                      }}>
-                        {summary}
-                      </div>
-                    </div>
-                  )}
-
-                  {task.result && task.result !== task.result_summary && (
-                    <div style={{ marginTop: '12px' }}>
-                      <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>
-                        💬 Full Agent Output (notes, suggestions, issues)
-                      </div>
-                      <div style={{
-                        fontSize: '11px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7,
-                        whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-                        maxHeight: '300px', overflowY: 'auto',
-                        backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: '6px',
-                        padding: '8px 10px', boxSizing: 'border-box',
-                      }}>
-                        {task.result}
-                      </div>
-                    </div>
-                  )}
-
-                  {task.comments && task.comments.length > 0 && (
-                    <div style={{ marginTop: '12px' }}>
-                      <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
-                        💬 Agent Comments ({task.comments.length})
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {task.comments.map((c, i) => (
-                          <div key={i} style={{
-                            padding: '6px 10px', borderRadius: '6px',
-                            backgroundColor: 'rgba(255,255,255,0.03)',
-                            border: '1px solid rgba(255,255,255,0.06)',
-                            boxSizing: 'border-box',
-                          }}>
-                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '3px' }}>
-                              <span style={{ fontSize: '10px', fontWeight: 700, color: AGENT_COLORS[c.agentId] || '#6b7280', textTransform: 'uppercase' }}>{c.agentId}</span>
-                              <span style={{ fontSize: '10px', color: 'var(--theme-text-secondary)' }}>{new Date(c.createdAt).toLocaleString()}</span>
-                            </div>
-                            <div style={{ fontSize: '12px', color: 'var(--theme-text-primary)', lineHeight: 1.5 }}>{c.message}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div style={{ display: 'flex', gap: '16px', marginTop: '12px', fontSize: '10px', color: 'var(--theme-text-secondary)', flexWrap: 'wrap' }}>
-                    <span>ID: <span style={{ color: 'var(--theme-text-primary)' }}>{task.id}</span></span>
-                    <span>By: <span style={{ color: 'var(--theme-text-primary)' }}>{task.created_by}</span></span>
-                    <span>Completed: <span style={{ color: 'var(--theme-text-primary)' }}>{task.completed_at ? new Date(task.completed_at).toLocaleString() : '—'}</span></span>
-                    {task.ops_task_id && (
-                      <span>Ops: <span style={{ color: 'var(--theme-accent)' }}>{task.ops_task_id}</span></span>
-                    )}
+              <div style={{
+                maxHeight: isOpen ? '520px' : '0px',
+                opacity: isOpen ? 1 : 0,
+                transition: 'max-height 220ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms cubic-bezier(0.22, 1, 0.36, 1)',
+                overflow: 'hidden',
+                borderTop: isOpen ? '1px solid rgba(245,231,196,0.14)' : '1px solid transparent',
+                background: '#172033',
+              }}>
+                <div style={{ padding: '12px 14px 14px' }}>
+                  <div style={{ fontSize: '10px', color: '#C9D1E5', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '5px' }}>
+                    Summary
+                  </div>
+                  <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#E2E8F0', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                    {summary}
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           )
         })}
@@ -333,9 +375,9 @@ export default function CompletedView() {
         gap: '10px',
         flexWrap: 'wrap',
         padding: '10px 12px',
-        borderRadius: '8px',
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        borderRadius: '12px',
+        background: 'linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))',
+        border: '1px solid rgba(245,231,196,0.16)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           {[25, 50, 100].map(size => {
@@ -349,10 +391,11 @@ export default function CompletedView() {
                   fontSize: '11px',
                   fontWeight: 700,
                   borderRadius: '999px',
-                  border: active ? '1px solid var(--theme-accent, #8b5cf6)' : '1px solid rgba(255,255,255,0.12)',
-                  background: active ? 'var(--theme-accent, #8b5cf6)' : 'rgba(255,255,255,0.02)',
-                  color: active ? '#fff' : 'var(--theme-text-secondary)',
+                  border: active ? '1px solid rgba(245,231,196,0.60)' : '1px solid rgba(255,255,255,0.12)',
+                  background: active ? 'rgba(245,231,196,0.20)' : 'rgba(255,255,255,0.02)',
+                  color: active ? '#F5E7C4' : '#C9D1E5',
                   cursor: 'pointer',
+                  boxShadow: active ? '0 0 12px rgba(245,231,196,0.18)' : 'none',
                 }}
               >
                 {size}
@@ -361,9 +404,7 @@ export default function CompletedView() {
           })}
         </div>
 
-        <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>
-          Showing {from}–{to} of {total} tasks
-        </div>
+        <div style={{ fontSize: '11px', color: '#C9D1E5' }}>Showing {from}–{to} of {total} tasks</div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
@@ -373,19 +414,17 @@ export default function CompletedView() {
               padding: '5px 10px',
               fontSize: '11px',
               borderRadius: '6px',
-              border: '1px solid rgba(255,255,255,0.12)',
-              background: 'rgba(255,255,255,0.04)',
-              color: 'var(--theme-text-primary)',
-              opacity: safePage === 1 ? 0.45 : 1,
+              border: '1px solid rgba(0,212,255,0.35)',
+              background: 'linear-gradient(135deg, rgba(0,212,255,0.12), rgba(0,212,255,0.05))',
+              color: '#9BEFFF',
+              opacity: safePage === 1 ? 0.42 : 1,
               cursor: safePage === 1 ? 'not-allowed' : 'pointer',
             }}
           >
             Prev
           </button>
 
-          <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>
-            Page {safePage} / {totalPages}
-          </span>
+          <span style={{ fontSize: '11px', color: '#C9D1E5' }}>Page {safePage} / {totalPages}</span>
 
           <button
             onClick={() => handlePageChange(Math.min(totalPages, safePage + 1))}
@@ -394,10 +433,10 @@ export default function CompletedView() {
               padding: '5px 10px',
               fontSize: '11px',
               borderRadius: '6px',
-              border: '1px solid rgba(255,255,255,0.12)',
-              background: 'rgba(255,255,255,0.04)',
-              color: 'var(--theme-text-primary)',
-              opacity: safePage === totalPages ? 0.45 : 1,
+              border: '1px solid rgba(0,212,255,0.35)',
+              background: 'linear-gradient(135deg, rgba(0,212,255,0.12), rgba(0,212,255,0.05))',
+              color: '#9BEFFF',
+              opacity: safePage === totalPages ? 0.42 : 1,
               cursor: safePage === totalPages ? 'not-allowed' : 'pointer',
             }}
           >
