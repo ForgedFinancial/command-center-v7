@@ -27,9 +27,21 @@ export default function Board({ projectId }) {
   const [interaction, setInteraction] = useState(null)
   const [selectionBox, setSelectionBox] = useState(null)
   const [contextMenu, setContextMenu] = useState(null)
+  const [history, setHistory] = useState({ past: [], future: [] })
+  const [historyLock, setHistoryLock] = useState(false)
   const { viewport, beginPan, onPointerMove: onPanMove, endPan, onWheel, centerOnOrigin, zoomIn, zoomOut } = useViewport(containerRef)
 
   const selectedItem = useMemo(() => items.find((item) => selectedIds.has(item.id)), [items, selectedIds])
+
+  useEffect(() => {
+    if (historyLock) return
+    const snapshot = JSON.stringify({ items, connectors })
+    setHistory((prev) => {
+      if (prev.past[prev.past.length - 1] === snapshot) return prev
+      const past = [...prev.past, snapshot].slice(-50)
+      return { past, future: [] }
+    })
+  }, [items, connectors, historyLock])
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -38,6 +50,28 @@ export default function Board({ projectId }) {
       if (ctrl && event.key.toLowerCase() === 'a') {
         event.preventDefault()
         setSelectedIds(new Set(items.map((item) => item.id)))
+      }
+      if (ctrl && event.key.toLowerCase() === 'z') {
+        event.preventDefault()
+        setHistoryLock(true)
+        setHistory((prev) => {
+          if (event.shiftKey) {
+            if (!prev.future.length) return prev
+            const next = prev.future[0]
+            const parsed = JSON.parse(next)
+            setItems(parsed.items || [])
+            setConnectors(parsed.connectors || [])
+            return { past: [...prev.past, next].slice(-50), future: prev.future.slice(1) }
+          }
+          if (prev.past.length < 2) return prev
+          const current = prev.past[prev.past.length - 1]
+          const back = prev.past[prev.past.length - 2]
+          const parsed = JSON.parse(back)
+          setItems(parsed.items || [])
+          setConnectors(parsed.connectors || [])
+          return { past: prev.past.slice(0, -1), future: [current, ...prev.future].slice(0, 50) }
+        })
+        setTimeout(() => setHistoryLock(false), 0)
       }
       if (event.key === 'Escape') setSelectedIds(new Set())
       if (event.key === 'Delete' || event.key === 'Backspace') {
@@ -202,7 +236,37 @@ export default function Board({ projectId }) {
           setSelectedIds(new Set([next.id]))
         }}
       />
-      <BoardTopbar zoom={viewport.zoom} onZoomIn={zoomIn} onZoomOut={zoomOut} onFit={centerOnOrigin} />
+      <BoardTopbar
+        zoom={viewport.zoom}
+        onZoomIn={zoomIn}
+        onZoomOut={zoomOut}
+        onFit={centerOnOrigin}
+        onUndo={() => {
+          setHistoryLock(true)
+          setHistory((prev) => {
+            if (prev.past.length < 2) return prev
+            const current = prev.past[prev.past.length - 1]
+            const back = prev.past[prev.past.length - 2]
+            const parsed = JSON.parse(back)
+            setItems(parsed.items || [])
+            setConnectors(parsed.connectors || [])
+            return { past: prev.past.slice(0, -1), future: [current, ...prev.future].slice(0, 50) }
+          })
+          setTimeout(() => setHistoryLock(false), 0)
+        }}
+        onRedo={() => {
+          setHistoryLock(true)
+          setHistory((prev) => {
+            if (!prev.future.length) return prev
+            const next = prev.future[0]
+            const parsed = JSON.parse(next)
+            setItems(parsed.items || [])
+            setConnectors(parsed.connectors || [])
+            return { past: [...prev.past, next].slice(-50), future: prev.future.slice(1) }
+          })
+          setTimeout(() => setHistoryLock(false), 0)
+        }}
+      />
       <BoardMinimap viewport={viewport} />
       <BoardContextMenu
         menu={contextMenu}
