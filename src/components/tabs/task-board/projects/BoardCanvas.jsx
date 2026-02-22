@@ -7,7 +7,7 @@ function Handle({ style, cursor, onPointerDown }) {
   return <div onPointerDown={onPointerDown} style={{ position: 'absolute', width: 8, height: 8, borderRadius: 2, background: '#fff', border: `2px solid ${BOARD_THEME.activeBorder}`, cursor, ...style }} />
 }
 
-export default function BoardCanvas({ viewport, onPointerDown, onPointerMove, onPointerUp, onWheel, items, connectors, selectedIds, selectedConnectorId, onSelectConnector, onItemPointerDown, onItemContextMenu, onHandlePointerDown, onRotatePointerDown, onItemContentChange, onAiAction, onDocumentExpand, selectionBox }) {
+export default function BoardCanvas({ viewport, onPointerDown, onPointerMove, onPointerUp, onWheel, items, connectors, selectedIds, selectedConnectorId, onSelectConnector, onItemPointerDown, onItemContextMenu, onHandlePointerDown, onRotatePointerDown, onItemContentChange, onAiAction, onDocumentExpand, selectionBox, connectorDraft, onStartConnector }) {
   const gridSize = GRID_BASE_SIZE * viewport.zoom
   const firstSelected = items.find((item) => selectedIds.has(item.id))
 
@@ -15,8 +15,13 @@ export default function BoardCanvas({ viewport, onPointerDown, onPointerMove, on
     <div onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerLeave={onPointerUp} onWheel={onWheel} style={{ position: 'absolute', inset: 0, overflow: 'hidden', backgroundColor: BOARD_THEME.canvasBg, backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px)', backgroundSize: `${gridSize}px ${gridSize}px`, backgroundPosition: `${viewport.x}px ${viewport.y}px` }}>
       <div className="board-canvas" style={{ transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`, transformOrigin: '0 0', willChange: 'transform', position: 'absolute', inset: 0 }}>
         <ConnectorLayer items={items} connectors={connectors} selectedId={selectedConnectorId} onSelect={onSelectConnector} />
+        {connectorDraft && (
+          <svg style={{ position: 'absolute', inset: 0, overflow: 'visible', pointerEvents: 'none' }}>
+            <path d={`M ${connectorDraft.start.x} ${connectorDraft.start.y} L ${connectorDraft.end.x} ${connectorDraft.end.y}`} stroke="#06b6d4" strokeWidth="1.5" fill="none" strokeDasharray="4 4" />
+          </svg>
+        )}
         {[...items].sort((a, b) => (a.type === 'frame' ? -1 : 0) - (b.type === 'frame' ? -1 : 0)).map((item) => (
-          <BoardItem key={item.id} item={item} isSelected={selectedIds.has(item.id)} onPointerDown={(event) => onItemPointerDown(event, item.id)} onContextMenu={(event) => onItemContextMenu(event, item.id)} onContentChange={(content) => onItemContentChange(item.id, content)} onAiAction={onAiAction} onDocumentExpand={onDocumentExpand} />
+          <BoardItem key={item.id} item={item} isSelected={selectedIds.has(item.id)} onPointerDown={(event) => onItemPointerDown(event, item.id)} onContextMenu={(event) => onItemContextMenu(event, item.id)} onContentChange={(content) => onItemContentChange(item.id, content)} onAiAction={onAiAction} onDocumentExpand={onDocumentExpand} onStartConnector={(event, side) => onStartConnector?.(event, item.id, side)} />
         ))}
 
         {firstSelected && selectedIds.size === 1 && (

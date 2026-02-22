@@ -12,7 +12,7 @@ export default function SuggestionCard({ task }) {
       const res = await taskboardClient.approveSuggestion(task.id)
       if (res.ok) {
         actions.updateTask(res.data)
-        appActions.addToast({ type: 'success', message: `Approved: ${task.name || task.title}` })
+        appActions.addToast({ type: 'success', message: `Approved: ${task.name}` })
       }
     } catch (err) {
       appActions.addToast({ type: 'error', message: err.message })
@@ -24,7 +24,7 @@ export default function SuggestionCard({ task }) {
     try {
       await taskboardClient.dismissSuggestion(task.id)
       actions.removeTask(task.id)
-      appActions.addToast({ type: 'info', message: `Dismissed: ${task.name || task.title}` })
+      appActions.addToast({ type: 'info', message: `Dismissed: ${task.name}` })
     } catch (err) {
       appActions.addToast({ type: 'error', message: err.message })
     }
@@ -43,7 +43,7 @@ export default function SuggestionCard({ task }) {
       }}
     >
       <div style={{ fontSize: '12px', fontWeight: 500, color: '#c4b5fd', marginBottom: '6px', lineHeight: 1.4 }}>
-        {task.name || task.title}
+        {task.name}
       </div>
       {task.suggestReason && (
         <div style={{ fontSize: '10px', color: '#a78bfa', marginBottom: '10px', lineHeight: 1.4 }}>

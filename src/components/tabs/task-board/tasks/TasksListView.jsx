@@ -161,7 +161,7 @@ export default function TasksListView() {
                 onMouseOut={(e) => { e.currentTarget.style.background = 'transparent' }}
               >
                 <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--theme-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {task.name || task.title}
+                  {task.name}
                 </span>
                 <span style={{ fontSize: '11px', color: 'var(--theme-text-secondary)' }}>
                   {task.projectId ? getProjectName(task.projectId) : '—'}

@@ -1,14 +1,13 @@
 export const LeadCampaign = {
-  id: 'lead-campaign',
-  name: 'Lead Campaign',
-  industry: 'life-insurance',
-  description: 'Audience-to-report lifecycle with measurable checkpoints.',
+  id: 'sprint-planning',
+  name: 'Sprint Planning',
+  industry: 'general',
+  description: 'Plan, execute, and review sprint work with reusable structure.',
   objects: [
-    { type: 'shape', x: 120, y: 460, data: { title: 'Target Audience Defined', label: 'Target Audience Defined' } },
-    { type: 'task', x: 390, y: 460, data: { name: 'Creatives Built', assignee: 'Unassigned', status: 'todo' } },
-    { type: 'task', x: 660, y: 460, data: { name: 'Launch', assignee: 'Unassigned', status: 'todo' } },
-    { type: 'checklist', x: 930, y: 460, data: { title: 'Monitor', items: [{ text: 'Track CPL', checked: false }, { text: 'Track CTR', checked: false }] } },
-    { type: 'task', x: 1200, y: 460, data: { name: 'Optimize', assignee: 'Unassigned', status: 'todo' } },
-    { type: 'checklist', x: 1470, y: 460, data: { title: 'Close Out + Report', items: [{ text: 'Export report', checked: false }] } },
+    { type: 'shape', x: 120, y: 460, data: { name: 'Sprint Goal', label: 'Sprint Goal' } },
+    { type: 'task', x: 390, y: 460, data: { name: 'Backlog Grooming', assignee: 'Unassigned', status: 'todo' } },
+    { type: 'task', x: 660, y: 460, data: { name: 'Sprint Kickoff', assignee: 'Unassigned', status: 'todo' } },
+    { type: 'checklist', x: 930, y: 460, data: { name: 'Daily Standup', items: [{ text: 'Blockers reviewed', checked: false }, { text: 'Priorities set', checked: false }] } },
+    { type: 'task', x: 1200, y: 460, data: { name: 'Review & Retro', assignee: 'Unassigned', status: 'todo' } },
   ],
 }

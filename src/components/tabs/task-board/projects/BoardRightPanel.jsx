@@ -1,6 +1,6 @@
 import { BOARD_THEME } from './boardConstants'
 
-export default function BoardRightPanel({ item, onPatch }) {
+export default function BoardRightPanel({ item, onPatch, onLayerAction }) {
   if (!item) return null
 
   const setNum = (field, value) => onPatch({ [field]: Number.isFinite(Number(value)) ? Number(value) : 0 })
@@ -30,9 +30,22 @@ export default function BoardRightPanel({ item, onPatch }) {
             <label>H<input value={Math.round(item.height)} onChange={(e) => setNum('height', e.target.value)} /></label>
             <label style={{ gridColumn: 'span 2' }}>Rotation<input value={Math.round(item.rotation || 0)} onChange={(e) => setNum('rotation', e.target.value)} /></label>
           </div>
-          <div style={{ marginTop: 12 }}>
-            <label style={{ display: 'block' }}>Text / Content</label>
-            <textarea value={item.content || ''} onChange={(e) => onPatch({ content: e.target.value })} style={{ width: '100%', minHeight: 90 }} />
+          {(item.type === 'sticky_note' || item.type === 'text' || item.type === 'shape' || item.type === 'card') && (
+            <div style={{ marginTop: 12 }}>
+              <label style={{ display: 'block' }}>Text / Content</label>
+              <textarea value={item.content || ''} onChange={(e) => onPatch({ content: e.target.value })} style={{ width: '100%', minHeight: 90 }} />
+            </div>
+          )}
+          {item.type === 'image' && <label>Image URL <input value={item.src || ''} onChange={(e) => onPatch({ src: e.target.value })} /></label>}
+          {item.type === 'shape' && <label>Shape
+            <select value={item.shape || 'rectangle'} onChange={(e) => onPatch({ shape: e.target.value })}><option value="rectangle">rectangle</option><option value="ellipse">ellipse</option></select>
+          </label>}
+          <div style={{ marginTop: 12, display: 'grid', gap: 6 }}>
+            <button onClick={() => onPatch({ locked: !item.locked })}>{item.locked ? 'Unlock' : 'Lock'} Item</button>
+            <button onClick={() => onLayerAction?.('bringFront')}>Bring to Front</button>
+            <button onClick={() => onLayerAction?.('bringForward')}>Bring Forward</button>
+            <button onClick={() => onLayerAction?.('sendBackward')}>Send Backward</button>
+            <button onClick={() => onLayerAction?.('sendBack')}>Send to Back</button>
           </div>
         </>
       )}

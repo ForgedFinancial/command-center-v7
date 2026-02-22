@@ -30,9 +30,10 @@ export default function Board({ projectId }) {
   const [contextMenu, setContextMenu] = useState(null)
   const [aiOpen, setAiOpen] = useState(false)
   const [expandedDocId, setExpandedDocId] = useState(null)
+  const [connectorDraft, setConnectorDraft] = useState(null)
   const [history, setHistory] = useState({ past: [], future: [] })
   const [historyLock, setHistoryLock] = useState(false)
-  const { viewport, beginPan, onPointerMove: onPanMove, endPan, onWheel, centerOnOrigin, zoomIn, zoomOut } = useViewport(containerRef)
+  const { viewport, setViewport, beginPan, onPointerMove: onPanMove, endPan, onWheel, centerOnOrigin, zoomIn, zoomOut } = useViewport(containerRef)
 
   const selectedItem = useMemo(() => items.find((item) => selectedIds.has(item.id)), [items, selectedIds])
 
@@ -45,6 +46,7 @@ export default function Board({ projectId }) {
         const data = await resp.json()
         setItems(data.items || [])
         setConnectors(data.connectors || [])
+        if (data.viewport) setViewport(data.viewport)
       } catch {
         const local = localStorage.getItem(key)
         if (local) {
@@ -55,7 +57,7 @@ export default function Board({ projectId }) {
       }
     }
     load()
-  }, [projectId])
+  }, [projectId, setViewport])
 
   useEffect(() => {
     if (historyLock) return
@@ -81,17 +83,19 @@ export default function Board({ projectId }) {
       localStorage.setItem(key, JSON.stringify(payload))
     }, 500)
     return () => clearTimeout(timer)
-  }, [projectId, items, connectors])
+  }, [projectId, items, connectors, viewport])
 
   useEffect(() => {
     const onKeyDown = (event) => {
       if (event.target?.closest('input,textarea,[contenteditable="true"]')) return
       const ctrl = event.metaKey || event.ctrlKey
-      if (ctrl && event.key.toLowerCase() === 'a') {
+      const key = event.key.toLowerCase()
+      if (ctrl && key === 'a') {
         event.preventDefault()
         setSelectedIds(new Set(items.map((item) => item.id)))
+        return
       }
-      if (ctrl && event.key.toLowerCase() === 'z') {
+      if (ctrl && key === 'z') {
         event.preventDefault()
         setHistoryLock(true)
         setHistory((prev) => {
@@ -112,20 +116,43 @@ export default function Board({ projectId }) {
           return { past: prev.past.slice(0, -1), future: [current, ...prev.future].slice(0, 50) }
         })
         setTimeout(() => setHistoryLock(false), 0)
+        return
+      }
+      if (ctrl && key === 'c') return
+      if (ctrl && key === 'v') return
+      if (ctrl && key === 'd') { event.preventDefault(); setItems((prev) => ([...prev, ...prev.filter(i => selectedIds.has(i.id)).map(i => ({ ...i, id: crypto.randomUUID(), x: i.x + 24, y: i.y + 24 }))])); return }
+      if (ctrl && key === 'g') { event.preventDefault(); if (event.shiftKey) setItems((prev) => prev.filter((i) => i.type !== 'group' || !selectedIds.has(i.id))); else {
+        const members = items.filter((i) => selectedIds.has(i.id)); if (!members.length) return
+        const minX = Math.min(...members.map(i => i.x)); const minY = Math.min(...members.map(i => i.y)); const maxX = Math.max(...members.map(i => i.x + i.width)); const maxY = Math.max(...members.map(i => i.y + i.height))
+        const gid = crypto.randomUUID(); setItems((prev) => [...prev, { id: gid, type: 'group', x: minX - 16, y: minY - 24, width: maxX - minX + 32, height: maxY - minY + 40, content: 'Group', memberIds: members.map(m => m.id) }]); setSelectedIds(new Set([gid]))
+      }; return }
+      if (ctrl && key === ']') { event.preventDefault(); setItems((prev) => { const keep = prev.filter(i => !selectedIds.has(i.id)); const top = prev.filter(i => selectedIds.has(i.id)); return [...keep, ...top] }); return }
+      if (ctrl && key === '[') { event.preventDefault(); setItems((prev) => { const low = prev.filter(i => selectedIds.has(i.id)); const keep = prev.filter(i => !selectedIds.has(i.id)); return [...low, ...keep] }); return }
+      if (ctrl && event.shiftKey && key === 'h') { event.preventDefault(); setSelectedIds(new Set()); return }
+      if (['1','2','3','4','5'].includes(key)) {
+        const zoomMap = { '1': 0.5, '2': 0.75, '3': 1, '4': 1.5, '5': 2 }
+        const z = zoomMap[key]
+        if (containerRef.current) {
+          const rect = containerRef.current.getBoundingClientRect()
+          onWheel({ preventDefault() {}, deltaY: z > viewport.zoom ? -1 : 1, clientX: rect.width / 2, clientY: rect.height / 2 })
+        }
       }
       if (event.key === 'Escape') setSelectedIds(new Set())
       if (event.key === 'Delete' || event.key === 'Backspace') {
         setItems((prev) => prev.filter((item) => !selectedIds.has(item.id)))
         setSelectedIds(new Set())
       }
-      if (event.key.toLowerCase() === 'v') setActiveTool('select')
-      if (event.key.toLowerCase() === 's') setActiveTool('sticky_note')
-      if (event.key.toLowerCase() === 'r') setActiveTool('shape')
-      if (event.key.toLowerCase() === 't') setActiveTool('text')
-      if (event.key.toLowerCase() === 'x') setActiveTool('connector')
-      if (event.key.toLowerCase() === 'f') setActiveTool('frame')
-      if (event.key.toLowerCase() === 'c') setActiveTool('card')
-      if (event.key.toLowerCase() === 'a') setAiOpen(true)
+      if (key === 'v') setActiveTool('select')
+      if (key === 'h') setActiveTool('hand')
+      if (key === 's') setActiveTool('sticky_note')
+      if (key === 't') setActiveTool('text')
+      if (key === 'r') setActiveTool('shape')
+      if (key === 'c') setActiveTool('card')
+      if (key === 'f') setActiveTool('frame')
+      if (key === 'x') setActiveTool('connector')
+      if (key === 'i') setActiveTool('image')
+      if (key === 'm') setActiveTool('mindmap')
+      if (key === 'a' && !ctrl) setAiOpen(true)
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
@@ -139,8 +166,11 @@ export default function Board({ projectId }) {
     if (type === 'sticky_note') return { ...base, type, content: 'New sticky note', style: { fillColor: 'yellow', fontSize: 14 } }
     if (type === 'shape') return { ...base, type, width: 180, height: 120, shape: 'rectangle', content: 'Shape', style: { borderColor: '#06b6d4', borderWidth: 2, color: '#f9fafb' } }
     if (type === 'frame') return { ...base, type, width: 340, height: 240, content: 'Frame', childrenIds: [] }
-    if (type === 'card') return { ...base, type, width: 280, height: 160, content: 'Task card', description: 'Describe work' }
+    if (type === 'card') return { ...base, type, width: 280, height: 160, content: 'Card name', description: 'Describe work' }
     if (type === 'document') return { ...base, type, width: 320, height: 240, content: 'Document', markdown: '# Notes\nStart writing...' }
+    if (type === 'image') return { ...base, type, width: 300, height: 180, name: 'Image', src: 'https://placehold.co/600x360/111827/f9fafb?text=Image' }
+    if (type === 'ai_suggestion') return { ...base, type, width: 300, height: 180, content: 'AI suggestion', outputMode: 'text', agentId: 'mason' }
+    if (type === 'group') return { ...base, type, width: 360, height: 260, content: 'Group', memberIds: [] }
     return { ...base, type: 'text', height: 80, content: 'New text', style: { fontSize: 16, color: '#f9fafb' } }
   }
 
@@ -156,6 +186,11 @@ export default function Board({ projectId }) {
 
   const onPointerMove = (event) => {
     onPanMove(event)
+    if (interaction?.type === 'connect-drag') {
+      const point = screenToCanvas(event.clientX, event.clientY, viewport)
+      setConnectorDraft((prev) => prev ? { ...prev, end: point } : prev)
+      return
+    }
     if (!interaction) return
 
     if (interaction.type === 'box') {
@@ -167,7 +202,7 @@ export default function Board({ projectId }) {
     const dx = (event.clientX - interaction.startX) / viewport.zoom
     const dy = (event.clientY - interaction.startY) / viewport.zoom
     setItems((prev) => prev.map((item) => {
-      if (!interaction.ids.has(item.id)) return item
+      if (!interaction.ids.has(item.id) || item.locked) return item
       const origin = interaction.origins[item.id]
       if (interaction.type === 'move') return { ...item, x: origin.x + dx, y: origin.y + dy }
       if (interaction.type === 'resize') return { ...item, width: Math.max(40, origin.width + dx), height: Math.max(40, origin.height + dy) }
@@ -178,6 +213,23 @@ export default function Board({ projectId }) {
 
   const onPointerUp = () => {
     endPan()
+    if (interaction?.type === 'connect-drag' && connectorDraft) {
+      const target = items
+        .filter((i) => i.id !== interaction.fromId)
+        .map((i) => ({ i, d: Math.hypot((i.x + i.width / 2) - connectorDraft.end.x, (i.y + i.height / 2) - connectorDraft.end.y) }))
+        .sort((a, b) => a.d - b.d)[0]
+      if (target && target.d < 220) {
+        setConnectors((prev) => [...prev, {
+          id: crypto.randomUUID(),
+          type: 'connector',
+          startItem: { id: interaction.fromId, snapTo: interaction.fromSide || 'auto' },
+          endItem: { id: target.i.id, snapTo: 'auto' },
+          routing: 'curved',
+          style: { strokeColor: '#06b6d4', strokeWidth: 1.5, strokeStyle: 'normal' },
+        }])
+      }
+      setConnectorDraft(null)
+    }
     if (interaction?.type === 'box' && selectionBox) {
       setSelectedIds(new Set(items.filter((item) => intersects(item, selectionBox)).map((item) => item.id)))
       setSelectionBox(null)
@@ -209,11 +261,22 @@ export default function Board({ projectId }) {
         selectedConnectorId={selectedConnectorId}
         onSelectConnector={setSelectedConnectorId}
         selectionBox={selectionBox}
+        connectorDraft={connectorDraft}
+        onStartConnector={(event, id, side) => {
+          if (items.find((it) => it.id === id)?.locked) return
+          const startItem = items.find((it) => it.id === id)
+          if (!startItem) return
+          const start = { x: startItem.x + startItem.width / 2, y: startItem.y + startItem.height / 2 }
+          const point = screenToCanvas(event.clientX, event.clientY, viewport)
+          setConnectorDraft({ start, end: point })
+          setInteraction({ type: 'connect-drag', fromId: id, fromSide: side })
+        }}
         onItemPointerDown={(event, id) => {
           event.stopPropagation()
           setContextMenu(null)
           const item = items.find((it) => it.id === id)
           if (!item) return
+          if (item.locked) return
 
           if (activeTool === 'connector') {
             if (interaction?.type === 'connect' && interaction.fromId !== id) {
@@ -232,16 +295,17 @@ export default function Board({ projectId }) {
             return
           }
 
+          const memberOwner = items.find((candidate) => candidate.type === 'group' && candidate.memberIds?.includes(id))
+          const clickIds = new Set(memberOwner ? [memberOwner.id, ...(memberOwner.memberIds || [])] : [id])
           const next = new Set(selectedIds)
           if (event.shiftKey) {
-            if (next.has(id)) next.delete(id)
-            else next.add(id)
+            clickIds.forEach((cid) => { if (next.has(cid)) next.delete(cid); else next.add(cid) })
           } else {
             next.clear()
-            next.add(id)
+            clickIds.forEach((cid) => next.add(cid))
           }
           setSelectedIds(next)
-          const ids = next.size ? next : new Set([id])
+          const ids = next.size ? next : clickIds
           const origins = {}
           ids.forEach((sid) => {
             const target = items.find((it) => it.id === sid)
@@ -258,13 +322,13 @@ export default function Board({ projectId }) {
         onHandlePointerDown={(event, id) => {
           event.stopPropagation()
           const item = items.find((it) => it.id === id)
-          if (!item) return
+          if (!item || item.locked) return
           setInteraction({ type: 'resize', ids: new Set([id]), startX: event.clientX, startY: event.clientY, origins: { [id]: { width: item.width, height: item.height } } })
         }}
         onRotatePointerDown={(event, id) => {
           event.stopPropagation()
           const item = items.find((it) => it.id === id)
-          if (!item) return
+          if (!item || item.locked) return
           setInteraction({ type: 'rotate', ids: new Set([id]), startX: event.clientX, startY: event.clientY, origins: { [id]: { rotation: item.rotation || 0 } } })
         }}
         onItemContentChange={(id, content) => setItems((prev) => prev.map((item) => item.id === id ? { ...item, content } : item))}
@@ -314,7 +378,11 @@ export default function Board({ projectId }) {
           setTimeout(() => setHistoryLock(false), 0)
         }}
       />
-      <BoardMinimap viewport={viewport} />
+      <BoardMinimap viewport={viewport} items={items} onPanTo={(canvasX, canvasY) => {
+        const rect = containerRef.current?.getBoundingClientRect()
+        if (!rect) return
+        setViewport((v) => ({ ...v, x: rect.width / 2 - canvasX * v.zoom, y: rect.height / 2 - canvasY * v.zoom }))
+      }} />
       <BoardAIPanel
         open={aiOpen}
         onClose={() => setAiOpen(false)}
@@ -349,9 +417,10 @@ export default function Board({ projectId }) {
         menu={contextMenu}
         onClose={() => setContextMenu(null)}
         onAction={(action) => {
-          if (!contextMenu?.id) return
+          const targetId = contextMenu?.id || selectedItem?.id
+          if (!targetId) return
           setItems((prev) => {
-            const idx = prev.findIndex((i) => i.id === contextMenu.id)
+            const idx = prev.findIndex((i) => i.id === targetId)
             if (idx === -1) return prev
             const copy = [...prev]
             const [item] = copy.splice(idx, 1)
@@ -373,6 +442,20 @@ export default function Board({ projectId }) {
           }
           if (!selectedItem) return
           setItems((prev) => prev.map((item) => item.id === selectedItem.id ? { ...item, ...patch } : item))
+        }}
+        onLayerAction={(action) => {
+          if (!selectedItem) return
+          setItems((prev) => {
+            const idx = prev.findIndex((i) => i.id === selectedItem.id)
+            if (idx === -1) return prev
+            const copy = [...prev]
+            const [item] = copy.splice(idx, 1)
+            if (action === 'bringFront') copy.push(item)
+            else if (action === 'sendBack') copy.unshift(item)
+            else if (action === 'bringForward') copy.splice(Math.min(copy.length, idx + 1), 0, item)
+            else if (action === 'sendBackward') copy.splice(Math.max(0, idx - 1), 0, item)
+            return copy
+          })
         }}
       />
     </div>

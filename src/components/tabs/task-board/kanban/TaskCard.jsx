@@ -32,7 +32,7 @@ export default function TaskCard({ task }) {
     >
       {/* Title */}
       <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--theme-text-primary)', marginBottom: '8px', lineHeight: 1.4 }}>
-        {task.name || task.title}
+        {task.name}
       </div>
 
       {/* Priority + Agent row */}
