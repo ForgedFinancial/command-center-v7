@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
-import { PRIORITIES, AGENT_STAGE_ROUTING } from './pipelineConstants'
+import { PRIORITIES } from './pipelineConstants'
 import { WORKER_PROXY_URL, SYNC_API_KEY, ENDPOINTS } from '../../../../config/api'
 
 export default function NewTaskForm({ onClose, onCreate }) {
@@ -14,13 +14,11 @@ export default function NewTaskForm({ onClose, onCreate }) {
   const [isBacklog, setIsBacklog]     = useState(false)
 
   // Attachments state
-  const [pendingFiles, setPendingFiles]   = useState([]) // [{file, comment, previewUrl}]
+  const [pendingFiles, setPendingFiles]   = useState([])
   const [dragOver, setDragOver]           = useState(false)
   const fileInputRef                      = useRef(null)
 
   const canSubmit = name.trim().length > 0 && !submitting
-  const assignee = 'clawd'
-  const routedStage = AGENT_STAGE_ROUTING[assignee] || 'INTAKE'
 
   // ── Attachment helpers ──
   const addFiles = useCallback((fileList) => {
@@ -30,7 +28,7 @@ export default function NewTaskForm({ onClose, onCreate }) {
         const ext = f.name.split('.').pop().toLowerCase()
         return allowed.test(ext) || f.type.startsWith('image/') || f.type === 'application/pdf'
       })
-      .slice(0, 5 - pendingFiles.length) // max 5 total
+      .slice(0, 5 - pendingFiles.length)
       .map(f => ({
         file: f,
         comment: '',
@@ -58,7 +56,6 @@ export default function NewTaskForm({ onClose, onCreate }) {
     addFiles(e.dataTransfer.files)
   }, [addFiles])
 
-  // ── Upload all pending files to a created task ──
   const uploadAttachments = async (taskId) => {
     for (const entry of pendingFiles) {
       try {
@@ -86,11 +83,10 @@ export default function NewTaskForm({ onClose, onCreate }) {
       const task = await onCreate({
         name: name.trim(),
         description: description.trim(),
-        assignee,
+        assignee: 'clawd',
         createdBy: 'dano',
-        stage: isBacklog ? 'INTAKE' : routedStage,
+        stage: isBacklog ? 'INTAKE' : 'INTAKE',
         isBacklog,
-        type: 'build',
         taskType,
         priority,
         specRef: specRef.trim() || null,
@@ -99,7 +95,6 @@ export default function NewTaskForm({ onClose, onCreate }) {
           ...(tags.trim() ? tags.split(',').map(t => t.trim()).filter(Boolean) : [])
         ],
       })
-      // Upload attachments after task is created (need the task ID)
       if (pendingFiles.length > 0 && task?.id) {
         await uploadAttachments(task.id)
       }
@@ -135,7 +130,7 @@ export default function NewTaskForm({ onClose, onCreate }) {
             New Task
           </h3>
           <p style={{ margin: 0, fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
-            Pick an agent — task auto-routes to the right stage.
+            All tasks route to Clawd for triage and assignment.
           </p>
         </div>
 
@@ -153,56 +148,46 @@ export default function NewTaskForm({ onClose, onCreate }) {
               placeholder="Context, requirements, anything the agent needs…" style={{ ...base, resize: 'vertical' }} />
           </div>
 
-          {/* Workstream */}
-          <div>
-            <label style={label}>Workstream</label>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {[
-                { value: 'frontend', icon: '🖥', label: 'Frontend', color: '#c4b5fd', bg: 'rgba(124, 58, 237, 0.22)', border: 'rgba(167, 139, 250, 0.85)' },
-                { value: 'backend', icon: '⚙', label: 'Backend', color: '#67e8f9', bg: 'rgba(8, 145, 178, 0.22)', border: 'rgba(34, 211, 238, 0.85)' },
-              ].map(ws => {
-                const active = taskType === ws.value
-                return (
-                  <button
-                    key={ws.value}
-                    type="button"
-                    onClick={() => setTaskType(ws.value)}
-                    style={{
-                      padding: '6px 12px',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      borderRadius: '999px',
-                      cursor: 'pointer',
+          {/* Workstream + Priority side by side */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+            <div>
+              <label style={label}>Workstream</label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {[
+                  { value: 'frontend', icon: '🖥', label: 'Frontend', color: '#c4b5fd', bg: 'rgba(124, 58, 237, 0.22)', border: 'rgba(167, 139, 250, 0.85)' },
+                  { value: 'backend', icon: '⚙', label: 'Backend', color: '#67e8f9', bg: 'rgba(8, 145, 178, 0.22)', border: 'rgba(34, 211, 238, 0.85)' },
+                ].map(ws => {
+                  const active = taskType === ws.value
+                  return (
+                    <button key={ws.value} type="button" onClick={() => setTaskType(ws.value)} style={{
+                      padding: '6px 12px', fontSize: '11px', fontWeight: 700, borderRadius: '999px', cursor: 'pointer',
                       border: `1px solid ${active ? ws.border : 'var(--theme-border, rgba(255,255,255,0.08))'}`,
                       backgroundColor: active ? ws.bg : 'rgba(255,255,255,0.02)',
                       color: active ? ws.color : 'var(--theme-text-secondary)',
-                      letterSpacing: '0.2px',
-                    }}
-                  >
-                    {ws.icon} {ws.label}
-                  </button>
-                )
-              })}
+                    }}>
+                      {ws.icon} {ws.label}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-
-          {/* Priority */}
-          <div>
-            <label style={label}>Priority</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
-              {PRIORITIES.map(p => (
-                <label key={p.value} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  padding: '6px 8px', borderRadius: '6px', cursor: 'pointer', fontSize: '11px',
-                  backgroundColor: priority === p.value ? 'rgba(255,255,255,0.06)' : 'transparent',
-                  color: priority === p.value ? p.color : 'var(--theme-text-secondary)',
-                  border: priority === p.value ? `1px solid ${p.color}` : '1px solid var(--theme-border)',
-                  fontWeight: priority === p.value ? 600 : 400,
-                }}>
-                  <input type="radio" name="priority" value={p.value} checked={priority === p.value} onChange={() => setPriority(p.value)} style={{ display: 'none' }} />
-                  {p.label}
-                </label>
-              ))}
+            <div>
+              <label style={label}>Priority</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                {PRIORITIES.map(p => (
+                  <label key={p.value} style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px',
+                    backgroundColor: priority === p.value ? 'rgba(255,255,255,0.06)' : 'transparent',
+                    color: priority === p.value ? p.color : 'var(--theme-text-secondary)',
+                    border: priority === p.value ? `1px solid ${p.color}` : '1px solid transparent',
+                    fontWeight: priority === p.value ? 600 : 400,
+                  }}>
+                    <input type="radio" name="priority" value={p.value} checked={priority === p.value} onChange={() => setPriority(p.value)} style={{ display: 'none' }} />
+                    {p.label}
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -218,7 +203,7 @@ export default function NewTaskForm({ onClose, onCreate }) {
             </div>
           </div>
 
-          {/* ── Attachments ── */}
+          {/* Attachments */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
               <label style={label}>Attachments <span style={{ fontWeight: 400, textTransform: 'none', opacity: 0.6 }}>(screenshots, docs — up to 5)</span></label>
@@ -228,13 +213,8 @@ export default function NewTaskForm({ onClose, onCreate }) {
                 border: '1px solid rgba(139,92,246,0.3)', borderRadius: '5px', cursor: 'pointer',
               }}>+ Add File</button>
             </div>
-            <input
-              ref={fileInputRef} type="file" multiple accept="image/*,.pdf,.txt,.md"
-              style={{ display: 'none' }}
-              onChange={e => { addFiles(e.target.files); e.target.value = '' }}
-            />
-
-            {/* Drop zone */}
+            <input ref={fileInputRef} type="file" multiple accept="image/*,.pdf,.txt,.md" style={{ display: 'none' }}
+              onChange={e => { addFiles(e.target.files); e.target.value = '' }} />
             <div
               onDragOver={e => { e.preventDefault(); setDragOver(true) }}
               onDragLeave={() => setDragOver(false)}
@@ -242,92 +222,51 @@ export default function NewTaskForm({ onClose, onCreate }) {
               onClick={() => !pendingFiles.length && fileInputRef.current?.click()}
               style={{
                 border: `2px dashed ${dragOver ? 'var(--theme-accent)' : 'rgba(255,255,255,0.1)'}`,
-                borderRadius: '8px',
-                padding: pendingFiles.length ? '10px' : '20px',
+                borderRadius: '8px', padding: pendingFiles.length ? '10px' : '20px',
                 textAlign: pendingFiles.length ? 'left' : 'center',
                 cursor: pendingFiles.length ? 'default' : 'pointer',
-                transition: 'border-color 0.15s, background 0.15s',
                 backgroundColor: dragOver ? 'rgba(139,92,246,0.06)' : 'rgba(255,255,255,0.01)',
                 minHeight: pendingFiles.length ? 'auto' : '70px',
-                display: 'flex',
-                flexDirection: pendingFiles.length ? 'column' : 'row',
+                display: 'flex', flexDirection: pendingFiles.length ? 'column' : 'row',
                 alignItems: pendingFiles.length ? 'stretch' : 'center',
-                justifyContent: pendingFiles.length ? 'flex-start' : 'center',
-                gap: '8px',
+                justifyContent: pendingFiles.length ? 'flex-start' : 'center', gap: '8px',
               }}
             >
               {pendingFiles.length === 0 ? (
-                <span style={{ fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
-                  📎 Drop screenshots or files here, or click to browse
-                </span>
+                <span style={{ fontSize: '12px', color: 'var(--theme-text-secondary)' }}>📎 Drop screenshots or files here, or click to browse</span>
               ) : (
                 pendingFiles.map(entry => (
                   <div key={entry.id} style={{
-                    display: 'flex', gap: '10px', alignItems: 'flex-start',
-                    padding: '8px', borderRadius: '6px',
-                    backgroundColor: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.06)',
+                    display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '8px', borderRadius: '6px',
+                    backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
                   }}>
-                    {/* Thumbnail or icon */}
                     <div style={{ flexShrink: 0, width: '48px', height: '48px', borderRadius: '4px', overflow: 'hidden', backgroundColor: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {entry.previewUrl
                         ? <img src={entry.previewUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <span style={{ fontSize: '20px' }}>{entry.file.type === 'application/pdf' ? '📄' : '📎'}</span>
-                      }
+                        : <span style={{ fontSize: '20px' }}>{entry.file.type === 'application/pdf' ? '📄' : '📎'}</span>}
                     </div>
-                    {/* File info + comment */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {entry.file.name}
-                      </div>
-                      <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', marginBottom: '5px' }}>
-                        {(entry.file.size / 1024).toFixed(0)} KB
-                      </div>
-                      <input
-                        value={entry.comment}
-                        onChange={e => updateComment(entry.id, e.target.value)}
-                        placeholder="Add a comment for context…"
-                        onClick={e => e.stopPropagation()}
-                        style={{
-                          width: '100%', fontSize: '11px', color: 'var(--theme-text-primary)',
-                          backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-                          borderRadius: '4px', padding: '4px 8px', fontFamily: 'inherit', outline: 'none',
-                          boxSizing: 'border-box',
-                        }}
-                      />
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.file.name}</div>
+                      <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', marginBottom: '5px' }}>{(entry.file.size / 1024).toFixed(0)} KB</div>
+                      <input value={entry.comment} onChange={e => updateComment(entry.id, e.target.value)} placeholder="Add a comment for context…" onClick={e => e.stopPropagation()}
+                        style={{ width: '100%', fontSize: '11px', color: 'var(--theme-text-primary)', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '4px', padding: '4px 8px', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }} />
                     </div>
-                    {/* Remove */}
-                    <button type="button" onClick={() => removeFile(entry.id)} style={{
-                      background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: '14px',
-                      cursor: 'pointer', padding: '0', flexShrink: 0, lineHeight: 1,
-                    }}>✕</button>
+                    <button type="button" onClick={() => removeFile(entry.id)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: '14px', cursor: 'pointer', padding: '0', flexShrink: 0 }}>✕</button>
                   </div>
                 ))
               )}
             </div>
-            {pendingFiles.length > 0 && pendingFiles.length < 5 && (
-              <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)', marginTop: '4px', textAlign: 'right' }}>
-                {pendingFiles.length}/5 files — drop more to add
-              </div>
-            )}
           </div>
 
+          {/* Placement toggle */}
           <div>
             <label style={label}>Placement</label>
-            <button
-              type="button"
-              onClick={() => setIsBacklog(v => !v)}
-              style={{
-                padding: '8px 12px',
-                fontSize: '12px',
-                fontWeight: 700,
-                borderRadius: '8px',
-                border: `1px solid ${isBacklog ? 'rgba(0,212,255,0.45)' : 'var(--theme-border)'}`,
-                background: isBacklog ? 'rgba(0,212,255,0.12)' : 'rgba(255,255,255,0.03)',
-                color: isBacklog ? '#CFF6FF' : 'var(--theme-text-secondary)',
-                cursor: 'pointer',
-              }}
-            >
+            <button type="button" onClick={() => setIsBacklog(v => !v)} style={{
+              padding: '8px 12px', fontSize: '12px', fontWeight: 700, borderRadius: '8px',
+              border: `1px solid ${isBacklog ? 'rgba(0,212,255,0.45)' : 'var(--theme-border)'}`,
+              background: isBacklog ? 'rgba(0,212,255,0.12)' : 'rgba(255,255,255,0.03)',
+              color: isBacklog ? '#CFF6FF' : 'var(--theme-text-secondary)', cursor: 'pointer',
+            }}>
               {isBacklog ? 'Backlog task (outside active pipeline)' : 'Active pipeline task'}
             </button>
           </div>
@@ -335,10 +274,10 @@ export default function NewTaskForm({ onClose, onCreate }) {
           {/* Routing preview */}
           <div style={{
             padding: '10px 12px', borderRadius: '8px',
-            backgroundColor: agentInfo.color + '10', border: `1px solid ${agentInfo.color}30`,
+            backgroundColor: 'rgba(0,212,255,0.06)', border: '1px solid rgba(0,212,255,0.15)',
             fontSize: '11px', color: 'var(--theme-text-secondary)', lineHeight: '1.5',
           }}>
-            {agentInfo.icon} Assigned to <strong style={{ color: agentInfo.color }}>{agentInfo.label}</strong> → routes to <strong style={{ color: 'var(--theme-text-primary)' }}>{routedStage}</strong> stage
+            🔨 All tasks route to <strong style={{ color: '#00D4FF' }}>Clawd</strong> → triaged and assigned to the right agent
             {pendingFiles.length > 0 && <span style={{ marginLeft: '8px', color: 'var(--theme-accent)' }}>· {pendingFiles.length} attachment{pendingFiles.length > 1 ? 's' : ''} will upload</span>}
           </div>
         </div>
@@ -356,8 +295,7 @@ export default function NewTaskForm({ onClose, onCreate }) {
             backgroundColor: canSubmit ? 'var(--theme-accent)' : 'rgba(255,255,255,0.08)',
             color: canSubmit ? '#fff' : 'var(--theme-text-secondary)',
             border: 'none', borderRadius: '8px',
-            cursor: canSubmit ? 'pointer' : 'not-allowed',
-            opacity: submitting ? 0.6 : 1,
+            cursor: canSubmit ? 'pointer' : 'not-allowed', opacity: submitting ? 0.6 : 1,
           }}>
             {submitting ? (pendingFiles.length > 0 ? 'Creating + Uploading…' : 'Creating…') : 'Create Task'}
           </button>

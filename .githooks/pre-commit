@@ -1,0 +1,36 @@
+#!/bin/bash
+RED='\033[0;31m'
+NC='\033[0m'
+BLOCKED=0
+
+echo "🔒 Running credential scan..."
+
+PATTERNS=(
+  'Nugget123'
+  'Newmandan85'
+  '8549625129:AA'
+  'zombiekiller885'
+  'vibp-ezfp'
+  'mac-bridge-2026'
+)
+
+FILES=$(git diff --cached --name-only --diff-filter=ACMR -- '*.js' '*.jsx' '*.ts' '*.tsx' '*.json' '*.html' '*.env*')
+for f in $FILES; do
+  for pattern in "${PATTERNS[@]}"; do
+    if git show ":$f" 2>/dev/null | grep -q "$pattern"; then
+      echo -e "${RED}❌ BLOCKED: Hardcoded credential in $f (pattern: ${pattern:0:8}...)${NC}"
+      BLOCKED=1
+    fi
+  done
+  # Block credential fallback patterns
+  if git show ":$f" 2>/dev/null | grep -qE "(TOKEN|PASSWORD|SECRET|API_KEY|ACCESS_CODE).*\|\|.*'[^']{8,}'"; then
+    echo -e "${RED}❌ BLOCKED: Credential fallback pattern in $f${NC}"
+    BLOCKED=1
+  fi
+done
+
+if [ $BLOCKED -eq 1 ]; then
+  echo -e "${RED}COMMIT REJECTED — Remove hardcoded credentials.${NC}"
+  exit 1
+fi
+echo "✅ Credential scan passed"
