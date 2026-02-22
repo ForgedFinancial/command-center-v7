@@ -20,8 +20,7 @@ export default function ApprovalQueue() {
       const res = await crmClient.request('/sms-queue')
       setMessages(Array.isArray(res) ? res : res.messages || res.data || [])
     } catch {
-      // Only use mock data in development; production shows empty state
-      setMessages(import.meta.env.DEV ? getMockMessages() : [])
+      setMessages([])
     } finally {
       setLoading(false)
     }
@@ -175,7 +174,9 @@ export default function ApprovalQueue() {
       {/* Messages list */}
       {filtered.length === 0 ? (
         <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>
-          {filter === 'pending' ? '✓ No pending messages' : 'No messages'}
+          <div style={{ fontSize: 16, marginBottom: 8 }}>📭</div>
+          <div>{filter === 'pending' ? 'No pending approvals' : 'No messages in this queue'}</div>
+          <div style={{ marginTop: 6, fontSize: 12, color: '#475569' }}>Messages will appear here when real queue data is available.</div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -231,12 +232,3 @@ export default function ApprovalQueue() {
   )
 }
 
-function getMockMessages() {
-  return [
-    { id: 'msg-1', recipient: 'client', recipientName: 'John Smith', recipientPhone: '(555) 123-4567', content: 'Hi John! This is {{agent_name}} with Forged Financial. I saw you were interested in life insurance — I\'d love to help! When\'s a good time to chat?', status: 'pending', triggerReason: 'P1 New Lead → On entry', templateName: 'Speed-to-Lead Intro', createdAt: new Date().toISOString() },
-    { id: 'msg-2', recipient: 'client', recipientName: 'Sarah Johnson', recipientPhone: '(555) 987-6543', content: 'Great news Sarah! Your application with Mutual of Omaha has been approved! Your agent Dano will be in touch with next steps.', status: 'pending', triggerReason: 'P3 Approved → On entry', templateName: 'Approval Congrats', createdAt: new Date(Date.now() - 3600000).toISOString() },
-    { id: 'msg-3', recipient: 'agent', recipientName: 'Agent Dano', recipientPhone: '(555) 555-0100', content: '🚨 EXCEPTION ALERT: Policy #LF-2024-0847 for Mike Davis has a billing issue. Check P4 immediately.', status: 'pending', triggerReason: 'P4 New Exception → On entry', templateName: 'Exception Alert', createdAt: new Date(Date.now() - 7200000).toISOString() },
-    { id: 'msg-4', recipient: 'client', recipientName: 'Lisa Chen', recipientPhone: '(555) 246-8135', content: 'Hey Lisa, life gets busy — totally understand! Just wanted you to know I\'m still here whenever you\'re ready to chat about coverage options.', status: 'approved', triggerReason: 'P7 Nurture → Day 7', templateName: 'Nurture Day 7', createdAt: new Date(Date.now() - 86400000).toISOString() },
-    { id: 'msg-5', recipient: 'client', recipientName: 'Bob Williams', recipientPhone: '(555) 369-2580', content: 'Hi Bob, we noticed your payment didn\'t go through. Please contact us to resolve this quickly so your coverage stays active.', status: 'declined', triggerReason: 'P4 Active Recovery → On entry', templateName: 'Issue Notification', createdAt: new Date(Date.now() - 172800000).toISOString() },
-  ]
-}

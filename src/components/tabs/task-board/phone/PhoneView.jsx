@@ -126,11 +126,7 @@ export default function PhoneView() {
         if (multiLineMode) {
           // For demo purposes, create multiple leads with same number
           // In real usage, this would come from a call queue
-          const leads = [
-            { phone: number, name: callingName || `Lead 1 (${number})`, id: '1' },
-            { phone: number, name: callingName || `Lead 2 (${number})`, id: '2' },
-            { phone: number, name: callingName || `Lead 3 (${number})`, id: '3' },
-          ]
+          const leads = []
           await makeMultiLineCalls(leads)
         } else {
           await ctxMakeCall({ phone: number, name: callingName || number })

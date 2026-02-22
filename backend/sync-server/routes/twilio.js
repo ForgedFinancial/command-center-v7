@@ -801,14 +801,8 @@ function registerRoutes(app) {
         dailyRates[parseInt(stat.dow)] = rate;
       });
       
-      // Mock state and type rates for now
-      const stateRates = {
-        'IL': 84, 'TX': 79, 'CA': 73, 'NC': 76, 'FL': 82, 'NY': 68, 'AZ': 71, 'OH': 77
-      };
-      
-      const typeRates = {
-        'Life Insurance': 82, 'Final Expense': 89, 'Term Life': 75, 'Whole Life': 79
-      };
+      const stateRates = {};
+      const typeRates = {};
       
       // Weekly digest
       const totalCalls = db.prepare(`SELECT COUNT(*) as count FROM twilio_calls WHERE created_at >= ?`).get(dateLimit);
@@ -829,8 +823,8 @@ function registerRoutes(app) {
           weeklyDigest: {
             bestHour,
             bestDay,
-            bestState: { state: 'IL', rate: 84 },
-            bestType: { type: 'Final Expense', rate: 89 },
+            bestState: null,
+            bestType: null,
             totalCalls: totalCalls?.count || 0,
             connectedCalls: connectedCalls?.count || 0,
             overallRate: totalCalls?.count > 0 ? Math.round((connectedCalls?.count / totalCalls?.count) * 100) : 0,
@@ -868,13 +862,7 @@ function registerRoutes(app) {
         connectionRateByNumber[displayNumber] = rate;
       });
       
-      // Mock data for other metrics
-      const callToCloseRatio = {
-        'Life Insurance': 12,
-        'Final Expense': 18,
-        'Term Life': 8,
-        'Whole Life': 15,
-      };
+      const callToCloseRatio = {};
       
       // Average attempts to connect
       const avgAttempts = db.prepare(`
@@ -883,26 +871,15 @@ function registerRoutes(app) {
         WHERE notes LIKE '%attempts:%' AND created_at >= date('now', '-30 days')
       `).get();
       
-      // Mock talk time vs idle time (in seconds)
-      const talkTimeVsIdle = {
-        talk: 14250, // ~4 hours
-        idle: 10800, // ~3 hours
-      };
-      
-      // Lead source ROI mock data
-      const leadSourceROI = {
-        'Facebook Ads': 15.2,
-        'Google Ads': 12.8,
-        'Referrals': 22.1,
-        'Cold Outreach': 8.5,
-      };
+      const talkTimeVsIdle = {};
+      const leadSourceROI = {};
       
       res.json({
         success: true,
         intelligence: {
           connectionRateByNumber,
           callToCloseRatio,
-          avgAttemptsToConnect: avgAttempts?.avg || 2.3,
+          avgAttemptsToConnect: avgAttempts?.avg || 0,
           talkTimeVsIdle,
           leadSourceROI,
         }
