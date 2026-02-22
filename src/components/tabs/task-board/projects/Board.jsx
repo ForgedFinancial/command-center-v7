@@ -47,6 +47,7 @@ export default function Board({ projectId }) {
       if (event.key.toLowerCase() === 'r') setActiveTool('shape')
       if (event.key.toLowerCase() === 't') setActiveTool('text')
       if (event.key.toLowerCase() === 'x') setActiveTool('connector')
+      if (event.key.toLowerCase() === 'f') setActiveTool('frame')
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
@@ -59,6 +60,7 @@ export default function Board({ projectId }) {
     const base = { id, x: -60 + Math.random() * 120, y: -60 + Math.random() * 120, width: 220, height: 160, rotation: 0 }
     if (type === 'sticky_note') return { ...base, type, content: 'New sticky note', style: { fillColor: 'yellow', fontSize: 14 } }
     if (type === 'shape') return { ...base, type, width: 180, height: 120, shape: 'rectangle', content: 'Shape', style: { borderColor: '#06b6d4', borderWidth: 2, color: '#f9fafb' } }
+    if (type === 'frame') return { ...base, type, width: 340, height: 240, content: 'Frame', childrenIds: [] }
     return { ...base, type: 'text', height: 80, content: 'New text', style: { fontSize: 16, color: '#f9fafb' } }
   }
 
@@ -99,6 +101,16 @@ export default function Board({ projectId }) {
     if (interaction?.type === 'box' && selectionBox) {
       setSelectedIds(new Set(items.filter((item) => intersects(item, selectionBox)).map((item) => item.id)))
       setSelectionBox(null)
+    }
+    if (interaction?.type === 'move') {
+      setItems((prev) => {
+        const frames = prev.filter((i) => i.type === 'frame')
+        return prev.map((item) => {
+          if (item.type === 'frame' || !interaction.ids.has(item.id)) return item
+          const owner = frames.find((f) => item.x > f.x && item.y > f.y && item.x + item.width < f.x + f.width && item.y + item.height < f.y + f.height)
+          return { ...item, parentId: owner?.id }
+        }).map((item) => item.type === 'frame' ? { ...item, childrenIds: prev.filter((c) => c.parentId === item.id).map((c) => c.id) } : item)
+      })
     }
     setInteraction(null)
   }

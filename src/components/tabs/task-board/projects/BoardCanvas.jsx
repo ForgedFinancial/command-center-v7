@@ -15,7 +15,7 @@ export default function BoardCanvas({ viewport, onPointerDown, onPointerMove, on
     <div onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerLeave={onPointerUp} onWheel={onWheel} style={{ position: 'absolute', inset: 0, overflow: 'hidden', backgroundColor: BOARD_THEME.canvasBg, backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px)', backgroundSize: `${gridSize}px ${gridSize}px`, backgroundPosition: `${viewport.x}px ${viewport.y}px` }}>
       <div className="board-canvas" style={{ transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`, transformOrigin: '0 0', willChange: 'transform', position: 'absolute', inset: 0 }}>
         <ConnectorLayer items={items} connectors={connectors} selectedId={selectedConnectorId} onSelect={onSelectConnector} />
-        {items.map((item) => (
+        {[...items].sort((a, b) => (a.type === 'frame' ? -1 : 0) - (b.type === 'frame' ? -1 : 0)).map((item) => (
           <BoardItem key={item.id} item={item} isSelected={selectedIds.has(item.id)} onPointerDown={(event) => onItemPointerDown(event, item.id)} onContentChange={(content) => onItemContentChange(item.id, content)} />
         ))}
 

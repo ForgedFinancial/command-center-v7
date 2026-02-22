@@ -41,5 +41,9 @@ export default function BoardItem({ item, isSelected, onPointerDown, onContentCh
     return <div onPointerDown={onPointerDown} style={{ ...baseStyle, background: 'rgba(6,182,212,0.1)', border: `${item.style?.borderWidth || 2}px solid ${item.style?.borderColor || '#06b6d4'}`, borderRadius: item.shape === 'ellipse' ? '999px' : 8, display: 'grid', placeItems: 'center' }}><span {...commonText} style={{ color: item.style?.color || '#f9fafb' }}>{item.content}</span></div>
   }
 
+  if (item.type === 'frame') {
+    return <div onPointerDown={onPointerDown} style={{ ...baseStyle, border: '1.5px dashed rgba(255,255,255,0.2)', background: 'transparent', overflow: 'visible' }}><div style={{ position: 'absolute', top: -24, left: 0, background: '#1a1f2e', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '6px 6px 0 0', padding: '2px 10px', fontSize: 11, color: '#9ca3af' }} {...commonText}>{item.content || 'Frame'}</div></div>
+  }
+
   return <div onPointerDown={onPointerDown} style={{ ...baseStyle, background: 'transparent', border: isSelected ? `1px solid ${BOARD_THEME.activeBorder}` : '1px dashed transparent', color: item.style?.color || '#f9fafb', display: 'flex', alignItems: 'center', padding: 8 }}><div {...commonText} style={{ whiteSpace: 'pre-wrap', width: '100%', fontSize: item.style?.fontSize || 16 }}>{item.content}</div></div>
 }
