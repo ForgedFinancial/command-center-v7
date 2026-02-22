@@ -198,10 +198,10 @@ class SyncClient {
 
   auth = {
     check: () => this.request(ENDPOINTS.authCheck),
-    login: async (accessCode, username, password) => {
+    login: async (username, password) => {
       const result = await this.request(ENDPOINTS.authLogin, {
         method: 'POST',
-        body: JSON.stringify({ accessCode, username, password }),
+        body: JSON.stringify({ username, password }),
       })
       if (result?.token) this._setToken(result.token)
       return result

@@ -22,7 +22,7 @@ const calendarCollector = require('./collectors/calendar');
 
 const app = express();
 const PORT = process.env.PORT || 3737;
-const API_KEY = process.env.CC_API_KEY || process.env.SYNC_API_KEY || 'CHANGE_ME_IN_ENV_FILE';
+const API_KEY = process.env.CC_API_KEY || process.env.SYNC_API_KEY;
 
 // Auth module (Session 4: Auth Overhaul)
 const { registerRoutes: registerAuthRoutes, authMiddleware } = require('./auth');
@@ -61,7 +61,7 @@ app.get('/api/health', (req, res) => {
     queueSize: eventQueue.length,
     timestamp: new Date().toISOString(),
     version: '1.0.0',
-    apiKeyConfigured: API_KEY !== 'CHANGE_ME_IN_ENV_FILE'
+    apiKeyConfigured: API_KEY !== undefined
   });
 });
 
@@ -87,6 +87,10 @@ app.use(express.static('cc')); // Serve index.html from cc/ folder
 // Task Board API routes
 const taskboardRoutes = require('./routes/taskboard');
 app.use('/api/taskboard', taskboardRoutes);
+
+// Projects API routes (AI assist for canvas task/checklist generation)
+const projectsRoutes = require('./routes/projects');
+app.use('/api/projects', projectsRoutes);
 
 // Notifications API routes
 const notificationsRoutes = require('./routes/notifications');
@@ -1251,8 +1255,6 @@ https.createServer(sslOptions, app).listen(PORT, () => {
   console.log(`📋 Ready for webhook calls from Openclaw/Claude`);
   console.log('');
 
-  if (API_KEY === 'CHANGE_ME_IN_ENV_FILE') {
-    console.warn('⚠️  WARNING: Using default API key! Set CC_API_KEY in .env file');
   }
 
   // Start data collectors
