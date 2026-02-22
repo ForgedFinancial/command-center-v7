@@ -28,6 +28,36 @@ export const TASK_TYPES = [
   { value: 'research', label: '🔬 Research', desc: 'Investigate and report back' },
 ]
 
+
+// Workstream classification — visible as FE/BE pill on task cards
+export const WORKSTREAM_TYPES = {
+  frontend: {
+    label: 'FE',
+    icon: '🖥',
+    fill: 'rgba(124, 58, 237, 0.22)',
+    border: 'rgba(167, 139, 250, 0.85)',
+    color: '#c4b5fd',
+    description: 'Frontend / UI — anything a human sees or touches',
+  },
+  backend: {
+    label: 'BE',
+    icon: '⚙',
+    fill: 'rgba(8, 145, 178, 0.22)',
+    border: 'rgba(34, 211, 238, 0.85)',
+    color: '#67e8f9',
+    description: 'Backend / Code — APIs, config, secrets, tests, proxies',
+  },
+}
+
+// Resolve workstream type from task object (backward compat with type-f / type-b tags)
+export function resolveWorkstream(task) {
+  const t = task?.taskType?.toLowerCase() || ''
+  const tags = task?.tags || []
+  if (t === 'frontend' || t === 'fe' || tags.includes('type-f') || tags.includes('frontend')) return 'frontend'
+  if (t === 'backend' || t === 'be' || tags.includes('type-b') || tags.includes('backend')) return 'backend'
+  return null
+}
+
 export const PRIORITIES = [
   { value: 'critical', label: '🔴 Critical', color: '#ef4444' },
   { value: 'high',     label: '🟠 High',     color: '#f97316' },

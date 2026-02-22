@@ -6,6 +6,7 @@ export default function NewTaskForm({ onClose, onCreate }) {
   const [name, setName]               = useState('')
   const [description, setDescription] = useState('')
   const [type, setType]               = useState('build')
+  const [taskType, setTaskType]       = useState('frontend')
   const [priority, setPriority]       = useState('normal')
   const [assignee, setAssignee]       = useState('clawd')
   const [tier, setTier]               = useState('build')
@@ -90,6 +91,7 @@ export default function NewTaskForm({ onClose, onCreate }) {
         createdBy: 'dano',
         stage: routedStage,
         type,
+        taskType,
         priority,
         specRef: specRef.trim() || null,
         tags: [
@@ -168,6 +170,39 @@ export default function NewTaskForm({ onClose, onCreate }) {
                   {a.icon} {a.label}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Workstream */}
+          <div>
+            <label style={label}>Workstream</label>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {[
+                { value: 'frontend', icon: '🖥', label: 'Frontend', color: '#c4b5fd', bg: 'rgba(124, 58, 237, 0.22)', border: 'rgba(167, 139, 250, 0.85)' },
+                { value: 'backend', icon: '⚙', label: 'Backend', color: '#67e8f9', bg: 'rgba(8, 145, 178, 0.22)', border: 'rgba(34, 211, 238, 0.85)' },
+              ].map(ws => {
+                const active = taskType === ws.value
+                return (
+                  <button
+                    key={ws.value}
+                    type="button"
+                    onClick={() => setTaskType(ws.value)}
+                    style={{
+                      padding: '6px 12px',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      borderRadius: '999px',
+                      cursor: 'pointer',
+                      border: `1px solid ${active ? ws.border : 'var(--theme-border, rgba(255,255,255,0.08))'}`,
+                      backgroundColor: active ? ws.bg : 'rgba(255,255,255,0.02)',
+                      color: active ? ws.color : 'var(--theme-text-secondary)',
+                      letterSpacing: '0.2px',
+                    }}
+                  >
+                    {ws.icon} {ws.label}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
