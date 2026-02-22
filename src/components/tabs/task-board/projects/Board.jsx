@@ -4,6 +4,7 @@ import BoardMinimap from './BoardMinimap'
 import BoardToolbar from './BoardToolbar'
 import BoardTopbar from './BoardTopbar'
 import BoardRightPanel from './BoardRightPanel'
+import BoardContextMenu from './BoardContextMenu'
 import { DEFAULT_ITEMS } from './boardConstants'
 import useViewport from './hooks/useViewport'
 import { screenToCanvas } from './boardUtils'
@@ -25,6 +26,7 @@ export default function Board({ projectId }) {
   const [selectedConnectorId, setSelectedConnectorId] = useState(null)
   const [interaction, setInteraction] = useState(null)
   const [selectionBox, setSelectionBox] = useState(null)
+  const [contextMenu, setContextMenu] = useState(null)
   const { viewport, beginPan, onPointerMove: onPanMove, endPan, onWheel, centerOnOrigin, zoomIn, zoomOut } = useViewport(containerRef)
 
   const selectedItem = useMemo(() => items.find((item) => selectedIds.has(item.id)), [items, selectedIds])
@@ -48,6 +50,7 @@ export default function Board({ projectId }) {
       if (event.key.toLowerCase() === 't') setActiveTool('text')
       if (event.key.toLowerCase() === 'x') setActiveTool('connector')
       if (event.key.toLowerCase() === 'f') setActiveTool('frame')
+      if (event.key.toLowerCase() === 'c') setActiveTool('card')
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
@@ -61,6 +64,7 @@ export default function Board({ projectId }) {
     if (type === 'sticky_note') return { ...base, type, content: 'New sticky note', style: { fillColor: 'yellow', fontSize: 14 } }
     if (type === 'shape') return { ...base, type, width: 180, height: 120, shape: 'rectangle', content: 'Shape', style: { borderColor: '#06b6d4', borderWidth: 2, color: '#f9fafb' } }
     if (type === 'frame') return { ...base, type, width: 340, height: 240, content: 'Frame', childrenIds: [] }
+    if (type === 'card') return { ...base, type, width: 280, height: 160, content: 'Task card', description: 'Describe work' }
     return { ...base, type: 'text', height: 80, content: 'New text', style: { fontSize: 16, color: '#f9fafb' } }
   }
 
@@ -131,6 +135,7 @@ export default function Board({ projectId }) {
         selectionBox={selectionBox}
         onItemPointerDown={(event, id) => {
           event.stopPropagation()
+          setContextMenu(null)
           const item = items.find((it) => it.id === id)
           if (!item) return
 
@@ -168,6 +173,12 @@ export default function Board({ projectId }) {
           })
           setInteraction({ type: 'move', ids, startX: event.clientX, startY: event.clientY, origins })
         }}
+        onItemContextMenu={(event, id) => {
+          event.preventDefault()
+          event.stopPropagation()
+          setSelectedIds(new Set([id]))
+          setContextMenu({ x: event.clientX, y: event.clientY, id })
+        }}
         onHandlePointerDown={(event, id) => {
           event.stopPropagation()
           const item = items.find((it) => it.id === id)
@@ -193,6 +204,25 @@ export default function Board({ projectId }) {
       />
       <BoardTopbar zoom={viewport.zoom} onZoomIn={zoomIn} onZoomOut={zoomOut} onFit={centerOnOrigin} />
       <BoardMinimap viewport={viewport} />
+      <BoardContextMenu
+        menu={contextMenu}
+        onClose={() => setContextMenu(null)}
+        onAction={(action) => {
+          if (!contextMenu?.id) return
+          setItems((prev) => {
+            const idx = prev.findIndex((i) => i.id === contextMenu.id)
+            if (idx === -1) return prev
+            const copy = [...prev]
+            const [item] = copy.splice(idx, 1)
+            if (action === 'bringFront') copy.push(item)
+            else if (action === 'sendBack') copy.unshift(item)
+            else if (action === 'bringForward') copy.splice(Math.min(copy.length, idx + 1), 0, item)
+            else if (action === 'sendBackward') copy.splice(Math.max(0, idx - 1), 0, item)
+            return copy
+          })
+          setContextMenu(null)
+        }}
+      />
       <BoardRightPanel
         item={selectedConnectorId ? connectors.find((c) => c.id === selectedConnectorId) : selectedItem}
         onPatch={(patch) => {

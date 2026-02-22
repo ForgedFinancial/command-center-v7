@@ -13,7 +13,7 @@ const stickyColors = {
   dark: { background: '#1a1f2e', color: '#f9fafb' },
 }
 
-export default function BoardItem({ item, isSelected, onPointerDown, onContentChange }) {
+export default function BoardItem({ item, isSelected, onPointerDown, onContentChange, onContextMenu }) {
   const [editing, setEditing] = useState(false)
 
   const baseStyle = {
@@ -34,16 +34,20 @@ export default function BoardItem({ item, isSelected, onPointerDown, onContentCh
 
   if (item.type === 'sticky_note') {
     const colorSet = stickyColors[item.style?.fillColor || 'yellow']
-    return <div onPointerDown={onPointerDown} style={{ ...baseStyle, ...colorSet, borderRadius: 12, padding: 16 }}><div {...commonText} style={{ whiteSpace: 'pre-wrap', fontSize: item.style?.fontSize || 14 }}>{item.content}</div></div>
+    return <div onPointerDown={onPointerDown} onContextMenu={onContextMenu} style={{ ...baseStyle, ...colorSet, borderRadius: 12, padding: 16 }}><div {...commonText} style={{ whiteSpace: 'pre-wrap', fontSize: item.style?.fontSize || 14 }}>{item.content}</div></div>
   }
 
   if (item.type === 'shape') {
-    return <div onPointerDown={onPointerDown} style={{ ...baseStyle, background: 'rgba(6,182,212,0.1)', border: `${item.style?.borderWidth || 2}px solid ${item.style?.borderColor || '#06b6d4'}`, borderRadius: item.shape === 'ellipse' ? '999px' : 8, display: 'grid', placeItems: 'center' }}><span {...commonText} style={{ color: item.style?.color || '#f9fafb' }}>{item.content}</span></div>
+    return <div onPointerDown={onPointerDown} onContextMenu={onContextMenu} style={{ ...baseStyle, background: 'rgba(6,182,212,0.1)', border: `${item.style?.borderWidth || 2}px solid ${item.style?.borderColor || '#06b6d4'}`, borderRadius: item.shape === 'ellipse' ? '999px' : 8, display: 'grid', placeItems: 'center' }}><span {...commonText} style={{ color: item.style?.color || '#f9fafb' }}>{item.content}</span></div>
   }
 
   if (item.type === 'frame') {
-    return <div onPointerDown={onPointerDown} style={{ ...baseStyle, border: '1.5px dashed rgba(255,255,255,0.2)', background: 'transparent', overflow: 'visible' }}><div style={{ position: 'absolute', top: -24, left: 0, background: '#1a1f2e', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '6px 6px 0 0', padding: '2px 10px', fontSize: 11, color: '#9ca3af' }} {...commonText}>{item.content || 'Frame'}</div></div>
+    return <div onPointerDown={onPointerDown} onContextMenu={onContextMenu} style={{ ...baseStyle, border: '1.5px dashed rgba(255,255,255,0.2)', background: 'transparent', overflow: 'visible' }}><div style={{ position: 'absolute', top: -24, left: 0, background: '#1a1f2e', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '6px 6px 0 0', padding: '2px 10px', fontSize: 11, color: '#9ca3af' }} {...commonText}>{item.content || 'Frame'}</div></div>
   }
 
-  return <div onPointerDown={onPointerDown} style={{ ...baseStyle, background: 'transparent', border: isSelected ? `1px solid ${BOARD_THEME.activeBorder}` : '1px dashed transparent', color: item.style?.color || '#f9fafb', display: 'flex', alignItems: 'center', padding: 8 }}><div {...commonText} style={{ whiteSpace: 'pre-wrap', width: '100%', fontSize: item.style?.fontSize || 16 }}>{item.content}</div></div>
+  if (item.type === 'card') {
+    return <div onPointerDown={onPointerDown} onContextMenu={onContextMenu} style={{ ...baseStyle, background: '#1a1f2e', borderRadius: 10, borderLeft: '3px solid #3b82f6', padding: '14px 16px', boxShadow: '0 2px 12px rgba(0,0,0,0.4)' }}><div {...commonText} style={{ fontWeight: 700 }}>{item.content || 'Card title'}</div><div style={{ fontSize: 12, color: '#9ca3af', marginTop: 6 }}>{item.description || 'Description...'}</div></div>
+  }
+
+  return <div onPointerDown={onPointerDown} onContextMenu={onContextMenu} style={{ ...baseStyle, background: 'transparent', border: isSelected ? `1px solid ${BOARD_THEME.activeBorder}` : '1px dashed transparent', color: item.style?.color || '#f9fafb', display: 'flex', alignItems: 'center', padding: 8 }}><div {...commonText} style={{ whiteSpace: 'pre-wrap', width: '100%', fontSize: item.style?.fontSize || 16 }}>{item.content}</div></div>
 }
