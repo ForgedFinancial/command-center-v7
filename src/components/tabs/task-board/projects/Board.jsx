@@ -37,6 +37,27 @@ export default function Board({ projectId }) {
   const selectedItem = useMemo(() => items.find((item) => selectedIds.has(item.id)), [items, selectedIds])
 
   useEffect(() => {
+    const key = `board_${projectId}`
+    const load = async () => {
+      try {
+        const resp = await fetch(`/api/projects/${projectId}/board`)
+        if (!resp.ok) throw new Error('load failed')
+        const data = await resp.json()
+        setItems(data.items || [])
+        setConnectors(data.connectors || [])
+      } catch {
+        const local = localStorage.getItem(key)
+        if (local) {
+          const data = JSON.parse(local)
+          setItems(data.items || [])
+          setConnectors(data.connectors || [])
+        }
+      }
+    }
+    load()
+  }, [projectId])
+
+  useEffect(() => {
     if (historyLock) return
     const snapshot = JSON.stringify({ items, connectors })
     setHistory((prev) => {
@@ -45,6 +66,22 @@ export default function Board({ projectId }) {
       return { past, future: [] }
     })
   }, [items, connectors, historyLock])
+
+  useEffect(() => {
+    const key = `board_${projectId}`
+    const payload = { items, connectors, viewport }
+    const timer = setTimeout(async () => {
+      try {
+        await fetch(`/api/projects/${projectId}/board`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } catch {}
+      localStorage.setItem(key, JSON.stringify(payload))
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [projectId, items, connectors])
 
   useEffect(() => {
     const onKeyDown = (event) => {
