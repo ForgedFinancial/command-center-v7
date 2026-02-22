@@ -29,6 +29,7 @@ export default function Board({ projectId }) {
   const [selectionBox, setSelectionBox] = useState(null)
   const [contextMenu, setContextMenu] = useState(null)
   const [aiOpen, setAiOpen] = useState(false)
+  const [expandedDocId, setExpandedDocId] = useState(null)
   const [history, setHistory] = useState({ past: [], future: [] })
   const [historyLock, setHistoryLock] = useState(false)
   const { viewport, beginPan, onPointerMove: onPanMove, endPan, onWheel, centerOnOrigin, zoomIn, zoomOut } = useViewport(containerRef)
@@ -102,6 +103,7 @@ export default function Board({ projectId }) {
     if (type === 'shape') return { ...base, type, width: 180, height: 120, shape: 'rectangle', content: 'Shape', style: { borderColor: '#06b6d4', borderWidth: 2, color: '#f9fafb' } }
     if (type === 'frame') return { ...base, type, width: 340, height: 240, content: 'Frame', childrenIds: [] }
     if (type === 'card') return { ...base, type, width: 280, height: 160, content: 'Task card', description: 'Describe work' }
+    if (type === 'document') return { ...base, type, width: 320, height: 240, content: 'Document', markdown: '# Notes\nStart writing...' }
     return { ...base, type: 'text', height: 80, content: 'New text', style: { fontSize: 16, color: '#f9fafb' } }
   }
 
@@ -233,6 +235,7 @@ export default function Board({ projectId }) {
           if (action === 'dismiss') setItems((prev) => prev.filter((item) => item.id !== aiItem.id))
           if (action === 'accept') setItems((prev) => prev.map((item) => item.id === aiItem.id ? { ...item, type: aiItem.outputMode === 'task_cards' ? 'card' : 'text' } : item))
         }}
+        onDocumentExpand={(item) => setExpandedDocId(item.id)}
       />
       <BoardToolbar
         activeTool={activeTool}
@@ -294,6 +297,17 @@ export default function Board({ projectId }) {
           setAiOpen(false)
         }}
       />
+      {expandedDocId && (() => {
+        const doc = items.find((i) => i.id === expandedDocId)
+        if (!doc) return null
+        return (
+          <div style={{ position: 'fixed', inset: 20, background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, zIndex: 130, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: 10 }}>
+            <textarea value={doc.markdown || ''} onChange={(e) => setItems((prev) => prev.map((item) => item.id === doc.id ? { ...item, markdown: e.target.value } : item))} style={{ width: '100%', height: '100%' }} />
+            <pre style={{ margin: 0, whiteSpace: 'pre-wrap', color: '#f9fafb' }}>{doc.markdown}</pre>
+            <button onClick={() => setExpandedDocId(null)} style={{ position: 'absolute', right: 12, top: 12 }}>Close</button>
+          </div>
+        )
+      })()}
       <BoardContextMenu
         menu={contextMenu}
         onClose={() => setContextMenu(null)}

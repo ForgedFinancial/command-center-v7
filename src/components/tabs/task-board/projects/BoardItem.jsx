@@ -13,7 +13,7 @@ const stickyColors = {
   dark: { background: '#1a1f2e', color: '#f9fafb' },
 }
 
-export default function BoardItem({ item, isSelected, onPointerDown, onContentChange, onContextMenu, onAiAction }) {
+export default function BoardItem({ item, isSelected, onPointerDown, onContentChange, onContextMenu, onAiAction, onDocumentExpand }) {
   const [editing, setEditing] = useState(false)
 
   const baseStyle = {
@@ -47,6 +47,10 @@ export default function BoardItem({ item, isSelected, onPointerDown, onContentCh
 
   if (item.type === 'card') {
     return <div onPointerDown={onPointerDown} onContextMenu={onContextMenu} style={{ ...baseStyle, background: '#1a1f2e', borderRadius: 10, borderLeft: '3px solid #3b82f6', padding: '14px 16px', boxShadow: '0 2px 12px rgba(0,0,0,0.4)' }}><div {...commonText} style={{ fontWeight: 700 }}>{item.content || 'Card title'}</div><div style={{ fontSize: 12, color: '#9ca3af', marginTop: 6 }}>{item.description || 'Description...'}</div><div style={{ marginTop: 8, fontSize: 11, border: '1px solid rgba(6,182,212,0.4)', background: 'rgba(6,182,212,0.1)', borderRadius: 20, padding: '4px 10px', display: 'inline-block' }}>✦ Mason: Add next step doc [+]</div></div>
+  }
+
+  if (item.type === 'document') {
+    return <div onPointerDown={onPointerDown} onContextMenu={onContextMenu} style={{ ...baseStyle, background: '#1a1f2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, overflow: 'hidden' }}><div style={{ background: '#111827', padding: '6px 8px', display: 'flex', justifyContent: 'space-between' }}><strong style={{ fontSize: 12 }}>{item.content || 'Document'}</strong><button onClick={(e) => { e.stopPropagation(); onDocumentExpand?.(item) }}>⤢</button></div><div style={{ padding: 8, fontSize: 12, color: '#9ca3af', whiteSpace: 'pre-wrap' }}>{item.markdown || 'Markdown content...'}</div></div>
   }
 
   if (item.type === 'ai_suggestion') {

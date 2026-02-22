@@ -8,6 +8,7 @@ const TOOLS = [
   ['connector', 'X'],
   ['frame', 'F'],
   ['card', 'C'],
+  ['document', 'D'],
 ]
 
 export default function BoardToolbar({ activeTool, onSetTool, onAddItem }) {
