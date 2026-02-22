@@ -15,7 +15,6 @@ const TYPE_ICON = {
   shape: '⬜',
   image: '🖼️',
   file: '📎',
-  metric: '📈',
   'task-card': '📋',
   checklist: '✅',
   'agent-chat': '🤖',
@@ -39,8 +38,6 @@ export default function ProjectCanvasObjectCard({
   const size = obj.size || { width: 220, height: 140 }
   const bg = obj.color || 'rgba(255,255,255,0.06)'
   const shapeType = obj.data?.shapeType || 'rectangle'
-  const metricValue = obj.data?.value ?? '--'
-  const metricLabel = obj.data?.label || 'Metric'
   const checklistItems = Array.isArray(obj.data?.items) ? obj.data.items : []
 
   const checklistProgress = useMemo(() => {
@@ -120,12 +117,6 @@ export default function ProjectCanvasObjectCard({
         />
       )}
 
-      {obj.type === 'metric' && (
-        <div style={{ marginBottom: '12px' }}>
-          <div style={{ fontSize: '22px', fontWeight: 700, color: '#4ade80', lineHeight: 1 }}>{metricValue}</div>
-          <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginTop: '4px' }}>{metricLabel}</div>
-        </div>
-      )}
 
       {obj.type === 'checklist' && (
         <div style={{ marginBottom: '10px' }}>
@@ -146,7 +137,7 @@ export default function ProjectCanvasObjectCard({
         </div>
       )}
 
-      {!['shape', 'image', 'metric', 'checklist'].includes(obj.type) && (
+      {!['shape', 'image', 'checklist'].includes(obj.type) && (
         <p style={{ margin: '0 0 10px', fontSize: '11px', color: 'var(--theme-text-secondary)', lineHeight: 1.4 }}>
           {obj.data?.body || obj.data?.text || 'Canvas item'}
         </p>

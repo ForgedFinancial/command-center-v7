@@ -46,7 +46,7 @@ function EmptyCanvas({ onNewProject }) {
         }}>
           This is your visual workspace — like a digital whiteboard for organizing projects.
           Create project folders, drag them anywhere on the canvas, and open each one
-          to reveal its own inner canvas workspace with tools, metrics, and task generation.
+          to reveal its own inner canvas workspace with tools and task generation.
         </p>
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px',
@@ -484,7 +484,7 @@ export default function ProjectCanvas() {
 
       for (const task of sourceTaskCandidates) {
         const res = await taskboardClient.createTask({
-          title: `Subtask: ${task.title}`,
+          title: `Subtask: ${task.name || task.title || "Task"}`,
           description: task.description || `Derived from project task ${task.id}`,
           projectId: task.projectId,
           parentTaskId: parentRes.data.id,

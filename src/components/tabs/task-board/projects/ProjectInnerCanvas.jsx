@@ -7,6 +7,7 @@ import taskboardClient from '../../../../api/taskboardClient'
 import CanvasGrid from './CanvasGrid'
 import CanvasMinimap from './CanvasMinimap'
 import CanvasToolbar from './CanvasToolbar'
+import CanvasConnector from './CanvasConnector'
 import InnerCanvasToolbar from './InnerCanvasToolbar'
 import KeyboardShortcutPanel from './components/KeyboardShortcutPanel'
 
@@ -14,7 +15,10 @@ const TOOL_TO_TYPE = {
   task: 'task',
   note: 'note',
   shape: 'shape',
-  metric: 'metric',
+  text: 'text',
+  image: 'image',
+  file: 'file',
+  subproject: 'subproject',
   checklist: 'checklist',
 }
 
@@ -26,7 +30,7 @@ function createPayloadForTool(tool, position) {
         type,
         position,
         size: { width: 240, height: 120 },
-        data: { title: 'New Task', assignee: 'Unassigned', status: 'todo' },
+        data: { name: 'New Task', assignee: 'Unassigned', status: 'todo', priority: 'medium' },
       }
     case 'note':
       return {
@@ -42,12 +46,61 @@ function createPayloadForTool(tool, position) {
         size: { width: 180, height: 110 },
         data: { label: 'Shape' },
       }
-    case 'metric':
+    case 'text':
       return {
         type,
         position,
-        size: { width: 210, height: 110 },
-        data: { value: '0', label: 'Metric' },
+        size: { width: 240, height: 90 },
+        data: { title: 'Text', text: 'Double-click to edit', textStyle: 'body' },
+      }
+    case 'image':
+      return {
+        type,
+        position,
+        size: { width: 260, height: 180 },
+        data: { title: 'Image', src: '', alt: '' },
+      }
+    case 'file':
+      return {
+        type,
+        position,
+        size: { width: 260, height: 110 },
+        data: { title: 'Document', fileName: '', fileSize: '', fileType: '' },
+      }
+    case 'subproject':
+      return {
+        type,
+        position,
+        size: { width: 260, height: 120 },
+        data: { title: 'Subproject', status: 'active' },
+      }
+    case 'text':
+      return {
+        type,
+        position,
+        size: { width: 260, height: 90 },
+        data: { text: 'Text block', textStyle: 'body' },
+      }
+    case 'image':
+      return {
+        type,
+        position,
+        size: { width: 260, height: 160 },
+        data: { src: null, alt: '', fileName: '', fileSize: 0 },
+      }
+    case 'file':
+      return {
+        type,
+        position,
+        size: { width: 260, height: 120 },
+        data: { fileName: 'Document', fileSize: 0, fileType: 'file', previewUrl: null },
+      }
+    case 'subproject':
+      return {
+        type,
+        position,
+        size: { width: 260, height: 130 },
+        data: { name: 'Subproject', status: 'planning' },
       }
     case 'checklist':
       return {
@@ -164,7 +217,7 @@ function ObjectCard({
       return (
         <>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#E6EDF7' }}>{object.data?.title || 'Task'}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#E6EDF7' }}>{object.data?.name || object.data?.title || 'Task'}</div>
             <button
               onClick={(e) => { e.stopPropagation(); onTaskStatusCycle(object) }}
               onMouseDown={(e) => e.stopPropagation()}
@@ -182,14 +235,56 @@ function ObjectCard({
         </>
       )
     }
+    if (object.type === 'text') {
+      return <div style={{ fontSize: 12, color: '#E6EDF7' }}>{object.data?.text || object.data?.title || 'Text'}</div>
+    }
 
-    if (object.type === 'metric') {
+    if (object.type === 'image') {
       return (
         <>
-          <div style={{ fontSize: 20, lineHeight: 1, color: '#E6EDF7', fontFamily: 'JetBrains Mono, SFMono-Regular, Menlo, monospace' }}>{object.data?.value ?? '0'}</div>
-          <div style={{ marginTop: 6, fontSize: 11, color: '#9AA7BC' }}>{object.data?.label || 'Metric'}</div>
+          {object.data?.src ? <img src={object.data.src} alt={object.data?.alt || 'Image'} style={{ width: '100%', height: 90, objectFit: 'cover', borderRadius: 8 }} /> : <div style={{ fontSize: 11, color: '#9AA7BC' }}>Image placeholder — upload from sidebar</div>}
+          <div style={{ marginTop: 6, fontSize: 10, color: '#9AA7BC' }}>{object.data?.alt || 'No alt text'}</div>
         </>
       )
+    }
+
+    if (object.type === 'file') {
+      return (
+        <>
+          <div style={{ fontSize: 12, fontWeight: 700 }}>{object.data?.fileName || 'Document'}</div>
+          <div style={{ marginTop: 4, fontSize: 10, color: '#9AA7BC' }}>{object.data?.fileSize || ''} {object.data?.fileType || ''}</div>
+          <div style={{ marginTop: 8, display: 'flex', gap: 6 }}>
+            <button style={{ height: 22, borderRadius: 6, border: '1px solid rgba(154,167,188,0.24)', background: 'transparent', color: '#E6EDF7', fontSize: 10 }}>Preview</button>
+            <button style={{ height: 22, borderRadius: 6, border: '1px solid rgba(154,167,188,0.24)', background: 'transparent', color: '#E6EDF7', fontSize: 10 }}>Download</button>
+          </div>
+        </>
+      )
+    }
+
+    if (object.type === 'subproject') {
+      return <div style={{ fontSize: 12, color: '#E6EDF7' }}>🧩 {object.data?.title || 'Subproject'}</div>
+    }
+
+
+    if (object.type === 'text') {
+      return <div style={{ fontSize: 12, color: '#E6EDF7' }}>{object.data?.text || 'Text block'}</div>
+    }
+
+    if (object.type === 'image') {
+      return (
+        <>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#E6EDF7', marginBottom: 6 }}>{object.data?.fileName || 'Image'}</div>
+          {object.data?.src ? <img src={object.data.src} alt={object.data?.alt || 'Image'} style={{ width: '100%', maxHeight: 86, objectFit: 'cover', borderRadius: 8 }} /> : <div style={{ fontSize: 11, color: '#9AA7BC' }}>Upload image then click canvas to place.</div>}
+        </>
+      )
+    }
+
+    if (object.type === 'file') {
+      return <div style={{ fontSize: 11, color: '#9AA7BC' }}>📎 {object.data?.fileName || 'Document'} · {Math.round((object.data?.fileSize || 0)/1024)} KB</div>
+    }
+
+    if (object.type === 'subproject') {
+      return <div style={{ fontSize: 12, color: '#E6EDF7' }}>🧩 {object.data?.name || 'Subproject'}</div>
     }
 
     if (object.type === 'shape') {
@@ -200,7 +295,7 @@ function ObjectCard({
       return <div style={{ fontSize: 12, color: '#E6EDF7' }}>{checkedCount}/{checklistItems.length || 0} complete</div>
     }
 
-    return <div style={{ fontSize: 12, color: '#E6EDF7' }}>{object.data?.title || object.type}</div>
+    return <div style={{ fontSize: 12, color: '#E6EDF7' }}>{object.data?.name || object.data?.label || object.type}</div>
   }
 
   return (
@@ -270,6 +365,10 @@ export default function ProjectInnerCanvas({ project }) {
   const [editingObjectId, setEditingObjectId] = useState(null)
   const [draftValue, setDraftValue] = useState('')
   const [showShortcuts, setShowShortcuts] = useState(false)
+  const [shapeStyle, setShapeStyle] = useState('solid')
+  const [textStyle, setTextStyle] = useState('body')
+  const [shapeType, setShapeType] = useState('rectangle')
+  const [projectNotes, setProjectNotes] = useState(() => localStorage.getItem(`projects:notes:${project.id}`) || '')
   const [snap, setSnap] = useState(true)
   const [search, setSearch] = useState('')
   const [canvasBg, setCanvasBg] = useState('#07090F')
@@ -281,6 +380,9 @@ export default function ProjectInnerCanvas({ project }) {
     return stored == null ? true : stored === '1'
   })
 
+
+  const [connectMode, setConnectMode] = useState({ active: false, sourceId: null })
+  const [cursorPos, setCursorPos] = useState(null)
   const canvasRef = useRef(null)
   const isPanning = useRef(false)
   const panStart = useRef({ x: 0, y: 0 })
@@ -293,12 +395,20 @@ export default function ProjectInnerCanvas({ project }) {
   const canvasObjects = useMemo(() => (
     state.canvasObjects
       .filter((obj) => obj.projectId === project.id || obj.data?.projectId === project.id)
-      .filter((obj) => !search || (obj.data?.title || obj.type).toLowerCase().includes(search.toLowerCase()))
+      .filter((obj) => !search || (obj.data?.name || obj.data?.text || obj.data?.label || obj.type).toLowerCase().includes(search.toLowerCase()))
   ), [project.id, search, state.canvasObjects])
+
+  const connectors = useMemo(() => canvasObjects.filter((obj) => obj.type === 'connector'), [canvasObjects])
+  const placeableObjects = useMemo(() => canvasObjects.filter((obj) => obj.type !== 'connector'), [canvasObjects])
 
   useEffect(() => {
     localStorage.setItem(`projects:minimap:${project.id}`, showMinimap ? '1' : '0')
   }, [project.id, showMinimap])
+
+  useEffect(() => {
+    const t = setTimeout(() => localStorage.setItem(`projects:notes:${project.id}`, projectNotes), 700)
+    return () => clearTimeout(t)
+  }, [project.id, projectNotes])
 
   useEffect(() => {
     const totalTasks = canvasObjects.filter((obj) => obj.type === 'task' || obj.type === 'taskcard' || obj.type === 'task-card').length
@@ -320,6 +430,7 @@ export default function ProjectInnerCanvas({ project }) {
       setGhostPosition(null)
       setEditingObjectId(null)
       setDraftValue('')
+      setConnectMode({ active: false, sourceId: null })
     }
 
     window.addEventListener('keydown', onEsc)
@@ -393,6 +504,7 @@ export default function ProjectInnerCanvas({ project }) {
   const handleToolSelect = (tool) => {
     if (tool === 'connect') {
       setActiveTool((current) => (current === 'connect' ? 'select' : 'connect'))
+      setConnectMode((current) => ({ active: !current.active, sourceId: null }))
       setIsPlacementMode(false)
       setGhostPosition(null)
       return
@@ -407,6 +519,8 @@ export default function ProjectInnerCanvas({ project }) {
 
     const position = screenToCanvas(event.clientX, event.clientY)
     const payload = createPayloadForTool(activeTool, position)
+    if (payload.type === 'shape') payload.data = { ...payload.data, shapeStyle, shapeType }
+    if (payload.type === 'text') payload.data = { ...payload.data, textStyle }
 
     try {
       const res = await taskboardClient.createProjectObject(project.id, payload)
@@ -466,12 +580,7 @@ export default function ProjectInnerCanvas({ project }) {
       return
     }
 
-    if (object.type === 'metric') {
-      setDraftValue(String(object.data?.value ?? '0'))
-      return
-    }
-
-    setDraftValue(object.data?.title || object.data?.label || '')
+    setDraftValue(object.data?.name || object.data?.text || object.data?.label || '')
   }
 
   const saveInlineEdit = async () => {
@@ -482,10 +591,10 @@ export default function ProjectInnerCanvas({ project }) {
     }
 
     const patch = { ...object.data }
-    if (object.type === 'note') patch.text = draftValue
-    else if (object.type === 'metric') patch.value = draftValue
+    if (object.type === 'note' || object.type === 'text') patch.text = draftValue
     else if (object.type === 'shape') patch.label = draftValue
-    else patch.title = draftValue
+    else if (object.type === 'task' || object.type === 'taskcard' || object.type === 'task-card') patch.name = draftValue
+    else if (object.type === 'subproject') patch.name = draftValue
 
     actions.updateCanvasObject({ id: object.id, data: patch })
     await taskboardClient.updateProjectObject(project.id, object.id, { data: patch }).catch(() => {})
@@ -531,17 +640,24 @@ export default function ProjectInnerCanvas({ project }) {
     }
   }
 
-  const activeObject = activeId ? canvasObjects.find((object) => object.id === activeId) : null
+  const activeObject = activeId ? placeableObjects.find((object) => object.id === activeId) : null
 
   return (
     <div style={{ display: 'flex', height: '100%', background: '#07090F' }}>
       <InnerCanvasToolbar
-        expanded={sidebarExpanded}
         activeTool={activeTool}
         isPlacementMode={isPlacementMode}
-        onToggleExpand={() => setSidebarExpanded((value) => !value)}
         onSelectTool={handleToolSelect}
         onToggleShortcuts={() => setShowShortcuts((open) => !open)}
+        shapeStyle={shapeStyle}
+        textStyle={textStyle}
+        onShapeStyleChange={(style, shape) => { if (style && !shape) setShapeStyle(style); if (shape) setShapeType(shape) }}
+        onTextStyleChange={setTextStyle}
+        onImageUpload={(file) => { if (!file || file.size > 15 * 1024 * 1024) return; const reader = new FileReader(); reader.onload = async () => { const payload = createPayloadForTool('image', { x: 220, y: 220 }); payload.data.src = String(reader.result); payload.data.fileName = file.name; payload.data.alt = file.name; const res = await taskboardClient.createProjectObject(project.id, payload).catch(() => null); if (res?.ok) actions.addCanvasObject(res.data) }; reader.readAsDataURL(file) }}
+        onFileUpload={async (file) => { if (!file) return; const payload = createPayloadForTool('file', { x: 240, y: 240 }); payload.data.fileName = file.name; payload.data.fileSize = `${(file.size / 1024).toFixed(1)} KB`; payload.data.fileType = file.name.split('.').pop()?.toUpperCase() || 'FILE'; const res = await taskboardClient.createProjectObject(project.id, payload).catch(() => null); if (res?.ok) actions.addCanvasObject(res.data) }}
+        onCreateTaskDraft={() => { setActiveTool('task'); setIsPlacementMode(true) }}
+        onAskAi={() => {}}
+        onGenerateChecklist={() => {}}
       />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
@@ -577,8 +693,11 @@ export default function ProjectInnerCanvas({ project }) {
               })
             }
 
+            const pt = screenToCanvas(event.clientX, event.clientY)
+            setCursorPos(pt)
+
             if (isPlacementMode) {
-              setGhostPosition(screenToCanvas(event.clientX, event.clientY))
+              setGhostPosition(pt)
             }
           }}
           onMouseDown={(event) => {
@@ -594,6 +713,10 @@ export default function ProjectInnerCanvas({ project }) {
           }}
           onClick={(event) => {
             if (event.target.closest('.inner-object-card')) return
+            if (connectMode.active) {
+              setSelectedObjectId(null)
+              return
+            }
             if (isPlacementMode) handleCreateObject(event)
             else setSelectedObjectId(null)
           }}
@@ -610,6 +733,12 @@ export default function ProjectInnerCanvas({ project }) {
             cursor: isPlacementMode ? 'crosshair' : 'default',
           }}
         >
+          {connectMode.active && (
+            <div className="placement-instruction">
+              {connectMode.sourceId ? 'Click target to connect — Esc to cancel' : 'Click source to start connection — Esc to cancel'}
+            </div>
+          )}
+
           {isPlacementMode && (
             <div className="placement-instruction">
               Click anywhere to place {activeTool.charAt(0).toUpperCase() + activeTool.slice(1)} — Esc to cancel
@@ -630,8 +759,10 @@ export default function ProjectInnerCanvas({ project }) {
               />
             )}
 
-            <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-              {canvasObjects.map((object) => (
+            <CanvasConnector connectors={connectors} projects={[]} canvasObjects={placeableObjects} connectMode={connectMode} cursorPos={cursorPos} canvasWidth={2600} canvasHeight={1800} />
+
+                        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+              {placeableObjects.map((object) => (
                 <ObjectCard
                   key={object.id}
                   object={object}
@@ -640,7 +771,27 @@ export default function ProjectInnerCanvas({ project }) {
                   isEditing={editingObjectId === object.id}
                   draftValue={draftValue}
                   onDraftChange={setDraftValue}
-                  onSelect={setSelectedObjectId}
+                  onSelect={(id) => {
+                    if (connectMode.active) {
+                      if (!connectMode.sourceId) {
+                        setConnectMode({ active: true, sourceId: id })
+                        return
+                      }
+                      if (connectMode.sourceId !== id) {
+                        const payload = {
+                          type: 'connector',
+                          position: { x: 0, y: 0 },
+                          size: { width: 0, height: 0 },
+                          data: { sourceId: connectMode.sourceId, targetId: id, style: 'curved', arrow: 'end', strokePattern: 'solid', strokeWidth: 2, color: '#00D4FF' },
+                        }
+                        taskboardClient.createProjectObject(project.id, payload).then((res) => { if (res?.ok) actions.addCanvasObject(res.data) }).catch(() => {})
+                      }
+                      setConnectMode({ active: false, sourceId: null })
+                      setActiveTool('select')
+                      return
+                    }
+                    setSelectedObjectId(id)
+                  }}
                   onDoubleEdit={enterInlineEdit}
                   onSave={saveInlineEdit}
                   onCancel={cancelInlineEdit}
@@ -686,6 +837,11 @@ export default function ProjectInnerCanvas({ project }) {
           />
         </div>
       </div>
+
+      <aside style={{ width: 280, borderLeft: '1px solid rgba(154,167,188,0.22)', background: '#0B1220', padding: 10 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: '#E6EDF7', marginBottom: 8 }}>Project Notes</div>
+        <textarea value={projectNotes} onChange={(e) => setProjectNotes(e.target.value)} placeholder='Notes autosave per project...' style={{ width: '100%', minHeight: 180, resize: 'vertical', borderRadius: 10, border: '1px solid rgba(154,167,188,0.24)', background: 'rgba(12,16,24,0.72)', color: '#E6EDF7', padding: 10 }} />
+      </aside>
 
       <KeyboardShortcutPanel open={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </div>
