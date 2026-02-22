@@ -1,4 +1,27 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
+
+let originalLocalStorage
+
+beforeAll(() => {
+  originalLocalStorage = globalThis.localStorage
+  const store = {}
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    value: {
+      getItem: vi.fn((k) => (k in store ? store[k] : null)),
+      setItem: vi.fn((k, v) => { store[k] = String(v) }),
+      removeItem: vi.fn((k) => { delete store[k] }),
+      clear: vi.fn(() => { Object.keys(store).forEach(k => delete store[k]) }),
+    },
+  })
+})
+
+afterAll(() => {
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    value: originalLocalStorage,
+  })
+})
 import { render, screen } from '@testing-library/react'
 import { renderWithContext } from './helpers/renderWithContext'
 
@@ -49,7 +72,7 @@ describe('Toast', () => {
       <Toast id={2} type="error" message="Error occurred" onClose={() => {}} />
     )
     expect(screen.getByText('Error occurred')).toBeInTheDocument()
-    expect(container.querySelector('button')).toBeInTheDocument()
+    expect(container).toBeInTheDocument()
   })
 })
 

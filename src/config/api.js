@@ -3,7 +3,7 @@
 // Worker proxy URL and endpoint definitions
 // ========================================
 
-export const WORKER_PROXY_URL = 'https://api.forgedfinancial.us'
+export const WORKER_PROXY_URL = 'https://cc.forgedfinancial.us'
 
 // Sync server auth — pulled from env at build time (Cloudflare Pages env vars)
 export const SYNC_API_KEY = import.meta.env.VITE_SYNC_API_KEY || import.meta.env.VITE_WORKER_API_KEY || '';

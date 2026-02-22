@@ -9,7 +9,7 @@ import { TABS, DEFAULT_THEME } from '../config/constants'
 
 const initialState = {
   // Navigation
-  activeTab: (typeof localStorage !== 'undefined' && localStorage.getItem('cc7-active-tab')) || TABS.ORG_CHART,
+  activeTab: (typeof window !== 'undefined' && typeof localStorage !== 'undefined' && localStorage.getItem('cc7-active-tab')) || TABS.ORG_CHART,
   theme: DEFAULT_THEME,
 
   // User role — default to owner (single-user system, DANO is the owner)

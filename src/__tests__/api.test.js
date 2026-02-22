@@ -29,7 +29,7 @@ describe('SyncClient', () => {
     expect(globalThis.fetch).toHaveBeenCalledTimes(1)
     const calledUrl = globalThis.fetch.mock.calls[0][0]
     expect(calledUrl).toContain('/api/health')
-    expect(calledUrl).toContain('forged-sync.danielruh.workers.dev')
+    expect(calledUrl).toContain('cc.forgedfinancial.us')
   })
 
   it('throws with .status on 404 response', async () => {

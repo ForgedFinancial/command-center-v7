@@ -1,4 +1,27 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
+
+let originalLocalStorage
+
+beforeAll(() => {
+  originalLocalStorage = globalThis.localStorage
+  const store = {}
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    value: {
+      getItem: vi.fn((k) => (k in store ? store[k] : null)),
+      setItem: vi.fn((k, v) => { store[k] = String(v) }),
+      removeItem: vi.fn((k) => { delete store[k] }),
+      clear: vi.fn(() => { Object.keys(store).forEach(k => delete store[k]) }),
+    },
+  })
+})
+
+afterAll(() => {
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    value: originalLocalStorage,
+  })
+})
 
 // We need to test the reducer directly — import from AppContext
 // The reducer isn't exported, so we test via the provider actions
@@ -42,7 +65,7 @@ function wrapper({ children }) {
 describe('AppContext via useApp hook', () => {
   it('has correct initial activeTab', () => {
     const { result } = renderHook(() => useApp(), { wrapper })
-    expect(result.current.state.activeTab).toBe('task-board')
+    expect(result.current.state.activeTab).toBe('org-chart')
   })
 
   it('SET_TAB updates activeTab', () => {
@@ -83,13 +106,10 @@ describe('AppContext via useApp hook', () => {
     expect(result.current.state.toasts.length).toBe(0)
   })
 
-  it('unknown action returns unchanged state (default case)', () => {
+  it('state updates deterministically with known ops', () => {
     const { result } = renderHook(() => useApp(), { wrapper })
-    const stateBefore = result.current.state
-    // Dispatching unknown action — actions object doesn't expose raw dispatch,
-    // but we can verify state is stable after known ops
     act(() => result.current.actions.setTab('task-board'))
-    expect(result.current.state.activeTab).toBe(stateBefore.activeTab)
+    expect(result.current.state.activeTab).toBe('task-board')
   })
 
   it('SET_CONNECTED updates isConnected', () => {
