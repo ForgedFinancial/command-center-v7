@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { WORKER_PROXY_URL, getSyncHeaders, ENDPOINTS } from '../../../../config/api'
 import AgentBadge from '../shared/AgentBadge'
 import TimeAgo from '../shared/TimeAgo'
+import ReportModal from './ReportModal'
 
 const AGENT_COLORS = {
   soren:    '#a855f7',
@@ -12,11 +13,46 @@ const AGENT_COLORS = {
   dano:     '#f59e0b',
 }
 
+const API_KEY = '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0'
+
 export default function CompletedView() {
   const [tasks, setTasks]       = useState([])
   const [loading, setLoading]   = useState(true)
   const [filter, setFilter]     = useState('all')   // all | soren | mason | sentinel
   const [expanded, setExpanded] = useState(null)
+  const [reportModal, setReportModal] = useState({ open: false, taskId: null, taskName: '', content: '' })
+
+  const fetchReport = useCallback(async (taskId) => {
+    try {
+      const res = await fetch(`https://api.forgedfinancial.us/api/ops/pipeline/tasks/${taskId}`, {
+        headers: { 'x-api-key': API_KEY },
+      })
+      if (!res.ok) {
+        return 'No report available yet.'
+      }
+
+      const task = await res.json()
+      const reportComment = (task.comments || []).find(c =>
+        c.message?.startsWith('REPORT:') || c.message?.includes('report.md')
+      )
+      const reportLog = (task.pipeline_log || []).find(l =>
+        l.notes?.includes('report') || l.notes?.includes('Files Changed')
+      )
+
+      return reportComment?.message || reportLog?.notes || task.description || 'No report available yet.'
+    } catch {
+      return 'No report available yet.'
+    }
+  }, [])
+
+  const openReport = useCallback(async (task) => {
+    const content = await fetchReport(task.id)
+    setReportModal({ open: true, taskId: task.id, taskName: task.title || task.name || 'Task', content })
+  }, [fetchReport])
+
+  const closeReport = useCallback(() => {
+    setReportModal({ open: false, taskId: null, taskName: '', content: '' })
+  }, [])
 
   const fetchCompleted = useCallback(async () => {
     try {
@@ -152,6 +188,21 @@ export default function CompletedView() {
                   {task.title}
                 </div>
 
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    openReport(task)
+                  }}
+                  style={{
+                    padding: '3px 10px', fontSize: '11px', borderRadius: '4px',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    background: 'rgba(255,255,255,0.05)',
+                    color: '#00d4ff', cursor: 'pointer', whiteSpace: 'nowrap',
+                  }}
+                >
+                  📄 View Report
+                </button>
+
                 {/* Time */}
                 <div style={{ fontSize:'10px', color:'var(--theme-text-secondary)', flexShrink:0 }}>
                   <TimeAgo date={task.completed_at || task.created_at} />
@@ -262,6 +313,15 @@ export default function CompletedView() {
           )
         })}
       </div>
+
+      {reportModal.open && (
+        <ReportModal
+          taskId={reportModal.taskId}
+          taskName={reportModal.taskName}
+          content={reportModal.content}
+          onClose={closeReport}
+        />
+      )}
     </div>
   )
 }
