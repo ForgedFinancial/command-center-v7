@@ -158,8 +158,8 @@ export default function FloatingCallBar() {
 
   return (
     <div onWheel={onWheel} style={{
-      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
-      transform: `scale(${scale})`, transformOrigin: 'center bottom',
+      position: 'fixed', bottom: 0, left: '50%', right: 'auto', width: '100%', zIndex: 9999,
+      transform: 'translateX(-50%) scale(1.05)', transformOrigin: 'center bottom',
       height: '56px',
       background: 'rgba(24,24,27,0.95)',
       backdropFilter: 'blur(12px)',
