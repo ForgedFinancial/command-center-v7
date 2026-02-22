@@ -46,7 +46,7 @@ const initialState = {
   selectedProject: null,
   createModalOpen: false,
   createProjectModalOpen: false,
-  projectTab: 'overview',
+  projectTab: 'canvas',
   taskFilters: { search: '', stages: [], priorities: [], projectIds: [], agents: [] },
   taskSort: { field: 'createdAt', dir: 'desc' },
   docToggle: 'reports',

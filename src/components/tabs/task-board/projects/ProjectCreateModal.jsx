@@ -5,7 +5,7 @@ import { useApp } from '../../../../context/AppContext'
 import taskboardClient from '../../../../api/taskboardClient'
 import { PROJECT_TEMPLATES, TEMPLATE_LIST, PROJECT_ICONS, PROJECT_COLORS } from '../../../../config/projectTemplates'
 
-export default function ProjectCreateModal({ existingProjects = [], onClose }) {
+export default function ProjectCreateModal({ existingProjects = [], onClose, parentProjectId = null }) {
   const { actions } = useTaskBoard()
   const { actions: appActions } = useApp()
   const [step, setStep] = useState('template') // template | details
@@ -40,6 +40,7 @@ export default function ProjectCreateModal({ existingProjects = [], onClose }) {
         icon: form.icon,
         columns: (selectedTemplate || PROJECT_TEMPLATES.custom).columns,
         canvasPosition,
+        parentProjectId,
       }
 
       const res = await taskboardClient.createProject(payload)

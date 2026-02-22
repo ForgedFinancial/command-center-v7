@@ -1,7 +1,7 @@
 import { useTaskBoard } from '../../../../context/TaskBoardContext'
 
 const TABS = [
-  { id: 'board', label: 'Board' },
+  { id: 'canvas', label: 'Canvas' },
   { id: 'files', label: 'Files' },
   { id: 'notes', label: 'Notes' },
   { id: 'overview', label: 'Overview' },
@@ -9,7 +9,7 @@ const TABS = [
 
 export default function WorkspaceTabs() {
   const { state, actions } = useTaskBoard()
-  const activeTab = state.projectTab || 'board'
+  const activeTab = state.projectTab || 'canvas'
 
   return (
     <div style={{

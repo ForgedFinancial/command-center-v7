@@ -18,7 +18,7 @@ export default function ProjectFolderCard({ project, dimmed = false, isDragging 
 
   const handleOpen = () => {
     actions.setSelectedProject(project)
-    actions.setProjectTab('board')
+    actions.setProjectTab('canvas')
   }
 
   const style = {
@@ -44,7 +44,7 @@ export default function ProjectFolderCard({ project, dimmed = false, isDragging 
     zIndex: isDragging ? 1000 : isSelected ? 8 : 5,
     boxSizing: 'border-box',
     filter: isConnectSource ? 'drop-shadow(0 0 8px rgba(0,212,255,0.6))' : isSelected ? 'drop-shadow(0 0 4px rgba(0,212,255,0.3))' : 'none',
-    opacity: dimmed ? 0.3 : 1,
+    opacity: isDragging ? 0 : (dimmed ? 0.3 : 1),
     userSelect: 'none',
   }
 

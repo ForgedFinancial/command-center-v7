@@ -183,7 +183,7 @@ export default function ProjectCanvas() {
   const handleBgChange = (color) => { setCanvasBg(color); localStorage.setItem('projecthub-bg', color) }
   const handleGridChange = (style) => { setGridStyle(style); localStorage.setItem('projecthub-grid', style) }
 
-  const projects = state.projects.filter(p => p.status !== 'archived')
+  const projects = state.projects.filter(p => p.status !== 'archived' && !p.parentProjectId)
   const canvasObjects = state.canvasObjects || []
   const stickies = canvasObjects.filter(o => o.type === 'sticky')
   const frames = canvasObjects.filter(o => o.type === 'frame')
@@ -445,7 +445,7 @@ export default function ProjectCanvas() {
         break
       case 'openProject': {
         const proj = projects.find(p => p.id === contextMenu?.target?.id)
-        if (proj) { actions.setSelectedProject(proj); actions.setProjectTab('board') }
+        if (proj) { actions.setSelectedProject(proj); actions.setProjectTab('canvas') }
         break
       }
       case 'deleteObject': {
