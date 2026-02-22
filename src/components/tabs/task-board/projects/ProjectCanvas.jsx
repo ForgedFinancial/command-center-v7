@@ -484,7 +484,7 @@ export default function ProjectCanvas() {
 
       for (const task of sourceTaskCandidates) {
         const res = await taskboardClient.createTask({
-          title: `Subtask: ${task.name || task.title || "Task"}`,
+          title: `Subtask: ${task.name || task.name || "Task"}`,
           description: task.description || `Derived from project task ${task.id}`,
           projectId: task.projectId,
           parentTaskId: parentRes.data.id,

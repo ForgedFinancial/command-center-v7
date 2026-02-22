@@ -34,13 +34,13 @@ export default function ProjectActivity({ project }) {
           items.push({
             type: 'task',
             icon: entry.stage === 'completed' ? '✅' : '📋',
-            text: `"${task.title}" moved to ${entry.stage.replace(/_/g, ' ')}`,
+            text: `"${task.name}" moved to ${entry.stage.replace(/_/g, ' ')}`,
             date: entry.at,
             by: entry.by,
           })
         }
       } else if (task.createdAt) {
-        items.push({ type: 'task', icon: '📋', text: `Task "${task.title}" created`, date: task.createdAt })
+        items.push({ type: 'task', icon: '📋', text: `Task "${task.name}" created`, date: task.createdAt })
       }
     }
 

@@ -24,7 +24,7 @@ export default function ProjectTaskCard({ task, isDragOverlay = false }) {
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <div style={{ fontWeight: 500, color: 'var(--theme-text-primary)', marginBottom: '4px' }}>
-        {task.title}
+        {task.name}
       </div>
       <div style={{ display: 'flex', gap: '6px', alignItems: 'center', fontSize: '10px' }}>
         {task.priority && task.priority !== 'medium' && (

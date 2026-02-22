@@ -37,7 +37,7 @@ function createPayloadForTool(tool, position) {
         type,
         position,
         size: { width: 220, height: 120 },
-        data: { title: 'Note', text: '' },
+        data: { text: '' },
       }
     case 'shape':
       return {
@@ -45,34 +45,6 @@ function createPayloadForTool(tool, position) {
         position,
         size: { width: 180, height: 110 },
         data: { label: 'Shape' },
-      }
-    case 'text':
-      return {
-        type,
-        position,
-        size: { width: 240, height: 90 },
-        data: { title: 'Text', text: 'Double-click to edit', textStyle: 'body' },
-      }
-    case 'image':
-      return {
-        type,
-        position,
-        size: { width: 260, height: 180 },
-        data: { title: 'Image', src: '', alt: '' },
-      }
-    case 'file':
-      return {
-        type,
-        position,
-        size: { width: 260, height: 110 },
-        data: { title: 'Document', fileName: '', fileSize: '', fileType: '' },
-      }
-    case 'subproject':
-      return {
-        type,
-        position,
-        size: { width: 260, height: 120 },
-        data: { title: 'Subproject', status: 'active' },
       }
     case 'text':
       return {
@@ -107,14 +79,14 @@ function createPayloadForTool(tool, position) {
         type,
         position,
         size: { width: 220, height: 120 },
-        data: { title: 'Checklist', items: [{ text: 'Item 1', checked: false }, { text: 'Item 2', checked: false }] },
+        data: { name: 'Checklist', items: [{ text: 'Item 1', checked: false }, { text: 'Item 2', checked: false }] },
       }
     default:
       return {
         type: 'note',
         position,
         size: { width: 220, height: 120 },
-        data: { title: 'Note', text: '' },
+        data: { text: '' },
       }
   }
 }

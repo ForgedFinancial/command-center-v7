@@ -93,7 +93,7 @@ export default function ProjectCanvasObjectCard({
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
         <span style={{ fontSize: '14px' }}>{TYPE_ICON[obj.type] || '🧩'}</span>
         <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--theme-text-primary)', textTransform: 'capitalize' }}>
-          {obj.data?.title || obj.type.replace('-', ' ')}
+          {obj.data?.name || obj.data?.title || obj.type.replace('-', ' ')}
         </span>
       </div>
 

@@ -116,7 +116,7 @@ export default function ProjectTaskList({ project }) {
               flexShrink: 0,
             }} />
             <span style={{ flex: 1, fontSize: '12px', fontWeight: 500, color: 'var(--theme-text-primary)' }}>
-              {task.title}
+              {task.name}
             </span>
             <span style={{
               fontSize: '10px',

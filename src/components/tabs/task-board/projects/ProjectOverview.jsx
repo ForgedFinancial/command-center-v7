@@ -88,7 +88,7 @@ export default function ProjectOverview({ project }) {
                     flexShrink: 0,
                   }} />
                   <span style={{ flex: 1, fontSize: '12px', color: task.stage === 'completed' ? '#71717a' : '#e4e4e7' }}>
-                    {task.title}
+                    {task.name}
                   </span>
                   {task.priority && task.priority !== 'low' && (
                     <span style={{
