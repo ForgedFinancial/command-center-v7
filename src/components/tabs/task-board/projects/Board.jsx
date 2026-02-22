@@ -3,6 +3,7 @@ import BoardCanvas from './BoardCanvas'
 import BoardMinimap from './BoardMinimap'
 import BoardToolbar from './BoardToolbar'
 import BoardTopbar from './BoardTopbar'
+import BoardRightPanel from './BoardRightPanel'
 import { DEFAULT_ITEMS } from './boardConstants'
 import useViewport from './hooks/useViewport'
 import { screenToCanvas } from './boardUtils'
@@ -143,7 +144,7 @@ export default function Board({ projectId }) {
           if (!item) return
           setInteraction({ type: 'rotate', ids: new Set([id]), startX: event.clientX, startY: event.clientY, origins: { [id]: { rotation: item.rotation || 0 } } })
         }}
-        onDoubleClickCanvasItem={() => {}}
+        onItemContentChange={(id, content) => setItems((prev) => prev.map((item) => item.id === id ? { ...item, content } : item))}
       />
       <BoardToolbar
         activeTool={activeTool}
@@ -156,6 +157,13 @@ export default function Board({ projectId }) {
       />
       <BoardTopbar zoom={viewport.zoom} onZoomIn={zoomIn} onZoomOut={zoomOut} onFit={centerOnOrigin} />
       <BoardMinimap viewport={viewport} />
+      <BoardRightPanel
+        item={selectedItem}
+        onPatch={(patch) => {
+          if (!selectedItem) return
+          setItems((prev) => prev.map((item) => item.id === selectedItem.id ? { ...item, ...patch } : item))
+        }}
+      />
     </div>
   )
 }
