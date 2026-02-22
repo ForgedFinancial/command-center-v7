@@ -180,6 +180,52 @@ function getTwilioClient(cfg) {
   return twilio(cfg.accountSid, cfg.authToken);
 }
 
+async function getStateRatesFromDB(days = 30) {
+  try {
+    const db = getDb();
+    const rows = db.prepare(`
+      SELECT
+        lead_state as state,
+        COUNT(*) as total,
+        SUM(CASE WHEN duration > 0 THEN 1 ELSE 0 END) as connected
+      FROM twilio_calls
+      WHERE created_at >= ? AND lead_state IS NOT NULL AND lead_state != ''
+      GROUP BY lead_state
+    `).all(new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString());
+
+    const rates = {};
+    rows.forEach((row) => {
+      rates[row.state] = row.total > 0 ? Math.round((row.connected / row.total) * 100) : 0;
+    });
+    return rates;
+  } catch {
+    return {};
+  }
+}
+
+async function getTypeRatesFromDB(days = 30) {
+  try {
+    const db = getDb();
+    const rows = db.prepare(`
+      SELECT
+        direction as type,
+        COUNT(*) as total,
+        SUM(CASE WHEN duration > 0 THEN 1 ELSE 0 END) as connected
+      FROM twilio_calls
+      WHERE created_at >= ? AND direction IS NOT NULL AND direction != ''
+      GROUP BY direction
+    `).all(new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString());
+
+    const rates = {};
+    rows.forEach((row) => {
+      rates[row.type] = row.total > 0 ? Math.round((row.connected / row.total) * 100) : 0;
+    });
+    return rates;
+  } catch {
+    return {};
+  }
+}
+
 // ── Register Routes ──
 
 function registerRoutes(app) {
@@ -759,7 +805,7 @@ function registerRoutes(app) {
   // ──────────────────────────────────────
   // GET /api/twilio/intelligence/best-time — Phase 4B: Best Time Intelligence
   // ──────────────────────────────────────
-  app.get('/api/twilio/intelligence/best-time', (req, res) => {
+  app.get('/api/twilio/intelligence/best-time', async (req, res) => {
     const { range = '30d' } = req.query;
     const days = range === '7d' ? 7 : range === '30d' ? 30 : 90;
     
@@ -801,8 +847,12 @@ function registerRoutes(app) {
         dailyRates[parseInt(stat.dow)] = rate;
       });
       
-      const stateRates = {};
-      const typeRates = {};
+      const stateRates = await getStateRatesFromDB(days);
+      const typeRates = await getTypeRatesFromDB(days);
+
+      if (!Object.keys(stateRates).length && !Object.keys(typeRates).length) {
+        return res.json({ stateRates: {}, typeRates: {} });
+      }
       
       // Weekly digest
       const totalCalls = db.prepare(`SELECT COUNT(*) as count FROM twilio_calls WHERE created_at >= ?`).get(dateLimit);
@@ -862,27 +912,19 @@ function registerRoutes(app) {
         connectionRateByNumber[displayNumber] = rate;
       });
       
-      const callToCloseRatio = {};
-      
       // Average attempts to connect
       const avgAttempts = db.prepare(`
         SELECT AVG(CAST(SUBSTR(notes, INSTR(notes, 'attempts: ') + 10) AS INTEGER)) as avg
         FROM twilio_calls 
         WHERE notes LIKE '%attempts:%' AND created_at >= date('now', '-30 days')
       `).get();
-      
-      const talkTimeVsIdle = {};
-      const leadSourceROI = {};
-      
-      res.json({
-        success: true,
-        intelligence: {
-          connectionRateByNumber,
-          callToCloseRatio,
-          avgAttemptsToConnect: avgAttempts?.avg || 0,
-          talkTimeVsIdle,
-          leadSourceROI,
-        }
+
+      return res.json({
+        connectionRateByNumber,
+        avgAttemptsToConnect: avgAttempts?.avg || 0,
+        callToCloseRatio: {},
+        talkTimeVsIdle: { talk: 0, idle: 0 },
+        leadSourceROI: {},
       });
     } catch (err) {
       console.error('[TWILIO:INTELLIGENCE:CALL-METRICS]', err.message);

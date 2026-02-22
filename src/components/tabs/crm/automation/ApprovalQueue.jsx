@@ -175,7 +175,7 @@ export default function ApprovalQueue() {
       {filtered.length === 0 ? (
         <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>
           <div style={{ fontSize: 16, marginBottom: 8 }}>📭</div>
-          <div>{filter === 'pending' ? 'No pending approvals' : 'No messages in this queue'}</div>
+          <div>No messages in approval queue</div>
           <div style={{ marginTop: 6, fontSize: 12, color: '#475569' }}>Messages will appear here when real queue data is available.</div>
         </div>
       ) : (
