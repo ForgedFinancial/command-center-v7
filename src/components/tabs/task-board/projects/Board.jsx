@@ -21,6 +21,8 @@ export default function Board({ projectId }) {
   const [items, setItems] = useState(DEFAULT_ITEMS)
   const [selectedIds, setSelectedIds] = useState(new Set(DEFAULT_ITEMS[0]?.id ? [DEFAULT_ITEMS[0].id] : []))
   const [activeTool, setActiveTool] = useState('select')
+  const [connectors, setConnectors] = useState([])
+  const [selectedConnectorId, setSelectedConnectorId] = useState(null)
   const [interaction, setInteraction] = useState(null)
   const [selectionBox, setSelectionBox] = useState(null)
   const { viewport, beginPan, onPointerMove: onPanMove, endPan, onWheel, centerOnOrigin, zoomIn, zoomOut } = useViewport(containerRef)
@@ -44,6 +46,7 @@ export default function Board({ projectId }) {
       if (event.key.toLowerCase() === 's') setActiveTool('sticky_note')
       if (event.key.toLowerCase() === 'r') setActiveTool('shape')
       if (event.key.toLowerCase() === 't') setActiveTool('text')
+      if (event.key.toLowerCase() === 'x') setActiveTool('connector')
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
@@ -109,12 +112,33 @@ export default function Board({ projectId }) {
         onPointerUp={onPointerUp}
         onWheel={onWheel}
         items={items}
+        connectors={connectors}
         selectedIds={selectedIds}
+        selectedConnectorId={selectedConnectorId}
+        onSelectConnector={setSelectedConnectorId}
         selectionBox={selectionBox}
         onItemPointerDown={(event, id) => {
           event.stopPropagation()
           const item = items.find((it) => it.id === id)
           if (!item) return
+
+          if (activeTool === 'connector') {
+            if (interaction?.type === 'connect' && interaction.fromId !== id) {
+              setConnectors((prev) => [...prev, {
+                id: crypto.randomUUID(),
+                type: 'connector',
+                startItem: { id: interaction.fromId, snapTo: 'auto' },
+                endItem: { id, snapTo: 'auto' },
+                routing: 'curved',
+                style: { strokeColor: '#06b6d4', strokeWidth: 1.5, strokeStyle: 'normal' },
+              }])
+              setInteraction(null)
+            } else {
+              setInteraction({ type: 'connect', fromId: id })
+            }
+            return
+          }
+
           const next = new Set(selectedIds)
           if (event.shiftKey) {
             if (next.has(id)) next.delete(id)
@@ -158,8 +182,12 @@ export default function Board({ projectId }) {
       <BoardTopbar zoom={viewport.zoom} onZoomIn={zoomIn} onZoomOut={zoomOut} onFit={centerOnOrigin} />
       <BoardMinimap viewport={viewport} />
       <BoardRightPanel
-        item={selectedItem}
+        item={selectedConnectorId ? connectors.find((c) => c.id === selectedConnectorId) : selectedItem}
         onPatch={(patch) => {
+          if (selectedConnectorId) {
+            setConnectors((prev) => prev.map((c) => c.id === selectedConnectorId ? { ...c, ...patch, style: { ...c.style, ...patch.style } } : c))
+            return
+          }
           if (!selectedItem) return
           setItems((prev) => prev.map((item) => item.id === selectedItem.id ? { ...item, ...patch } : item))
         }}

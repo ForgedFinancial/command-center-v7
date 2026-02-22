@@ -5,6 +5,7 @@ const TOOLS = [
   ['sticky_note', 'S'],
   ['shape', 'R'],
   ['text', 'T'],
+  ['connector', 'X'],
 ]
 
 export default function BoardToolbar({ activeTool, onSetTool, onAddItem }) {
