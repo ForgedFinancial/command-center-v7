@@ -4,6 +4,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { useTaskBoard } from '../../../../context/TaskBoardContext'
 import { useProjectCanvas } from '../../../../context/ProjectCanvasContext'
 import taskboardClient from '../../../../api/taskboardClient'
+import { WORKER_PROXY_URL, getSyncHeaders } from '../../../../config/api'
 import CanvasGrid from './CanvasGrid'
 import CanvasMinimap from './CanvasMinimap'
 import CanvasToolbar from './CanvasToolbar'
@@ -511,6 +512,62 @@ export default function ProjectInnerCanvas({ project }) {
     }
   }
 
+
+
+  const requestProjectAiAssist = async (type, prompt) => {
+    const response = await fetch(`${WORKER_PROXY_URL}/api/projects/ai-assist`, {
+      method: 'POST',
+      headers: getSyncHeaders(),
+      body: JSON.stringify({ type, prompt, projectId: project.id }),
+    })
+
+    if (!response.ok) throw new Error(`AI assist failed (${response.status})`)
+    return response.json()
+  }
+
+  const handleAskAi = async () => {
+    const prompt = window.prompt('Describe the task you want AI to create:')
+    if (!prompt) return
+
+    try {
+      const result = await requestProjectAiAssist('task', prompt)
+      const fields = result?.fields || {}
+      const payload = createPayloadForTool('task', { x: 220, y: 220 })
+      payload.data = {
+        ...payload.data,
+        name: fields.name || payload.data.name,
+        assignee: fields.assignee || payload.data.assignee,
+        priority: fields.priority || payload.data.priority,
+        dueDate: fields.dueDate || null,
+      }
+      const res = await taskboardClient.createProjectObject(project.id, payload)
+      if (res?.ok) actions.addCanvasObject(res.data)
+    } catch (err) {
+      window.alert(err.message || 'Failed to generate AI task')
+    }
+  }
+
+  const handleGenerateChecklist = async () => {
+    const prompt = window.prompt('What should this checklist cover?')
+    if (!prompt) return
+
+    try {
+      const result = await requestProjectAiAssist('checklist', prompt)
+      const items = Array.isArray(result?.items) ? result.items : []
+      const payload = createPayloadForTool('checklist', { x: 240, y: 240 })
+      payload.data = {
+        ...payload.data,
+        items: items.length
+          ? items.map((item) => ({ text: String(item || '').trim() || 'Checklist item', checked: false }))
+          : payload.data.items,
+      }
+      const res = await taskboardClient.createProjectObject(project.id, payload)
+      if (res?.ok) actions.addCanvasObject(res.data)
+    } catch (err) {
+      window.alert(err.message || 'Failed to generate AI checklist')
+    }
+  }
+
   const handleDelete = async (objectId) => {
     const object = state.canvasObjects.find((candidate) => candidate.id === objectId)
     if (!object) return
@@ -628,8 +685,8 @@ export default function ProjectInnerCanvas({ project }) {
         onImageUpload={(file) => { if (!file || file.size > 15 * 1024 * 1024) return; const reader = new FileReader(); reader.onload = async () => { const payload = createPayloadForTool('image', { x: 220, y: 220 }); payload.data.src = String(reader.result); payload.data.fileName = file.name; payload.data.alt = file.name; const res = await taskboardClient.createProjectObject(project.id, payload).catch(() => null); if (res?.ok) actions.addCanvasObject(res.data) }; reader.readAsDataURL(file) }}
         onFileUpload={async (file) => { if (!file) return; const payload = createPayloadForTool('file', { x: 240, y: 240 }); payload.data.fileName = file.name; payload.data.fileSize = `${(file.size / 1024).toFixed(1)} KB`; payload.data.fileType = file.name.split('.').pop()?.toUpperCase() || 'FILE'; const res = await taskboardClient.createProjectObject(project.id, payload).catch(() => null); if (res?.ok) actions.addCanvasObject(res.data) }}
         onCreateTaskDraft={() => { setActiveTool('task'); setIsPlacementMode(true) }}
-        onAskAi={() => {}}
-        onGenerateChecklist={() => {}}
+        onAskAi={handleAskAi}
+        onGenerateChecklist={handleGenerateChecklist}
       />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
