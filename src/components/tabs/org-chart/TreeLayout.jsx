@@ -50,7 +50,7 @@ export default function TreeLayout({ agents, activeConnections, onSelectAgent, s
       <ConnectorLine
         fromColor={TIER_COLORS.coo}
         toColor={TIER_COLORS.department}
-        isActive={isConnectionActive('clawd-architect') || isConnectionActive('clawd-mason') || isConnectionActive('clawd-sentinel')}
+        isActive={isConnectionActive('clawd-soren') || isConnectionActive('clawd-mason') || isConnectionActive('clawd-sentinel')}
         height={32}
       />
 

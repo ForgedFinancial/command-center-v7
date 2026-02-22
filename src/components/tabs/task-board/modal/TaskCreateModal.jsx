@@ -90,7 +90,7 @@ export default function TaskCreateModal() {
               <option value="">Unassigned</option>
               <option value="mason">Mason</option>
               <option value="sentinel">Sentinel</option>
-              <option value="architect">Architect</option>
+              <option value="soren">Architect</option>
             </select>
           </div>
         </div>

@@ -152,7 +152,7 @@ export default function ProjectOverview({ project }) {
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--theme-text-primary)', textTransform: 'capitalize' }}>{agent}</div>
                   <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary)' }}>
-                    {agent === 'architect' ? 'Planner' : agent === 'mason' ? 'Builder' : agent === 'sentinel' ? 'Inspector' : 'Agent'}
+                    {agent === 'soren' ? 'Planner' : agent === 'mason' ? 'Builder' : agent === 'sentinel' ? 'Inspector' : 'Agent'}
                   </div>
                 </div>
               </div>

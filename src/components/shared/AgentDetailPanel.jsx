@@ -60,10 +60,12 @@ export default function AgentDetailPanel() {
   const isDano = agent.id === 'ceo'
   const borderColor = isDano ? '#f59e0b'
     : agent.isHuman ? '#3b82f6'
-    : ['architect', 'mason', 'sentinel'].includes(agent.id) ? '#f59e0b'
+    : ['soren', 'mason', 'sentinel'].includes(agent.id) ? '#f59e0b'
     : '#10b981'
 
-  const statusColor = liveStatus === 'online' || liveStatus === 'active' ? '#4ade80'
+  const statusColor = liveStatus === 'online' || liveStatus === 'active' || liveStatus === 'busy' ? '#4ade80'
+    : liveStatus === 'idle' ? '#f59e0b'
+    : liveStatus === 'offline' ? '#ef4444'
     : liveStatus === 'busy' ? '#fbbf24'
     : liveStatus === 'error' ? '#ef4444' : '#6b7280'
 

@@ -12,7 +12,7 @@ const SIDEBAR_GROUPS = [
   {
     label: 'Operations',
     agents: [
-      { id: 'architect', children: ['scout', 'cartographer'] },
+      { id: 'soren', children: ['scout', 'cartographer'] },
       { id: 'mason', children: ['coder', 'wirer', 'scribe'] },
       { id: 'sentinel', children: ['probe', 'auditor'] },
     ],

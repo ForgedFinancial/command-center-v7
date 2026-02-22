@@ -43,6 +43,7 @@ export const STATUS_COLORS = {
   online: { color: '#4ade80', glow: 'rgba(74,222,128,0.5)' },
   idle: { color: '#f59e0b', glow: 'rgba(245,158,11,0.3)' },
   offline: { color: '#6b7280', glow: 'none' },
+  busy: { color: '#4ade80', glow: 'rgba(74,222,128,0.8)' },
 };
 
 export const KEYFRAMES = `
@@ -52,7 +53,7 @@ export const KEYFRAMES = `
 }
 `;
 
-export const DEPT_HEADS = ['architect', 'mason', 'sentinel'];
+export const DEPT_HEADS = ['soren', 'mason', 'sentinel'];
 
 export const SPECIALIST_MAP = {
   architect: ['scout', 'cartographer'],

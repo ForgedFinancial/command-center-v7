@@ -8,7 +8,7 @@ import RoomInput from './RoomInput'
 const AGENTS_LIST = [
   { id: 'clawd', name: 'Clawd', role: 'COO' },
   { id: 'kyle', name: 'Kyle', role: 'Desktop' },
-  { id: 'soren', name: 'Soren', role: 'Architect' },
+  { id: 'soren', name: 'Soren', role: 'The Planner' },
   { id: 'mason', name: 'Mason', role: 'Builder' },
   { id: 'sentinel', name: 'Sentinel', role: 'Inspector' },
 ]
