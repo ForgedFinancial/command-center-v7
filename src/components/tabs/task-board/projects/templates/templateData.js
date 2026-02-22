@@ -1,5 +1,5 @@
-import { LifeInsuranceCase } from './LifeInsuranceCase'
-import { LeadCampaign } from './LeadCampaign'
+import { ProductLaunch } from './ProductLaunch'
+import { SprintPlanning } from './SprintPlanning'
 
 const ContentCalendar = {
   id: 'content-calendar',
@@ -27,8 +27,8 @@ const Brainstorm = {
 }
 
 export const TEMPLATE_DATA = [
-  LifeInsuranceCase,
-  LeadCampaign,
+  ProductLaunch,
+  SprintPlanning,
   ContentCalendar,
   Brainstorm,
 ]

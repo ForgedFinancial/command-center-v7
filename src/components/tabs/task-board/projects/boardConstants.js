@@ -1,6 +1,6 @@
 export const BOARD_THEME = {
   canvasBg: '#0a0a0a',
-  secondaryBg: '#0d0d0d',
+  secondaryBg: '#0a0a0a',
   panelBg: '#111827',
   itemBg: '#1a1f2e',
   elevated: '#1e2538',
@@ -13,6 +13,8 @@ export const BOARD_THEME = {
   textPrimary: '#f9fafb',
   textSecondary: '#9ca3af',
   textMuted: '#4b5563',
+  uiFont: "'Inter', system-ui, sans-serif",
+  monoFont: "'JetBrains Mono', monospace",
 }
 
 export const GRID_BASE_SIZE = 24

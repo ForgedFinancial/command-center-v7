@@ -1,8 +1,8 @@
-export const AgentOnboarding = {
-  id: 'product-launch-legacy',
+export const ProductLaunch = {
+  id: 'product-launch',
   name: 'Product Launch',
   industry: 'general',
-  description: 'General product launch planning template.',
+  description: 'Plan launch milestones from research to release.',
   objects: [
     { type: 'task', x: 120, y: 180, data: { name: 'Research', status: 'todo' } },
     { type: 'task', x: 380, y: 180, data: { name: 'Build', status: 'todo' } },
