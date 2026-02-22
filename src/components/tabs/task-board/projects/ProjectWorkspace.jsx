@@ -16,7 +16,7 @@ export default function ProjectWorkspace() {
       right: 0,
       bottom: 0,
       zIndex: 50,
-      background: '#0a0a0f',
+      background: '#07090F',
       display: 'flex',
       flexDirection: 'column',
     }}>

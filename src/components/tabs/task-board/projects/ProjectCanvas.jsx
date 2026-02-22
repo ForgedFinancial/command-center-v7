@@ -915,7 +915,8 @@ export default function ProjectCanvas() {
         search={search} onSearchChange={setSearch}
         snap={snap} onSnapToggle={() => setSnap(s => !s)}
         zoom={zoom} onZoomChange={setZoom}
-        onNewProject={() => setShowCreate(true)}
+        onZoomReset={() => setZoom(1)}
+        onZoomFit={() => setZoom(1)}
         canvasBg={canvasBg} onBgChange={handleBgChange}
         gridStyle={gridStyle} onGridStyleChange={handleGridChange}
         showMinimap={showMinimap} onToggleMinimap={() => setShowMinimap(v => !v)}
