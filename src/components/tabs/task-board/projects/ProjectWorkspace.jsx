@@ -1,6 +1,6 @@
 import { useTaskBoard } from '../../../../context/TaskBoardContext'
 import WorkspaceHeader from './WorkspaceHeader'
-import ProjectWorkspaceCanvas from './ProjectWorkspaceCanvas'
+import ProjectInnerCanvas from './ProjectInnerCanvas'
 
 export default function ProjectWorkspace() {
   const { state } = useTaskBoard()
@@ -22,7 +22,7 @@ export default function ProjectWorkspace() {
     }}>
       <WorkspaceHeader project={project} />
       <div style={{ flex: 1, minHeight: 0 }}>
-        <ProjectWorkspaceCanvas project={project} />
+        <ProjectInnerCanvas project={project} />
       </div>
     </div>
   )
