@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useTaskBoard } from '../../../../context/TaskBoardContext'
 import { ProjectCanvasProvider, useProjectCanvas } from '../../../../context/ProjectCanvasContext'
 import ProjectCanvas from './ProjectCanvas'
-import ProjectWorkspace from './ProjectWorkspace'
+import Board from './Board'
 
 function ProjectHubLayout() {
   const { state, actions } = useTaskBoard()
@@ -34,7 +34,7 @@ function ProjectHubLayout() {
             <span className="crumb-sep">›</span>
             <strong className="project-crumb-name">{activeProject.name}</strong>
           </header>
-          <ProjectWorkspace project={activeProject} />
+          <Board projectId={activeProject?.id} />
         </section>
       )}
     </div>
