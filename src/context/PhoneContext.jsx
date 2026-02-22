@@ -21,7 +21,7 @@ import { WORKER_PROXY_URL, getSyncHeaders } from '../config/api'
 
 const PhoneContext = createContext(null)
 
-// 13 Dispositions
+// 14 Dispositions
 const DISPOSITIONS = [
   { id: 'called', label: 'Called', icon: '📞' },
   { id: 'follow_up', label: 'Follow-Up', icon: '📅' },
@@ -35,7 +35,8 @@ const DISPOSITIONS = [
   { id: 'req_replacement', label: 'Req Replace', icon: '🔄' },
   { id: 'replace_submitted', label: 'Replace Sub', icon: '📨' },
   { id: 'dnc', label: 'DNC', icon: '🛑' },
-  { id: 'new_lead', label: 'New Lead', icon: '🆕' },
+  { id: 'new_lead', value: 'new_lead', label: 'New Lead', icon: '🆕' },
+  { id: 'approved_applied', value: 'approved_applied', label: 'Approved As Applied', icon: '✅' },
 ]
 
 export function PhoneProvider({ children }) {
