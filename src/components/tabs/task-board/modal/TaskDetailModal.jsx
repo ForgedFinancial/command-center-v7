@@ -24,7 +24,7 @@ export default function TaskDetailModal() {
       if (res.ok) {
         actions.updateTask(res.data)
         actions.setSelectedTask(null)
-        appActions.addToast({ type: 'success', message: `Approved: ${task.title}` })
+        appActions.addToast({ type: 'success', message: `Approved: ${task.name || task.title}` })
       }
     } catch (err) {
       appActions.addToast({ type: 'error', message: err.message })
@@ -37,7 +37,7 @@ export default function TaskDetailModal() {
       if (res.ok) {
         actions.updateTask(res.data)
         actions.setSelectedTask(null)
-        appActions.addToast({ type: 'info', message: `Declined: ${task.title}` })
+        appActions.addToast({ type: 'info', message: `Declined: ${task.name || task.title}` })
       }
     } catch (err) {
       appActions.addToast({ type: 'error', message: err.message })
@@ -83,7 +83,7 @@ export default function TaskDetailModal() {
   )
 
   return (
-    <Modal isOpen={true} onClose={handleClose} title={task.title} width={640} footer={footer}>
+    <Modal isOpen={true} onClose={handleClose} title={task.name || task.title} width={640} footer={footer}>
       {/* Meta fields row */}
       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '20px' }}>
         {/* Stage */}
