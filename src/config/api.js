@@ -81,6 +81,7 @@ export const ENDPOINTS = {
   opsPipelineTaskComments: (id) => `/api/ops/pipeline/tasks/${id}/comments`,
   opsPipelineTaskReviews: (id) => `/api/ops/pipeline/tasks/${id}/reviews`,
   opsPipelineTaskAdvance: (id) => `/api/ops/pipeline/tasks/${id}/advance`,
+  opsPipelineTaskApproveDeploy: (id) => `/api/ops/pipeline/tasks/${id}/approve-deploy`,
   opsPipelineTaskAttachments: (id) => `/api/ops/pipeline/tasks/${id}/attachments`,
   opsPipelineTaskAttachment: (taskId, attId) => `/api/ops/pipeline/tasks/${taskId}/attachments/${attId}`,
   opsAttachmentFile: (taskId, filename) => `/api/ops/attachments/${taskId}/${filename}`,

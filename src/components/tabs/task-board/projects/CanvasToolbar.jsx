@@ -8,6 +8,8 @@ export default function CanvasToolbar({
   gridStyle, onGridStyleChange,
   showMinimap, onToggleMinimap,
   connectMode, onToggleConnect,
+  placementTool,
+  onSelectPlacementTool,
 }) {
   const btn = { padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(148,163,184,0.24)', background: '#0E1320', color: '#E2E8F0', fontSize: 12, cursor: 'pointer' }
   return (
@@ -17,6 +19,12 @@ export default function CanvasToolbar({
       <button onClick={onSnapToggle} style={btn}>Snap {snap ? 'On' : 'Off'}</button>
       <button onClick={() => onBgChange(canvasBg === '#07090F' ? '#0E1320' : '#07090F')} style={btn}>BG</button>
       <button onClick={() => onGridStyleChange(gridStyle === 'dots' ? 'lines' : 'dots')} style={btn}>Grid</button>
+      {onSelectPlacementTool && (
+        <>
+          <button onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.98)')} onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')} onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')} onClick={() => onSelectPlacementTool('note')} style={{ ...btn, transition: 'transform 90ms ease', color: placementTool === 'note' ? '#00D4FF' : '#E2E8F0' }}>Note</button>
+          <button onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.98)')} onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')} onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')} onClick={() => onSelectPlacementTool('text')} style={{ ...btn, transition: 'transform 90ms ease', color: placementTool === 'text' ? '#00D4FF' : '#E2E8F0' }}>Text</button>
+        </>
+      )}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
         <button onClick={() => onZoomChange(Math.max(0.25, zoom - 0.1))} style={btn}>-</button>
         <button onClick={onZoomFit} style={btn}>Fit</button>

@@ -15,7 +15,7 @@ export default function OpsTab() {
   // Pipeline state
   const [tasks, setTasks] = useState([])
   const [tasksLoading, setTasksLoading] = useState(true)
-  const [filters, setFilters] = useState({ assignee: 'all', priority: 'all', stage: 'all', search: '' })
+  const [filters, setFilters] = useState({ assignee: 'all', priority: 'all', stage: 'all', scope: 'all', search: '' })
 
   // Knowledge state
   const [entries, setEntries] = useState([])

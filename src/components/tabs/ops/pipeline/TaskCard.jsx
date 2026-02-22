@@ -22,22 +22,26 @@ export default function TaskCard({ task, onClick }) {
       <div
         onClick={onClick}
         style={{
-          padding: '10px 12px', borderRadius: '8px', cursor: 'pointer',
-          backgroundColor: 'var(--theme-bg, #0a0a0f)',
-          border: '1px solid var(--theme-border, rgba(255,255,255,0.06))',
-          transition: 'all 0.2s ease',
+          padding: '12px 14px', borderRadius: '10px', cursor: 'pointer',
+          backgroundColor: '#0E1320',
+          border: '1px solid rgba(148,163,184,0.24)',
+          transition: 'transform 140ms cubic-bezier(0.2,0.8,0.2,1), border-color 140ms cubic-bezier(0.2,0.8,0.2,1), box-shadow 140ms cubic-bezier(0.2,0.8,0.2,1)',
           animation: task.blocked ? 'blockerPulse 2s ease-in-out infinite' : 'none',
           opacity: isDone ? 0.7 : 1,
         }}
-        onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--theme-accent, #8b5cf6)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+        onMouseOver={e => {
+          e.currentTarget.style.borderColor = 'rgba(0,212,255,0.55)'
+          e.currentTarget.style.transform = 'translateY(-1px)'
+          e.currentTarget.style.boxShadow = '0 10px 24px rgba(0,0,0,0.38)'
+        }}
         onMouseOut={e => {
-          e.currentTarget.style.borderColor = 'var(--theme-border, rgba(255,255,255,0.06))'
+          e.currentTarget.style.borderColor = 'rgba(148,163,184,0.24)'
           e.currentTarget.style.transform = 'none'
+          e.currentTarget.style.boxShadow = 'none'
         }}
       >
-        {/* Title + Workstream */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '6px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--theme-text-primary)', lineHeight: 1.3, minWidth: 0, flex: 1 }}>
+          <div style={{ fontSize: '13px', fontWeight: 600, color: '#E2E8F0', lineHeight: 1.35, minWidth: 0, flex: 1 }}>
             {task.name}
           </div>
           {workstreamInfo && (
@@ -59,17 +63,31 @@ export default function TaskCard({ task, onClick }) {
           )}
         </div>
 
-        {/* Priority row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', flexWrap: 'wrap' }}>
           <span style={{
             fontSize: '10px', fontWeight: 700, padding: '1px 6px', borderRadius: '4px',
             backgroundColor: priorityColor + '20', color: priorityColor,
           }}>
             {(task.priority || 'normal').toUpperCase()}
           </span>
+          <button
+            onClick={(e) => { e.stopPropagation(); onClick?.() }}
+            style={{
+              marginLeft: 'auto',
+              padding: '2px 8px',
+              fontSize: '10px',
+              fontWeight: 700,
+              borderRadius: '999px',
+              border: '1px solid rgba(0,212,255,0.35)',
+              background: 'rgba(0,212,255,0.12)',
+              color: '#B9F3FF',
+              cursor: 'pointer',
+            }}
+          >
+            View Report
+          </button>
         </div>
 
-        {/* Time row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
           <TimeAgo date={task.stageEnteredAt} showColor />
           {task.blocked && (
@@ -80,14 +98,13 @@ export default function TaskCard({ task, onClick }) {
           )}
         </div>
 
-        {/* Badges row */}
         {(commentCount > 0 || (task.stage === 'REVIEW' && reviewCount > 0)) && (
           <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
             {commentCount > 0 && (
-              <span style={{ fontSize: '10px', color: 'var(--theme-text-secondary)' }}>💬 {commentCount}</span>
+              <span style={{ fontSize: '10px', color: '#94A3B8' }}>💬 {commentCount}</span>
             )}
             {task.stage === 'REVIEW' && (
-              <span style={{ fontSize: '10px', color: 'var(--theme-text-secondary)' }}>👁️ {reviewCount}/4</span>
+              <span style={{ fontSize: '10px', color: '#94A3B8' }}>👁️ {reviewCount}/4</span>
             )}
           </div>
         )}

@@ -55,11 +55,12 @@ export default function ProjectFolderCard({
     borderLeft: `4px solid ${project.color || '#71717a'}`,
     padding: '16px',
     cursor: isDragging ? 'grabbing' : 'pointer',
-    transition: isDragging || isOverlay ? 'none' : 'all 0.15s ease',
-    transform: isDragging && !isOverlay ? undefined : (CSS.Translate.toString(transform) || undefined),
-    scale: isDragging || isOverlay ? '1.04' : '1',
+    transition: isDragging || isOverlay ? 'none' : 'all var(--motion-fast, 120ms ease)',
+    transform: isDragging && !isOverlay
+      ? 'rotate(1.5deg) translateY(-2px) scale(1.02)'
+      : (CSS.Translate.toString(transform) || undefined),
     boxShadow: isDragging || isOverlay
-      ? '0 12px 32px rgba(0,0,0,0.6)'
+      ? '0 16px 34px rgba(0,0,0,0.62)'
       : hovered
         ? '0 4px 12px rgba(0,0,0,0.4)'
         : '0 2px 8px rgba(0,0,0,0.3)',
