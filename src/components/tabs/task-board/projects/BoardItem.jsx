@@ -13,7 +13,7 @@ const stickyColors = {
   dark: { background: '#1a1f2e', color: '#f9fafb' },
 }
 
-export default function BoardItem({ item, isSelected, onPointerDown, onContentChange, onContextMenu }) {
+export default function BoardItem({ item, isSelected, onPointerDown, onContentChange, onContextMenu, onAiAction }) {
   const [editing, setEditing] = useState(false)
 
   const baseStyle = {
@@ -46,7 +46,11 @@ export default function BoardItem({ item, isSelected, onPointerDown, onContentCh
   }
 
   if (item.type === 'card') {
-    return <div onPointerDown={onPointerDown} onContextMenu={onContextMenu} style={{ ...baseStyle, background: '#1a1f2e', borderRadius: 10, borderLeft: '3px solid #3b82f6', padding: '14px 16px', boxShadow: '0 2px 12px rgba(0,0,0,0.4)' }}><div {...commonText} style={{ fontWeight: 700 }}>{item.content || 'Card title'}</div><div style={{ fontSize: 12, color: '#9ca3af', marginTop: 6 }}>{item.description || 'Description...'}</div></div>
+    return <div onPointerDown={onPointerDown} onContextMenu={onContextMenu} style={{ ...baseStyle, background: '#1a1f2e', borderRadius: 10, borderLeft: '3px solid #3b82f6', padding: '14px 16px', boxShadow: '0 2px 12px rgba(0,0,0,0.4)' }}><div {...commonText} style={{ fontWeight: 700 }}>{item.content || 'Card title'}</div><div style={{ fontSize: 12, color: '#9ca3af', marginTop: 6 }}>{item.description || 'Description...'}</div><div style={{ marginTop: 8, fontSize: 11, border: '1px solid rgba(6,182,212,0.4)', background: 'rgba(6,182,212,0.1)', borderRadius: 20, padding: '4px 10px', display: 'inline-block' }}>✦ Mason: Add next step doc [+]</div></div>
+  }
+
+  if (item.type === 'ai_suggestion') {
+    return <div onPointerDown={onPointerDown} onContextMenu={onContextMenu} style={{ ...baseStyle, background: 'rgba(6,182,212,0.06)', border: '1px solid #06b6d4', borderRadius: 12, padding: 12 }}><div style={{ fontSize: 11, color: '#06b6d4', marginBottom: 6 }}>✦ AI ({item.agentId || 'mason'})</div><div style={{ whiteSpace: 'pre-wrap', fontSize: 13 }}>{item.content}</div><div style={{ display: 'flex', gap: 6, marginTop: 8 }}><button onClick={(e) => { e.stopPropagation(); onAiAction?.('accept', item) }}>Accept</button><button onClick={(e) => { e.stopPropagation(); onAiAction?.('dismiss', item) }}>Dismiss</button></div></div>
   }
 
   return <div onPointerDown={onPointerDown} onContextMenu={onContextMenu} style={{ ...baseStyle, background: 'transparent', border: isSelected ? `1px solid ${BOARD_THEME.activeBorder}` : '1px dashed transparent', color: item.style?.color || '#f9fafb', display: 'flex', alignItems: 'center', padding: 8 }}><div {...commonText} style={{ whiteSpace: 'pre-wrap', width: '100%', fontSize: item.style?.fontSize || 16 }}>{item.content}</div></div>

@@ -7,7 +7,7 @@ function Handle({ style, cursor, onPointerDown }) {
   return <div onPointerDown={onPointerDown} style={{ position: 'absolute', width: 8, height: 8, borderRadius: 2, background: '#fff', border: `2px solid ${BOARD_THEME.activeBorder}`, cursor, ...style }} />
 }
 
-export default function BoardCanvas({ viewport, onPointerDown, onPointerMove, onPointerUp, onWheel, items, connectors, selectedIds, selectedConnectorId, onSelectConnector, onItemPointerDown, onItemContextMenu, onHandlePointerDown, onRotatePointerDown, onItemContentChange, selectionBox }) {
+export default function BoardCanvas({ viewport, onPointerDown, onPointerMove, onPointerUp, onWheel, items, connectors, selectedIds, selectedConnectorId, onSelectConnector, onItemPointerDown, onItemContextMenu, onHandlePointerDown, onRotatePointerDown, onItemContentChange, onAiAction, selectionBox }) {
   const gridSize = GRID_BASE_SIZE * viewport.zoom
   const firstSelected = items.find((item) => selectedIds.has(item.id))
 
@@ -16,7 +16,7 @@ export default function BoardCanvas({ viewport, onPointerDown, onPointerMove, on
       <div className="board-canvas" style={{ transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`, transformOrigin: '0 0', willChange: 'transform', position: 'absolute', inset: 0 }}>
         <ConnectorLayer items={items} connectors={connectors} selectedId={selectedConnectorId} onSelect={onSelectConnector} />
         {[...items].sort((a, b) => (a.type === 'frame' ? -1 : 0) - (b.type === 'frame' ? -1 : 0)).map((item) => (
-          <BoardItem key={item.id} item={item} isSelected={selectedIds.has(item.id)} onPointerDown={(event) => onItemPointerDown(event, item.id)} onContextMenu={(event) => onItemContextMenu(event, item.id)} onContentChange={(content) => onItemContentChange(item.id, content)} />
+          <BoardItem key={item.id} item={item} isSelected={selectedIds.has(item.id)} onPointerDown={(event) => onItemPointerDown(event, item.id)} onContextMenu={(event) => onItemContextMenu(event, item.id)} onContentChange={(content) => onItemContentChange(item.id, content)} onAiAction={onAiAction} />
         ))}
 
         {firstSelected && selectedIds.size === 1 && (

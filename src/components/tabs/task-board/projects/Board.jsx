@@ -5,6 +5,7 @@ import BoardToolbar from './BoardToolbar'
 import BoardTopbar from './BoardTopbar'
 import BoardRightPanel from './BoardRightPanel'
 import BoardContextMenu from './BoardContextMenu'
+import BoardAIPanel from './BoardAIPanel'
 import { DEFAULT_ITEMS } from './boardConstants'
 import useViewport from './hooks/useViewport'
 import { screenToCanvas } from './boardUtils'
@@ -27,6 +28,7 @@ export default function Board({ projectId }) {
   const [interaction, setInteraction] = useState(null)
   const [selectionBox, setSelectionBox] = useState(null)
   const [contextMenu, setContextMenu] = useState(null)
+  const [aiOpen, setAiOpen] = useState(false)
   const [history, setHistory] = useState({ past: [], future: [] })
   const [historyLock, setHistoryLock] = useState(false)
   const { viewport, beginPan, onPointerMove: onPanMove, endPan, onWheel, centerOnOrigin, zoomIn, zoomOut } = useViewport(containerRef)
@@ -85,6 +87,7 @@ export default function Board({ projectId }) {
       if (event.key.toLowerCase() === 'x') setActiveTool('connector')
       if (event.key.toLowerCase() === 'f') setActiveTool('frame')
       if (event.key.toLowerCase() === 'c') setActiveTool('card')
+      if (event.key.toLowerCase() === 'a') setAiOpen(true)
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
@@ -226,6 +229,10 @@ export default function Board({ projectId }) {
           setInteraction({ type: 'rotate', ids: new Set([id]), startX: event.clientX, startY: event.clientY, origins: { [id]: { rotation: item.rotation || 0 } } })
         }}
         onItemContentChange={(id, content) => setItems((prev) => prev.map((item) => item.id === id ? { ...item, content } : item))}
+        onAiAction={(action, aiItem) => {
+          if (action === 'dismiss') setItems((prev) => prev.filter((item) => item.id !== aiItem.id))
+          if (action === 'accept') setItems((prev) => prev.map((item) => item.id === aiItem.id ? { ...item, type: aiItem.outputMode === 'task_cards' ? 'card' : 'text' } : item))
+        }}
       />
       <BoardToolbar
         activeTool={activeTool}
@@ -268,6 +275,25 @@ export default function Board({ projectId }) {
         }}
       />
       <BoardMinimap viewport={viewport} />
+      <BoardAIPanel
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        onGenerate={({ prompt, mode }) => {
+          setItems((prev) => [...prev, {
+            id: crypto.randomUUID(),
+            type: 'ai_suggestion',
+            x: -20,
+            y: -20,
+            width: 300,
+            height: 180,
+            rotation: 0,
+            content: prompt || 'AI suggestion',
+            outputMode: mode,
+            agentId: 'mason',
+          }])
+          setAiOpen(false)
+        }}
+      />
       <BoardContextMenu
         menu={contextMenu}
         onClose={() => setContextMenu(null)}
