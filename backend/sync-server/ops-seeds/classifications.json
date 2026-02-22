@@ -1,0 +1,42 @@
+﻿{
+  "classifications": [
+    {
+      "id": "FRONTEND",
+      "name": "Frontend",
+      "color": "#3b82f6",
+      "testSuites": ["unit", "e2e"],
+      "skipBackendTests": true
+    },
+    {
+      "id": "BACKEND",
+      "name": "Backend",
+      "color": "#10b981",
+      "testSuites": ["unit", "integration"],
+      "skipE2ETests": true
+    },
+    {
+      "id": "FULLSTACK",
+      "name": "Full-Stack",
+      "color": "#8b5cf6",
+      "testSuites": ["unit", "integration", "e2e"],
+      "skipBackendTests": false,
+      "skipE2ETests": false
+    },
+    {
+      "id": "AGENT-CONFIG",
+      "name": "Agent Config",
+      "color": "#f59e0b",
+      "testSuites": [],
+      "skipAllTests": true,
+      "validateOnly": true
+    },
+    {
+      "id": "RESEARCH",
+      "name": "Research",
+      "color": "#06b6d4",
+      "testSuites": [],
+      "skipAllTests": true,
+      "noBuild": true
+    }
+  ]
+}

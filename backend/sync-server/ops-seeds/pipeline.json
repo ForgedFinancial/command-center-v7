@@ -1,0 +1,122 @@
+﻿{
+  "stages": [
+    {
+      "id": "SPEC",
+      "name": "Specification",
+      "color": "#8b5cf6",
+      "assignedAgents": ["dano", "clawd"],
+      "gates": {
+        "specApproved": {
+          "type": "manual",
+          "approver": "dano",
+          "description": "DANO must approve spec before moving to PLANNING"
+        }
+      },
+      "autoAdvance": false
+    },
+    {
+      "id": "PLANNING",
+      "name": "Planning",
+      "color": "#3b82f6",
+      "assignedAgents": ["soren"],
+      "gates": {
+        "planApproved": {
+          "type": "manual",
+          "approver": "dano|clawd",
+          "description": "DANO or Clawd must approve plan before moving to BUILD"
+        }
+      },
+      "autoAdvance": false
+    },
+    {
+      "id": "BUILD",
+      "name": "Build",
+      "color": "#f59e0b",
+      "assignedAgents": ["mason"],
+      "gates": {
+        "buildPassed": {
+          "type": "automated",
+          "command": "npm run build",
+          "description": "Vite build must succeed"
+        },
+        "testsPass": {
+          "type": "automated",
+          "command": "npm test",
+          "description": "All local tests must pass"
+        }
+      },
+      "autoAdvance": true
+    },
+    {
+      "id": "VALIDATE",
+      "name": "Validation",
+      "color": "#10b981",
+      "assignedAgents": ["sentinel"],
+      "gates": {
+        "testsPass": {
+          "type": "automated",
+          "command": "npm run test:all",
+          "description": "Unit, integration, E2E tests must pass"
+        },
+        "securityScanPass": {
+          "type": "automated",
+          "command": "npm audit --audit-level=critical",
+          "description": "No critical vulnerabilities"
+        },
+        "sentinelApproved": {
+          "type": "manual",
+          "approver": "sentinel",
+          "description": "Sentinel must approve code quality"
+        }
+      },
+      "autoAdvance": false
+    },
+    {
+      "id": "DEPLOY",
+      "name": "Deployment",
+      "color": "#06b6d4",
+      "assignedAgents": ["mason"],
+      "gates": {
+        "deploymentSuccess": {
+          "type": "automated",
+          "command": "echo deployment_success",
+          "description": "Deployment script must succeed"
+        },
+        "healthCheckPass": {
+          "type": "automated",
+          "command": "curl -f https://cc.forgedfinancial.us/health",
+          "description": "Health check endpoint must return 200"
+        }
+      },
+      "autoAdvance": true
+    },
+    {
+      "id": "MONITOR",
+      "name": "Monitoring",
+      "color": "#ef4444",
+      "assignedAgents": ["sentinel"],
+      "gates": {
+        "errorRateOk": {
+          "type": "automated",
+          "threshold": "errorRate < 0.05",
+          "description": "Error rate must be below 5%"
+        },
+        "uptimeOk": {
+          "type": "automated",
+          "threshold": "uptime > 0.99",
+          "description": "Uptime must be above 99%"
+        }
+      },
+      "autoAdvance": true,
+      "monitorDuration": 86400
+    },
+    {
+      "id": "ARCHIVE",
+      "name": "Archive",
+      "color": "#6b7280",
+      "assignedAgents": null,
+      "gates": {},
+      "autoAdvance": false
+    }
+  ]
+}

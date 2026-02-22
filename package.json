@@ -8,8 +8,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:all": "npm run test && npm run build",
     "test:watch": "vitest",
-    "validate": "vite build && vitest run"
+    "validate": "vite build && vitest run",
+    "ops:smoke": "node scripts/ops-smoke-test.mjs",
+    "workspace:migrate": "node backend/sync-server/scripts/migrate-workspace-folders.js"
   },
   "dependencies": {
     "@codemirror/lang-markdown": "^6.3.0",

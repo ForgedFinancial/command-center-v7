@@ -1,0 +1,35 @@
+﻿{
+  "agents": [
+    {
+      "id": "dano",
+      "name": "DANO",
+      "role": "CEO",
+      "isHuman": true,
+      "permissions": ["approve_spec", "approve_plan", "override_gate", "delete_task", "rollback"]
+    },
+    {
+      "id": "clawd",
+      "name": "Clawd",
+      "role": "COO",
+      "permissions": ["create_task", "approve_plan", "assign_agent", "view_audit"]
+    },
+    {
+      "id": "soren",
+      "name": "Soren",
+      "role": "Planner",
+      "permissions": ["update_manifest_planning", "create_checkpoint"]
+    },
+    {
+      "id": "mason",
+      "name": "Mason",
+      "role": "Builder",
+      "permissions": ["update_manifest_build", "update_manifest_deploy", "create_checkpoint", "trigger_deploy"]
+    },
+    {
+      "id": "sentinel",
+      "name": "Sentinel",
+      "role": "Inspector",
+      "permissions": ["update_manifest_validate", "update_manifest_monitor", "approve_validate", "reject_task"]
+    }
+  ]
+}

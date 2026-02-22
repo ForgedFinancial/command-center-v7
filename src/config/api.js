@@ -21,8 +21,11 @@ export const ENDPOINTS = {
   poll: '/api/poll',
 
   // Workspace
-  workspace: (agentId) => `/api/workspace/${agentId}`,
-  workspaceFile: (agentId, filename) => `/api/workspace/${agentId}/${filename}`,
+  workspace: (agentId) => `/api/workspace/${encodeURIComponent(agentId)}`,
+  workspaceFile: (agentId, filename) => `/api/workspace/${encodeURIComponent(agentId)}/${encodeURIComponent(filename)}`,
+  workspacePathFile: (agentId) => `/api/workspace/${encodeURIComponent(agentId)}/file`,
+  workspaceFileByPath: (agentId, filePath) => `/api/workspace/${encodeURIComponent(agentId)}/file?path=${encodeURIComponent(filePath)}`,
+  workspaceChanges: '/api/workspace/changes',
 
   // Communications
   commsSend: '/api/comms/send',

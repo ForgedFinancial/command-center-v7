@@ -124,6 +124,32 @@ class SyncClient {
     return this.request(ENDPOINTS.workspaceFile(agentId, filename))
   }
 
+  async getWorkspaceFileByPath(agentId, filePath) {
+    return this.request(ENDPOINTS.workspaceFileByPath(agentId, filePath))
+  }
+
+  async saveWorkspaceFile(agentId, filename, content) {
+    return this.request(ENDPOINTS.workspaceFile(agentId, filename), {
+      method: 'PUT',
+      body: JSON.stringify({ content }),
+    })
+  }
+
+  async saveWorkspaceFileByPath(agentId, filePath, content) {
+    return this.request(ENDPOINTS.workspacePathFile(agentId), {
+      method: 'PUT',
+      body: JSON.stringify({ path: filePath, content }),
+    })
+  }
+
+  async getWorkspaceChanges(since = null) {
+    const params = new URLSearchParams()
+    if (since) params.set('since', since)
+    const query = params.toString()
+    const endpoint = query ? `${ENDPOINTS.workspaceChanges}?${query}` : ENDPOINTS.workspaceChanges
+    return this.request(endpoint)
+  }
+
   // Communications
   async sendComm(from, to, message, topic = 'general') {
     return this.request(ENDPOINTS.commsSend, {

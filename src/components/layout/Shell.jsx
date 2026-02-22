@@ -28,6 +28,7 @@ function ProjectsTab() {
 import CRMTab from '../tabs/crm/CRMTab'
 import StandUpTab from '../tabs/stand-up/StandUpTab'
 import OpsTab from '../tabs/ops/OpsTab'
+import OpsBoard from '../tabs/ops-board/OpsBoard'
 import AgentDetailPanel from '../shared/AgentDetailPanel'
 import ErrorBoundary from '../shared/ErrorBoundary'
 import HealthPanel from '../shared/HealthPanel'
@@ -36,6 +37,8 @@ import NotificationCenter from '../shared/NotificationCenter'
 const NetworkMonitor = import.meta.env.DEV
   ? lazy(() => import('../shared/NetworkMonitor'))
   : () => null
+
+const USE_OPS_BOARD_V2 = true
 
 // Sidebar configs
 const TASK_BOARD_SIDEBAR = [
@@ -264,7 +267,7 @@ function TabContent({ activeTab }) {
     case TABS.CRM:
       return <ErrorBoundary><CRMTab /></ErrorBoundary>
     case TABS.OPS:
-      return <ErrorBoundary><OpsTab /></ErrorBoundary>
+      return <ErrorBoundary>{USE_OPS_BOARD_V2 ? <OpsBoard /> : <OpsTab />}</ErrorBoundary>
     case TABS.PROJECTS:
       return <ErrorBoundary><ProjectsTab /></ErrorBoundary>
     case TABS.STAND_UP:

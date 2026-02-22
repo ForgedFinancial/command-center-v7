@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useApp } from '../../context/AppContext'
 import { AGENT_HIERARCHY, TABS } from '../../config/constants'
+import { WORKSPACE_STRUCTURE } from '../../config/workspace'
 
 // ========================================
 // FEATURE: AgentDetailPanel
@@ -52,8 +53,11 @@ export default function AgentDetailPanel() {
   const close = () => actions.setSelectedAgent(null)
 
   const openWorkspace = () => {
+    const workspaceAgent = WORKSPACE_STRUCTURE[agent.id]
+      ? agent.id
+      : (agent.parent && WORKSPACE_STRUCTURE[agent.parent] ? agent.parent : 'clawd')
     actions.setTab(TABS.WORKSPACES)
-    actions.setWorkspaceAgent(agent.id)
+    actions.setWorkspaceAgent(workspaceAgent)
     actions.setSelectedAgent(null)
   }
 

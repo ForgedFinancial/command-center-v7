@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import AuthGate from './components/layout/AuthGate'
 import Shell from './components/layout/Shell'
 import { TaskBoardProvider } from './context/TaskBoardContext'
+import { OpsBoardProvider } from './context/OpsBoardContext'
 import { CRMProvider } from './context/CRMContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { PhoneProvider } from './context/PhoneContext'
@@ -74,16 +75,17 @@ function App() {
     <ThemeProvider>
       <div className="app-scale-wrapper">
         <PhoneProvider>
-          <TaskBoardProvider>
-            <CRMProvider>
-              <Toaster position="top-right" />
-              <Shell />
-              <FloatingCallBar />
-              <IncomingCallBanner />
-              <DialerModal />
-              <CallScriptPanel isVisible={true} />
-            </CRMProvider>
-          </TaskBoardProvider>
+          <OpsBoardProvider>
+            <TaskBoardProvider>
+              <CRMProvider>
+                <Toaster position="top-right" />`n                <Shell />
+                <FloatingCallBar />
+                <IncomingCallBanner />
+                <DialerModal />
+                <CallScriptPanel isVisible={true} />
+              </CRMProvider>
+            </TaskBoardProvider>
+          </OpsBoardProvider>
         </PhoneProvider>
       </div>
     </ThemeProvider>
@@ -91,3 +93,4 @@ function App() {
 }
 
 export default App
+

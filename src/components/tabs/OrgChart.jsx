@@ -9,6 +9,7 @@ import { useApp } from '../../context/AppContext'
 import { useAgentPoll } from '../../hooks/useAgentPoll'
 import { usePipelinePoll } from '../../hooks/usePipelinePoll'
 import { TABS } from '../../config/constants'
+import { WORKSPACE_STRUCTURE } from '../../config/workspace'
 import PipelineBanner from './org-chart/PipelineBanner'
 import ColorLegend from './org-chart/ColorLegend'
 import TreeLayout from './org-chart/TreeLayout'
@@ -37,7 +38,8 @@ export default function OrgChart() {
   }, [actions])
 
   const handleViewWorkspace = useCallback((id) => {
-    actions.setWorkspaceAgent(id)
+    const selected = WORKSPACE_STRUCTURE[id] ? id : 'clawd'
+    actions.setWorkspaceAgent(selected)
     actions.setTab(TABS.WORKSPACES)
   }, [actions])
 

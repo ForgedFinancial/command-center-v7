@@ -12,6 +12,8 @@ const https = require("https");
 const fsSync = require("fs");
 const fs = require('fs').promises;
 const path = require('path');
+const { bootstrapOpsWorkspace } = require('./lib/opsBootstrap');
+const { initOpsWebSocket } = require('./websocket');
 
 // Import data collectors (email, finance, ads REMOVED — tokens expired, not in use)
 // const emailCollector = require('./collectors/email');
@@ -46,6 +48,13 @@ app.use(cors({
 }));
 app.use(bodyParser.json({ limit: '10mb' }));
 
+// Bootstrap Ops Board storage/config before route registration.
+try {
+  bootstrapOpsWorkspace(console);
+} catch (err) {
+  console.error('[OPS] Workspace bootstrap failed:', err.message);
+}
+
 // Register auth routes BEFORE auth middleware
 registerAuthRoutes(app);
 
@@ -72,9 +81,11 @@ app.use(authMiddleware);
 const leadSourcesRoutes = require('./routes/lead-sources');
 app.use('/api/settings/lead-sources', leadSourcesRoutes);
 
-// Ops Layer — Build Pipeline + Knowledge Base (Mason, 2026-02-20)
+// Ops Layer v2 + legacy compatibility
 const opsRoutes = require('./routes/ops');
+const opsLegacyRoutes = require('./routes/ops-legacy');
 app.use('/api/ops', opsRoutes);
+app.use('/api/ops', opsLegacyRoutes);
 
 // Agent Daemon Task Queue (Mason, 2026-02-21)
 const tasksRoutes = require('./routes/tasks');
@@ -145,6 +156,9 @@ const MAX_QUEUE_SIZE = 1000;
 // === PERSISTENT STATE ===
 const CC_STATE_FILE = path.join(__dirname, 'cc-state.json');
 const WORKSPACE_ROOT = '/home/clawd/.openclaw/workspace';
+const WORKSPACE_AGENT_IDS = ['clawd', 'soren', 'mason', 'sentinel', 'kyle'];
+const WORKSPACE_MAX_FILE_BYTES = 1024 * 1024; // 1MB
+const WORKSPACE_AUDIT_LOG = path.join(WORKSPACE_ROOT, 'workspace-audit.log');
 
 function loadState() {
   try {
@@ -185,6 +199,117 @@ function authenticateAPI(req, res, next) {
 // Utility: Generate unique ID
 function generateId() {
   return 'id_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+}
+
+function isPathInsideRoot(rootPath, testPath) {
+  const resolvedRoot = path.resolve(rootPath);
+  const resolvedTest = path.resolve(testPath);
+  return resolvedTest === resolvedRoot || resolvedTest.startsWith(resolvedRoot + path.sep);
+}
+
+function isValidWorkspaceAgentId(agentId) {
+  return typeof agentId === 'string' && /^[a-z0-9-]+$/i.test(agentId);
+}
+
+function normalizeWorkspaceRelativePath(rawPath) {
+  if (typeof rawPath !== 'string') return null;
+  const normalized = rawPath.trim().replace(/\\/g, '/').replace(/^\/+/, '');
+  if (!normalized) return null;
+  if (!normalized.endsWith('.md')) return null;
+  if (normalized.includes('..')) return null;
+  if (!/^[a-z0-9._\-\/ ]+$/i.test(normalized)) return null;
+  return normalized;
+}
+
+function resolveWorkspaceAgentRoot(agentId) {
+  if (!isValidWorkspaceAgentId(agentId)) return null;
+  const agentsRoot = path.resolve(path.join(WORKSPACE_ROOT, 'agents'));
+  const agentRoot = path.resolve(path.join(agentsRoot, agentId));
+  if (!isPathInsideRoot(agentsRoot, agentRoot)) return null;
+  return { agentsRoot, agentRoot };
+}
+
+function resolveWorkspaceFilePath(agentId, relativePath) {
+  const normalizedPath = normalizeWorkspaceRelativePath(relativePath);
+  if (!normalizedPath) return null;
+  const rootData = resolveWorkspaceAgentRoot(agentId);
+  if (!rootData) return null;
+  const { agentRoot } = rootData;
+
+  const resolved = path.resolve(path.join(agentRoot, normalizedPath));
+  if (!isPathInsideRoot(agentRoot, resolved)) return null;
+
+  return { agentRoot, normalizedPath, resolved };
+}
+
+function listWorkspaceMarkdownFiles(agentId) {
+  const rootData = resolveWorkspaceAgentRoot(agentId);
+  if (!rootData) return [];
+  const { agentRoot } = rootData;
+  if (!fsSync.existsSync(agentRoot)) return [];
+
+  const files = [];
+  const pending = [agentRoot];
+
+  while (pending.length > 0) {
+    const current = pending.pop();
+    let entries = [];
+    try {
+      entries = fsSync.readdirSync(current, { withFileTypes: true });
+    } catch (error) {
+      continue;
+    }
+
+    entries.forEach(entry => {
+      const absolute = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        // Ignore hidden folders such as .archive and .git.
+        if (!entry.name.startsWith('.')) {
+          pending.push(absolute);
+        }
+        return;
+      }
+      if (!entry.isFile() || !entry.name.endsWith('.md')) return;
+
+      try {
+        const stat = fsSync.statSync(absolute);
+        const relativePath = path.relative(agentRoot, absolute).replace(/\\/g, '/');
+        files.push({
+          filename: entry.name,
+          path: relativePath,
+          size: stat.size,
+          mtimeMs: stat.mtimeMs,
+          lastModified: stat.mtime.toISOString(),
+        });
+      } catch (error) {
+        // Ignore files that cannot be stat'ed.
+      }
+    });
+  }
+
+  return files.sort((a, b) => a.path.localeCompare(b.path));
+}
+
+function findWorkspaceMatchesByFilename(agentId, filename) {
+  const target = String(filename || '').toLowerCase();
+  if (!target) return [];
+  return listWorkspaceMarkdownFiles(agentId).filter(file => file.filename.toLowerCase() === target);
+}
+
+function appendWorkspaceAuditLog(req, operation, details) {
+  try {
+    fsSync.mkdirSync(path.dirname(WORKSPACE_AUDIT_LOG), { recursive: true });
+    const entry = {
+      timestamp: new Date().toISOString(),
+      operation,
+      user: req?.user?.username || req?.headers?.['x-user'] || 'api',
+      ip: req?.ip || null,
+      ...details,
+    };
+    fsSync.appendFileSync(WORKSPACE_AUDIT_LOG, JSON.stringify(entry) + '\n', 'utf8');
+  } catch (error) {
+    // Audit logging should never block workspace writes.
+  }
 }
 
 // === CC STATE ENDPOINTS ===
@@ -568,46 +693,330 @@ app.post('/api/claude/complete', authenticateAPI, (req, res) => {
   res.json({ success: true, taskId, status: 'moved to review' });
 });
 
-// === WORKSPACE FILE READ ===
+// === WORKSPACE FILE API ===
 
-// GET /api/workspace/:agentId/:filename — read agent config file
+// GET /api/workspace/changes?since=<ISO>&agents=clawd,soren
+app.get('/api/workspace/changes', authenticateAPI, (req, res) => {
+  const sinceRaw = req.query.since;
+  let since = new Date(0);
+  if (sinceRaw) {
+    const parsed = new Date(sinceRaw);
+    if (Number.isNaN(parsed.getTime())) {
+      return res.status(400).json({ error: 'Invalid since timestamp' });
+    }
+    since = parsed;
+  }
+
+  const requestedAgents = typeof req.query.agents === 'string'
+    ? req.query.agents.split(',').map(agent => agent.trim()).filter(Boolean)
+    : WORKSPACE_AGENT_IDS;
+  const agents = requestedAgents.filter(isValidWorkspaceAgentId);
+
+  const changes = [];
+  agents.forEach(agentId => {
+    const files = listWorkspaceMarkdownFiles(agentId);
+    files.forEach(file => {
+      const modifiedAt = new Date(file.lastModified);
+      if (modifiedAt > since) {
+        changes.push({
+          agentId,
+          filename: file.filename,
+          path: file.path,
+          size: file.size,
+          lastModified: file.lastModified,
+        });
+      }
+    });
+  });
+
+  changes.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
+  res.json({ changes, timestamp: new Date().toISOString() });
+});
+
+// GET /api/workspace/:agentId/file?path=core/IDENTITY.md
+app.get('/api/workspace/:agentId/file', authenticateAPI, (req, res) => {
+  const { agentId } = req.params;
+  const relativePath = req.query.path;
+  const resolvedData = resolveWorkspaceFilePath(agentId, relativePath);
+  if (!resolvedData) {
+    return res.status(400).json({ error: 'Invalid workspace path' });
+  }
+
+  try {
+    if (!fsSync.existsSync(resolvedData.resolved)) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    const stat = fsSync.statSync(resolvedData.resolved);
+    if (!stat.isFile()) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    const content = fsSync.readFileSync(resolvedData.resolved, 'utf8');
+    res.json({
+      agentId,
+      filename: path.basename(resolvedData.normalizedPath),
+      path: resolvedData.normalizedPath,
+      content,
+      size: stat.size,
+      lastModified: stat.mtime.toISOString(),
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PUT /api/workspace/:agentId/file
+app.put('/api/workspace/:agentId/file', authenticateAPI, async (req, res) => {
+  const { agentId } = req.params;
+  const relativePath = req.body?.path;
+  const content = req.body?.content;
+  const resolvedData = resolveWorkspaceFilePath(agentId, relativePath);
+  if (!resolvedData) {
+    return res.status(400).json({ error: 'Invalid workspace path' });
+  }
+  if (typeof content !== 'string') {
+    return res.status(400).json({ error: 'Invalid content' });
+  }
+  if (Buffer.byteLength(content, 'utf8') > WORKSPACE_MAX_FILE_BYTES) {
+    return res.status(413).json({ error: 'File exceeds 1MB limit' });
+  }
+
+  try {
+    await fs.mkdir(path.dirname(resolvedData.resolved), { recursive: true });
+    await fs.writeFile(resolvedData.resolved, content, 'utf8');
+    const stat = await fs.stat(resolvedData.resolved);
+    appendWorkspaceAuditLog(req, 'write', {
+      agentId,
+      path: resolvedData.normalizedPath,
+      size: stat.size,
+    });
+    res.json({
+      success: true,
+      agentId,
+      filename: path.basename(resolvedData.normalizedPath),
+      path: resolvedData.normalizedPath,
+      size: stat.size,
+      lastModified: stat.mtime.toISOString(),
+    });
+  } catch (error) {
+    console.error('[WORKSPACE] Write failed:', error.message);
+    res.status(500).json({ error: 'Failed to save file' });
+  }
+});
+
+// POST /api/workspace/:agentId/file (create only)
+app.post('/api/workspace/:agentId/file', authenticateAPI, async (req, res) => {
+  const { agentId } = req.params;
+  const relativePath = req.body?.path;
+  const content = req.body?.content || '';
+  const resolvedData = resolveWorkspaceFilePath(agentId, relativePath);
+  if (!resolvedData) {
+    return res.status(400).json({ error: 'Invalid workspace path' });
+  }
+  if (typeof content !== 'string') {
+    return res.status(400).json({ error: 'Invalid content' });
+  }
+  if (Buffer.byteLength(content, 'utf8') > WORKSPACE_MAX_FILE_BYTES) {
+    return res.status(413).json({ error: 'File exceeds 1MB limit' });
+  }
+  if (fsSync.existsSync(resolvedData.resolved)) {
+    return res.status(409).json({ error: 'File already exists' });
+  }
+
+  try {
+    await fs.mkdir(path.dirname(resolvedData.resolved), { recursive: true });
+    await fs.writeFile(resolvedData.resolved, content, 'utf8');
+    const stat = await fs.stat(resolvedData.resolved);
+    appendWorkspaceAuditLog(req, 'create', {
+      agentId,
+      path: resolvedData.normalizedPath,
+      size: stat.size,
+    });
+    res.status(201).json({
+      success: true,
+      agentId,
+      filename: path.basename(resolvedData.normalizedPath),
+      path: resolvedData.normalizedPath,
+      size: stat.size,
+      lastModified: stat.mtime.toISOString(),
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create file' });
+  }
+});
+
+// DELETE /api/workspace/:agentId/file?path=...
+app.delete('/api/workspace/:agentId/file', authenticateAPI, async (req, res) => {
+  const { agentId } = req.params;
+  const relativePath = req.query.path || req.body?.path;
+  const resolvedData = resolveWorkspaceFilePath(agentId, relativePath);
+  if (!resolvedData) {
+    return res.status(400).json({ error: 'Invalid workspace path' });
+  }
+  if (!fsSync.existsSync(resolvedData.resolved)) {
+    return res.status(404).json({ error: 'File not found' });
+  }
+
+  try {
+    const archiveStamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const archiveRoot = path.join(resolvedData.agentRoot, '.archive', archiveStamp);
+    const archivePath = path.resolve(path.join(archiveRoot, resolvedData.normalizedPath));
+    if (!isPathInsideRoot(resolvedData.agentRoot, archivePath)) {
+      return res.status(403).json({ error: 'Archive path blocked' });
+    }
+
+    await fs.mkdir(path.dirname(archivePath), { recursive: true });
+    await fs.rename(resolvedData.resolved, archivePath);
+    appendWorkspaceAuditLog(req, 'archive', {
+      agentId,
+      path: resolvedData.normalizedPath,
+      archivedTo: path.relative(resolvedData.agentRoot, archivePath).replace(/\\/g, '/'),
+    });
+    res.json({
+      success: true,
+      agentId,
+      path: resolvedData.normalizedPath,
+      archivedTo: path.relative(resolvedData.agentRoot, archivePath).replace(/\\/g, '/'),
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to archive file' });
+  }
+});
+
+// GET /api/workspace/:agentId/:filename (legacy basename route)
 app.get('/api/workspace/:agentId/:filename', authenticateAPI, (req, res) => {
   const { agentId, filename } = req.params;
   if (!filename.endsWith('.md') || filename.includes('/') || filename.includes('..')) {
     return res.status(400).json({ error: 'Invalid filename' });
   }
-  const filePath = path.join(WORKSPACE_ROOT, 'agents', agentId, filename);
-  const resolved = path.resolve(filePath);
-  if (!resolved.startsWith(WORKSPACE_ROOT)) {
-    return res.status(403).json({ error: 'Path traversal blocked' });
+
+  const exactPath = resolveWorkspaceFilePath(agentId, filename);
+  const exactExists = Boolean(exactPath && fsSync.existsSync(exactPath.resolved))
+  const matches = exactExists
+    ? [{
+      filename,
+      path: filename,
+      resolved: exactPath.resolved,
+    }]
+    : findWorkspaceMatchesByFilename(agentId, filename).map(match => ({
+      ...match,
+      resolved: resolveWorkspaceFilePath(agentId, match.path)?.resolved,
+    })).filter(match => match.resolved);
+
+  if (matches.length === 0) {
+    return res.status(404).json({ error: 'File not found' });
   }
+  if (matches.length > 1) {
+    return res.status(409).json({
+      error: 'Ambiguous filename. Use /api/workspace/:agentId/file?path=...',
+      matches: matches.map(match => match.path),
+    });
+  }
+
   try {
-    if (!fsSync.existsSync(resolved)) {
-      return res.status(404).json({ error: 'File not found' });
-    }
-    const content = fsSync.readFileSync(resolved, 'utf8');
-    res.json({ agentId, filename, content, lastModified: fsSync.statSync(resolved).mtime.toISOString() });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const target = matches[0];
+    const stat = fsSync.statSync(target.resolved);
+    const content = fsSync.readFileSync(target.resolved, 'utf8');
+    res.json({
+      agentId,
+      filename: target.filename || filename,
+      path: target.path || filename,
+      content,
+      size: stat.size,
+      lastModified: stat.mtime.toISOString(),
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
-// GET /api/workspace/:agentId — list all config files for an agent
+// PUT /api/workspace/:agentId/:filename (legacy basename route)
+app.put('/api/workspace/:agentId/:filename', authenticateAPI, async (req, res) => {
+  const { agentId, filename } = req.params;
+  const content = req.body?.content;
+  if (!filename.endsWith('.md') || filename.includes('/') || filename.includes('..')) {
+    return res.status(400).json({ error: 'Invalid filename' });
+  }
+  if (typeof content !== 'string') {
+    return res.status(400).json({ error: 'Invalid content' });
+  }
+  if (Buffer.byteLength(content, 'utf8') > WORKSPACE_MAX_FILE_BYTES) {
+    return res.status(413).json({ error: 'File exceeds 1MB limit' });
+  }
+
+  const exactPath = resolveWorkspaceFilePath(agentId, filename);
+  const exactExists = Boolean(exactPath && fsSync.existsSync(exactPath.resolved));
+  const matches = exactExists ? [{
+    filename,
+    path: filename,
+    resolved: exactPath.resolved,
+  }] : findWorkspaceMatchesByFilename(agentId, filename).map(match => ({
+    ...match,
+    resolved: resolveWorkspaceFilePath(agentId, match.path)?.resolved,
+  })).filter(match => match.resolved);
+
+  if (matches.length > 1) {
+    return res.status(409).json({
+      error: 'Ambiguous filename. Use PUT /api/workspace/:agentId/file with body.path.',
+      matches: matches.map(match => match.path),
+    });
+  }
+
+  const target = matches[0] || {
+    filename,
+    path: filename,
+    resolved: exactPath?.resolved,
+  };
+
+  if (!target.resolved) {
+    return res.status(400).json({ error: 'Invalid filename' });
+  }
+
+  try {
+    await fs.mkdir(path.dirname(target.resolved), { recursive: true });
+    await fs.writeFile(target.resolved, content, 'utf8');
+    const stat = await fs.stat(target.resolved);
+    appendWorkspaceAuditLog(req, 'write-legacy', {
+      agentId,
+      path: target.path,
+      size: stat.size,
+    });
+    res.json({
+      success: true,
+      agentId,
+      filename: target.filename || filename,
+      path: target.path || filename,
+      size: stat.size,
+      lastModified: stat.mtime.toISOString(),
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to save file' });
+  }
+});
+
+// GET /api/workspace/:agentId — list markdown files for an agent (recursive)
 app.get('/api/workspace/:agentId', authenticateAPI, (req, res) => {
   const { agentId } = req.params;
-  const agentDir = path.join(WORKSPACE_ROOT, 'agents', agentId);
+  if (!isValidWorkspaceAgentId(agentId)) {
+    return res.status(400).json({ error: 'Invalid agentId' });
+  }
+
+  const rootData = resolveWorkspaceAgentRoot(agentId);
+  if (!rootData || !fsSync.existsSync(rootData.agentRoot)) {
+    return res.status(404).json({ error: 'Agent not found' });
+  }
+
   try {
-    if (!fsSync.existsSync(agentDir)) {
-      return res.status(404).json({ error: 'Agent not found' });
-    }
-    const files = fsSync.readdirSync(agentDir).filter(f => f.endsWith('.md'));
-    const result = files.map(f => {
-      const stat = fsSync.statSync(path.join(agentDir, f));
-      return { filename: f, size: stat.size, lastModified: stat.mtime.toISOString() };
-    });
-    res.json({ agentId, files: result });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const files = listWorkspaceMarkdownFiles(agentId).map(file => ({
+      filename: file.filename,
+      path: file.path,
+      size: file.size,
+      lastModified: file.lastModified,
+    }));
+    res.json({ agentId, files, count: files.length });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -1209,8 +1618,12 @@ app.use((req, res) => {
       'GET /api/cc-state',
       'POST /api/cc-state',
       'GET /api/poll',
+      'GET /api/workspace/changes?since=...',
       'GET /api/workspace/:agentId',
+      'GET /api/workspace/:agentId/file?path=...',
       'GET /api/workspace/:agentId/:filename',
+      'PUT /api/workspace/:agentId/file',
+      'PUT /api/workspace/:agentId/:filename',
       'GET /api/dashboard/email',
       'GET /api/dashboard/finance',
       'GET /api/dashboard/calendar',
@@ -1245,7 +1658,11 @@ const sslOptions = fsSync.existsSync(LE_CERT_PATH + '/fullchain.pem') ? {
 };
 
 // === START SERVER ===
-https.createServer(sslOptions, app).listen(PORT, () => {
+const httpsServer = https.createServer(sslOptions, app);
+const opsWss = initOpsWebSocket(httpsServer);
+app.set('opsWss', opsWss);
+
+httpsServer.listen(PORT, () => {
   console.log('');
   console.log('✅ Command Center API Server Started');
   console.log('=====================================');
@@ -1253,6 +1670,7 @@ https.createServer(sslOptions, app).listen(PORT, () => {
   console.log(`🔑 API Key: ${API_KEY.substring(0, 8)}...`);
   console.log(`🌐 Health: http://localhost:${PORT}/api/health`);
   console.log(`📋 Ready for webhook calls from Openclaw/Claude`);
+  console.log(`📡 Ops WS: wss://<host>/ops`);
   console.log('');
 
   }
