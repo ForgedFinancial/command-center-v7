@@ -47,7 +47,10 @@ export default function WorkspaceHeader({ project }) {
       background: 'rgba(10,10,15,0.95)',
       flexShrink: 0,
     }}>
-      <button onClick={handleClose} style={{ background: 'none', border: 'none', color: 'var(--theme-text-secondary)', fontSize: '12px', cursor: 'pointer', padding: 0 }}>← Hub</button>
+      <button onClick={handleClose} style={{ background: 'none', border: 'none', color: '#94A3B8', fontSize: '12px', cursor: 'pointer', padding: 0, fontWeight: 600 }}>
+        Project Hub
+      </button>
+      <span style={{ color: '#64748B', fontSize: 12 }}>{'>'}</span>
       <span style={{ fontSize: '18px' }}>{project.icon || '📁'}</span>
 
       {editing ? (

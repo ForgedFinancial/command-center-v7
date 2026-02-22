@@ -9,7 +9,7 @@ export default function ProjectWorkspace() {
   if (!project) return null
 
   return (
-    <div style={{
+    <div className="project-folder-hero" style={{
       position: 'fixed',
       top: 0,
       left: 0,

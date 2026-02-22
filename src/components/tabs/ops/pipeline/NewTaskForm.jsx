@@ -14,6 +14,7 @@ export default function NewTaskForm({ onClose, onCreate }) {
   const [tags, setTags]               = useState('')
   const [submitting, setSubmitting]   = useState(false)
   const [error, setError]             = useState(null)
+  const [isBacklog, setIsBacklog]     = useState(false)
 
   // Attachments state
   const [pendingFiles, setPendingFiles]   = useState([]) // [{file, comment, previewUrl}]
@@ -89,7 +90,8 @@ export default function NewTaskForm({ onClose, onCreate }) {
         description: description.trim(),
         assignee,
         createdBy: 'dano',
-        stage: routedStage,
+        stage: isBacklog ? 'INTAKE' : routedStage,
+        isBacklog,
         type,
         taskType,
         priority,
@@ -366,6 +368,26 @@ export default function NewTaskForm({ onClose, onCreate }) {
                 {pendingFiles.length}/5 files — drop more to add
               </div>
             )}
+          </div>
+
+          <div>
+            <label style={label}>Placement</label>
+            <button
+              type="button"
+              onClick={() => setIsBacklog(v => !v)}
+              style={{
+                padding: '8px 12px',
+                fontSize: '12px',
+                fontWeight: 700,
+                borderRadius: '8px',
+                border: `1px solid ${isBacklog ? 'rgba(0,212,255,0.45)' : 'var(--theme-border)'}`,
+                background: isBacklog ? 'rgba(0,212,255,0.12)' : 'rgba(255,255,255,0.03)',
+                color: isBacklog ? '#CFF6FF' : 'var(--theme-text-secondary)',
+                cursor: 'pointer',
+              }}
+            >
+              {isBacklog ? 'Backlog task (outside active pipeline)' : 'Active pipeline task'}
+            </button>
           </div>
 
           {/* Routing preview */}

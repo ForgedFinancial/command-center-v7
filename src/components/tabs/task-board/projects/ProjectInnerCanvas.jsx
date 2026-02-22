@@ -15,7 +15,7 @@ import TemplatePickerModal from './modals/TemplatePickerModal'
 function DraggableItem({ obj, isDragging }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: obj.id })
   return (
-    <div ref={setNodeRef} {...attributes} {...listeners} style={{ position: 'absolute', left: obj.position?.x || obj.x || 0, top: obj.position?.y || obj.y || 0, width: obj.size?.width || 220, minHeight: 110, padding: 10, borderRadius: 10, border: '1px solid rgba(148,163,184,0.24)', background: '#0E1320', color: '#E2E8F0', transform: CSS.Translate.toString(transform), boxShadow: isDragging ? '0 12px 36px rgba(0,0,0,0.45)' : 'none' }}>
+    <div ref={setNodeRef} {...attributes} {...listeners} style={{ position: 'absolute', left: obj.position?.x || obj.x || 0, top: obj.position?.y || obj.y || 0, width: obj.size?.width || 220, minHeight: 110, padding: 10, borderRadius: 10, border: '1px solid rgba(148,163,184,0.24)', background: '#0E1320', color: '#E2E8F0', transform: isDragging ? 'rotate(1.5deg) translateY(-2px) scale(1.02)' : CSS.Translate.toString(transform), boxShadow: isDragging ? '0 14px 34px rgba(0,0,0,0.5)' : 'none', transition: 'transform var(--motion-fast,120ms ease), box-shadow var(--motion-fast,120ms ease)' }}>
       <div style={{ fontSize: 12, fontWeight: 600 }}>{obj.data?.title || obj.type}</div>
       <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 4 }}>{obj.data?.text || ''}</div>
     </div>

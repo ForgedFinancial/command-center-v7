@@ -296,6 +296,45 @@ export default function TaskDetailModal({ task: initialTask, onClose, onUpdate, 
     }
   }
 
+  const approveIntoIntake = async () => {
+    setAdvancing(true)
+    try {
+      const patch = { isBacklog: false, stage: 'INTAKE', approvedIntoIntakeAt: new Date().toISOString(), stageEnteredAt: new Date().toISOString() }
+      const res = await fetch(`${WORKER_PROXY_URL}${ENDPOINTS.opsPipelineTask(task.id)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': SYNC_API_KEY },
+        body: JSON.stringify(patch),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const updated = await res.json()
+      setTask(prev => ({ ...prev, ...updated }))
+      onUpdate(task.id, updated)
+      onClose()
+    } catch (err) {
+      console.error('[TaskDetailModal] approveIntoIntake failed:', err.message)
+      setAdvancing(false)
+    }
+  }
+
+  const approveDeploy = async () => {
+    setAdvancing(true)
+    try {
+      const res = await fetch(`${WORKER_PROXY_URL}${ENDPOINTS.opsPipelineTaskApproveDeploy(task.id)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': SYNC_API_KEY },
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const payload = await res.json()
+      const patch = { stage: 'DONE', completedAt: payload.completedAt || new Date().toISOString(), deployedAt: payload.deployedAt || new Date().toISOString() }
+      setTask(prev => ({ ...prev, ...patch }))
+      onUpdate(task.id, patch)
+      onClose()
+    } catch (err) {
+      console.error('[TaskDetailModal] approveDeploy failed:', err.message)
+      setAdvancing(false)
+    }
+  }
+
   const attachmentCount = (task.attachments || []).length
 
   const handleSave = () => {
@@ -367,6 +406,12 @@ export default function TaskDetailModal({ task: initialTask, onClose, onUpdate, 
           }}>
             {STAGE_CONFIG[task.stage]?.icon} {STAGE_CONFIG[task.stage]?.label}
           </span>
+          {task.isBacklog && (
+            <span style={{
+              padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700,
+              background: 'rgba(0,212,255,0.14)', border: '1px solid rgba(0,212,255,0.35)', color: '#CFF6FF',
+            }}>BACKLOG</span>
+          )}
           <AgentBadge agent={task.assignee} />
           <span style={{
             fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '4px',
@@ -501,13 +546,13 @@ export default function TaskDetailModal({ task: initialTask, onClose, onUpdate, 
                 <>
                   {task.stage === 'BOSS_REVIEW' && !reviewAction && (
                     <>
-                      <button onClick={() => callAdvance('approve', '')} disabled={advancing} style={{
+                      <button onClick={approveDeploy} disabled={advancing} style={{
                         padding: '7px 18px', fontSize: '12px', fontWeight: 700,
                         backgroundColor: '#10b981', color: '#fff', border: 'none',
                         borderRadius: '6px', cursor: advancing ? 'default' : 'pointer',
                         boxShadow: '0 0 10px rgba(16,185,129,0.35)', marginRight: 'auto',
                         opacity: advancing ? 0.6 : 1,
-                      }}>✓ Approve</button>
+                      }}>✓ Approve & Deploy</button>
                       <button onClick={() => { setReviewAction('modify'); setReviewNotes('') }} style={{
                         padding: '7px 16px', fontSize: '12px', fontWeight: 600,
                         backgroundColor: 'rgba(245,158,11,0.15)', color: '#f59e0b',
@@ -559,6 +604,11 @@ export default function TaskDetailModal({ task: initialTask, onClose, onUpdate, 
                         </button>
                       </div>
                     </div>
+                  )}
+                  {task.isBacklog && (
+                    <button onClick={approveIntoIntake} disabled={advancing} style={{ ...btnStyle('ghost'), border: '1px solid rgba(0,212,255,0.35)', color: '#CFF6FF', background: 'rgba(0,212,255,0.12)' }}>
+                      Approve to Intake
+                    </button>
                   )}
                   <button onClick={() => setConfirmDelete(true)} style={btnStyle('danger')}>Delete</button>
                   <button onClick={() => setEditMode(true)} style={btnStyle('ghost')}>Edit</button>

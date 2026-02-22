@@ -163,11 +163,16 @@ export default function ProjectCanvas() {
   // ── Connect mode state ──────────────────────────────────────────────────────
   const [connectMode, setConnectMode] = useState({ active: false, sourceId: null })
   const [cursorPos, setCursorPos] = useState(null) // canvas logical coords
+  const [placementTool, setPlacementTool] = useState(null)
+  const [isPlacementMode, setIsPlacementMode] = useState(false)
+  const [ghostPos, setGhostPos] = useState(null)
 
   // ── Pan state ───────────────────────────────────────────────────────────────
   const isPanning = useRef(false)
   const panStart = useRef({ x: 0, y: 0 })
   const panStartOffset = useRef({ x: 0, y: 0 })
+  const panVelocity = useRef({ x: 0, y: 0 })
+  const lastPanMove = useRef({ x: 0, y: 0, t: 0 })
   const canvasRef = useRef(null)
   const viewportSize = useRef({ w: 0, h: 0 })
 
@@ -289,6 +294,25 @@ export default function ProjectCanvas() {
 
     if (!isEmptyCanvas) return
 
+    if (isPlacementMode && placementTool) {
+      const pos = screenToCanvas(e.clientX, e.clientY)
+      const snappedPos = snap
+        ? { x: Math.round(pos.x / GRID_SIZE) * GRID_SIZE, y: Math.round(pos.y / GRID_SIZE) * GRID_SIZE }
+        : pos
+      taskboardClient.createCanvasObject({
+        projectId: null,
+        type: placementTool === 'text' ? 'text' : 'sticky',
+        position: snappedPos,
+        size: placementTool === 'text' ? undefined : { width: 180, height: 180 },
+        color: placementTool === 'text' ? '#94A3B8' : '#fef08a',
+        data: placementTool === 'text' ? { text: 'Label', fontSize: 24 } : { text: '' },
+      }).then(res => { if (res.ok) actions.addCanvasObject(res.data) })
+      setIsPlacementMode(false)
+      setPlacementTool(null)
+      setGhostPos(null)
+      return
+    }
+
     // Shift held → start lasso
     if (e.shiftKey) {
       const rect = canvasRef.current?.getBoundingClientRect()
@@ -306,11 +330,13 @@ export default function ProjectCanvas() {
       isPanning.current = true
       panStart.current = { x: e.clientX, y: e.clientY }
       panStartOffset.current = { ...pan }
+      lastPanMove.current = { x: pan.x, y: pan.y, t: performance.now() }
+      panVelocity.current = { x: 0, y: 0 }
       e.currentTarget.style.cursor = 'grabbing'
       // Clicking empty canvas deselects
       setSelectedIds(new Set())
     }
-  }, [pan])
+  }, [pan, isPlacementMode, placementTool, screenToCanvas, snap, actions])
 
   // ── Mouse move ────────────────────────────────────────────────────────────
   const handleMouseMove = useCallback((e) => {
@@ -329,13 +355,20 @@ export default function ProjectCanvas() {
       return
     }
 
-    if (isPanning.current) {
-      setPan({
-        x: panStartOffset.current.x + (e.clientX - panStart.current.x),
-        y: panStartOffset.current.y + (e.clientY - panStart.current.y),
-      })
+    if (isPlacementMode) {
+      setGhostPos(screenToCanvas(e.clientX, e.clientY))
     }
-  }, [connectMode.active, screenToCanvas])
+
+    if (isPanning.current) {
+      const now = performance.now()
+      const nx = panStartOffset.current.x + (e.clientX - panStart.current.x)
+      const ny = panStartOffset.current.y + (e.clientY - panStart.current.y)
+      setPan({ x: nx, y: ny })
+      const dt = Math.max(1, now - (lastPanMove.current.t || now))
+      panVelocity.current = { x: (nx - lastPanMove.current.x) / dt, y: (ny - lastPanMove.current.y) / dt }
+      lastPanMove.current = { x: nx, y: ny, t: now }
+    }
+  }, [connectMode.active, screenToCanvas, isPlacementMode])
 
   // ── Mouse up ──────────────────────────────────────────────────────────────
   const handleMouseUp = useCallback((e) => {
@@ -357,6 +390,19 @@ export default function ProjectCanvas() {
     if (isPanning.current) {
       isPanning.current = false
       if (canvasRef.current) canvasRef.current.style.cursor = 'default'
+      const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      if (!reduced) {
+        let vx = panVelocity.current.x
+        let vy = panVelocity.current.y
+        const tick = () => {
+          vx *= 0.92
+          vy *= 0.92
+          if (Math.abs(vx) < 0.1 && Math.abs(vy) < 0.1) return
+          setPan(prev => ({ x: prev.x + vx * 16, y: prev.y + vy * 16 }))
+          requestAnimationFrame(tick)
+        }
+        requestAnimationFrame(tick)
+      }
     }
   }, [lasso, computeLassoSelection])
 
@@ -922,6 +968,12 @@ export default function ProjectCanvas() {
         showMinimap={showMinimap} onToggleMinimap={() => setShowMinimap(v => !v)}
         connectMode={connectMode.active}
         onToggleConnect={() => setConnectMode(m => m.active ? { active: false, sourceId: null } : { active: true, sourceId: null })}
+        placementTool={placementTool}
+        onSelectPlacementTool={(tool) => {
+          const same = placementTool === tool && isPlacementMode
+          setPlacementTool(same ? null : tool)
+          setIsPlacementMode(!same)
+        }}
       />
 
       {/* Connect mode banner */}
@@ -947,6 +999,24 @@ export default function ProjectCanvas() {
       )}
 
       {isEmpty && <EmptyCanvas onNewProject={() => setShowCreate(true)} />}
+
+      {isPlacementMode && ghostPos && (
+        <div style={{
+          position: 'absolute',
+          left: pan.x + ghostPos.x * zoom,
+          top: pan.y + ghostPos.y * zoom,
+          width: placementTool === 'text' ? 160 : 180,
+          height: placementTool === 'text' ? 46 : 180,
+          border: '1px dashed rgba(0,212,255,0.55)',
+          background: 'rgba(0,212,255,0.08)',
+          borderRadius: 10,
+          pointerEvents: 'none',
+          transform: 'translate(-50%, -50%) scale(0.985)',
+          filter: 'blur(2px)',
+          animation: 'project-placement-settle 260ms cubic-bezier(0.34,1.56,0.64,1) forwards',
+          zIndex: 50,
+        }} />
+      )}
 
       <SelectionBadge count={selectedIds.size} />
 
