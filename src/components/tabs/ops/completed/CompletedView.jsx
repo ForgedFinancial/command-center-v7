@@ -12,8 +12,6 @@ const AGENT_COLORS = {
   dano: '#f59e0b',
 }
 
-const API_KEY = '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0'
-
 export default function CompletedView() {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
@@ -26,8 +24,8 @@ export default function CompletedView() {
 
   const fetchReport = useCallback(async (taskId) => {
     try {
-      const res = await fetch(`https://api.forgedfinancial.us/api/ops/pipeline/tasks/${taskId}`, {
-        headers: { 'x-api-key': API_KEY },
+      const res = await fetch(`${WORKER_PROXY_URL}${ENDPOINTS.opsPipelineTask(taskId)}`, {
+        headers: getSyncHeaders(),
       })
       if (!res.ok) {
         return 'No report available yet.'
