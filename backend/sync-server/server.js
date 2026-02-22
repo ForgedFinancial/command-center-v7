@@ -1338,9 +1338,13 @@ app.post('/api/kyle/online', authenticateAPI, (req, res) => {
 const AGENT_GATEWAY_PORTS = {
   clawd: 18789, soren: 18810, mason: 18830, sentinel: 18850, kyle: 18870,
 };
+const AGENT_STATUS_PING_TIMEOUT_MS = Number(process.env.AGENT_STATUS_PING_TIMEOUT_MS || 1000);
+const AGENT_STATUS_CACHE_TTL_MS = Number(process.env.AGENT_STATUS_CACHE_TTL_MS || 2000);
+
+let agentStatusCache = { payload: null, expiresAtMs: 0 };
 function pingAgentGateway(port) {
   return new Promise((resolve) => {
-    const req = require('http').get(`http://127.0.0.1:${port}/`, { timeout: 2000 }, (res) => {
+    const req = require('http').get(`http://127.0.0.1:${port}/`, { timeout: AGENT_STATUS_PING_TIMEOUT_MS }, (res) => {
       resolve(res.statusCode < 500);
     });
     req.on('error', () => resolve(false));
@@ -1348,6 +1352,13 @@ function pingAgentGateway(port) {
   });
 }
 app.get('/api/agents/status', authenticateAPI, async (req, res) => {
+  const requestNow = Date.now();
+  const forceRefresh = req.query?.refresh === '1' || req.query?.refresh === 'true';
+
+  if (!forceRefresh && AGENT_STATUS_CACHE_TTL_MS > 0 && agentStatusCache.payload && agentStatusCache.expiresAtMs > requestNow) {
+    res.set('Cache-Control', 'private, max-age=1');
+    return res.json(agentStatusCache.payload);
+  }
   try {
     const { AGENT_HIERARCHY } = require('./agent-hierarchy');
     const agents = {};
@@ -1376,13 +1387,13 @@ app.get('/api/agents/status', authenticateAPI, async (req, res) => {
     }
 
     // Check heartbeat files for active session indicator → green
-    const now = Date.now();
+    const heartbeatNow = Date.now();
     for (const id of Object.keys(AGENT_GATEWAY_PORTS)) {
       if (!agents[id]) continue;
       const hbFile = `/tmp/forged-daemon-${id}.heartbeat`;
       try {
-        const stat = require('fs').statSync(hbFile);
-        if ((now - stat.mtime.getTime()) < 180000) {
+        const stat = fsSync.statSync(hbFile);
+        if ((heartbeatNow - stat.mtime.getTime()) < 180000) {
           agents[id].status = 'online'; // heartbeat fresh → green
           agents[id].lastActive = stat.mtime.toISOString();
         }
@@ -1422,8 +1433,17 @@ app.get('/api/agents/status', authenticateAPI, async (req, res) => {
       data.recentActivity = agentActivity;
     }
 
+    if (!forceRefresh && AGENT_STATUS_CACHE_TTL_MS > 0) {
+      agentStatusCache = { payload: { agents }, expiresAtMs: Date.now() + AGENT_STATUS_CACHE_TTL_MS };
+    }
+
+    res.set('Cache-Control', 'private, max-age=1');
     res.json({ agents });
   } catch (err) {
+    if (!forceRefresh && agentStatusCache.payload) {
+      res.set('Cache-Control', 'private, max-age=1');
+      return res.json(agentStatusCache.payload);
+    }
     res.status(500).json({ error: 'Failed to fetch agent status' });
   }
 });
@@ -1673,7 +1693,6 @@ httpsServer.listen(PORT, () => {
   console.log(`📡 Ops WS: wss://<host>/ops`);
   console.log('');
 
-  }
 
   // Start data collectors
   console.log('📊 Starting data collectors...');

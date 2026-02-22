@@ -10,6 +10,7 @@ const IDLE_THRESHOLD = 5
 
 export function useAgentPoll() {
   const { state, actions } = useApp()
+  const updateAgents = actions.updateAgents
   const isOrgChartActive = state.activeTab === TABS.ORG_CHART
   const failureCount = useRef(0)
   const [backoffInterval, setBackoffInterval] = useState(BASE_INTERVAL)
@@ -21,7 +22,7 @@ export function useAgentPoll() {
     try {
       const data = await syncClient.getAgentStatus()
       if (data?.agents) {
-        actions.updateAgents(data.agents)
+        updateAgents(data.agents)
       }
       // Success — reset
       failureCount.current = 0
@@ -45,7 +46,7 @@ export function useAgentPoll() {
         )
       }
     }
-  }, [actions])
+  }, [updateAgents])
 
   // Only poll when org chart is active and not stopped
   const effectiveInterval = isOrgChartActive && !stopped.current ? backoffInterval : null

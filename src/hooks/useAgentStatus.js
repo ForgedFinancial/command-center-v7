@@ -12,18 +12,19 @@ const POLL_INTERVAL = 30000 // 30s real-time status
 
 export function useAgentStatus() {
   const { actions } = useApp()
+  const updateAgents = actions.updateAgents
   const intervalRef = useRef(null)
 
   const fetch_ = useCallback(async () => {
     try {
       const data = await syncClient.getAgentStatus()
       if (data?.agents) {
-        actions.updateAgents(data.agents)
+        updateAgents(data.agents)
       }
     } catch {
       // fail silently — don't break the app
     }
-  }, [actions])
+  }, [updateAgents])
 
   useEffect(() => {
     fetch_()
