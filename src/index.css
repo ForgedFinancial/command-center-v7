@@ -44,6 +44,31 @@
   --theme-mode:            dark;
 }
 
+[data-theme="matrix"] {
+  --theme-bg:              #000000;
+  --theme-surface:         #001100;
+  --theme-surface-hover:   #001a00;
+  --theme-sidebar:         #000000;
+  --theme-sidebar-hover:   #001100;
+  --theme-text-primary:    #00ff00;
+  --theme-text-secondary:  #66cc66;
+  --theme-accent:          #00ff00;
+  --theme-accent-hover:    #33ff33;
+  --theme-accent-muted:    #003300;
+  --theme-accent-text:     #000000;
+  --theme-border:          #003300;
+  --theme-border-subtle:   #002200;
+  --theme-success:         #00ff00;
+  --theme-warning:         #ccff00;
+  --theme-error:           #ff3333;
+  --theme-phone:           #00ff00;
+  --theme-modal-overlay:   rgba(0, 0, 0, 0.85);
+  --theme-shadow:          rgba(0, 255, 0, 0.15);
+  --theme-ring:            rgba(0, 255, 0, 0.45);
+  --theme-new-glow:        rgba(0, 255, 0, 0.2);
+  --theme-mode:            dark;
+}
+
 /* === DARK THEMES === */
 
 [data-theme="deep-ocean"] {

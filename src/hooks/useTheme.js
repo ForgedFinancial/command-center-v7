@@ -264,12 +264,12 @@ export const THEME_DEFINITIONS = {
     category: 'unique',
     vibe: 'Hacker Terminal',
     colors: {
-      bg: '#0a0f0a',
-      surface: '#111e11',
-      sidebar: '#080d08',
-      accent: '#00ff41',
-      textPrimary: '#d0f0d0',
-      textSecondary: '#6fbf6f',
+      bg: '#000000',
+      surface: '#001100',
+      sidebar: '#000000',
+      accent: '#00ff00',
+      textPrimary: '#00ff00',
+      textSecondary: '#66cc66',
     },
   },
   // === The Dano Collection ===
