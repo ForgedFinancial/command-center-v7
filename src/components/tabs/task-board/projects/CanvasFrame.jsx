@@ -4,7 +4,7 @@ import { CSS } from '@dnd-kit/utilities'
 import taskboardClient from '../../../../api/taskboardClient'
 import { useTaskBoard } from '../../../../context/TaskBoardContext'
 
-export default function CanvasFrame({ obj, isDragging = false, isOverlay = false, canvasBg, onContextMenu, isSelected = false, onClick }) {
+export default function CanvasFrame({ obj, isDragging = false, isOverlay = false, canvasBg, onContextMenu, isSelected = false, onClick, onCreateTask }) {
   const { actions } = useTaskBoard()
   const [editingTitle, setEditingTitle] = useState(false)
   const [title, setTitle] = useState(obj.data?.title || 'Untitled Section')
@@ -96,20 +96,36 @@ export default function CanvasFrame({ obj, isDragging = false, isOverlay = false
 
       {/* Delete on hover */}
       {hovered && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            actions.removeCanvasObject(obj.id)
-            taskboardClient.deleteCanvasObject(obj.id).catch(() => {})
-          }}
-          onMouseDown={(e) => e.stopPropagation()}
-          style={{
-            position: 'absolute', top: '6px', right: '6px',
-            background: 'rgba(0,0,0,0.3)', border: 'none', borderRadius: '50%',
-            width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', fontSize: '10px', color: '#fff', opacity: 0.6,
-          }}
-        >✕</button>
+        <>
+          {onCreateTask && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onCreateTask(obj) }}
+              onMouseDown={(e) => e.stopPropagation()}
+              style={{
+                position: 'absolute', top: '6px', right: '30px',
+                background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '10px',
+                height: '20px', padding: '0 7px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', fontSize: '9px', color: '#fff', opacity: 0.8,
+              }}
+            >
+              Task
+            </button>
+          )}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              actions.removeCanvasObject(obj.id)
+              taskboardClient.deleteCanvasObject(obj.id).catch(() => {})
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            style={{
+              position: 'absolute', top: '6px', right: '6px',
+              background: 'rgba(0,0,0,0.3)', border: 'none', borderRadius: '50%',
+              width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', fontSize: '10px', color: '#fff', opacity: 0.6,
+            }}
+          >✕</button>
+        </>
       )}
     </div>
   )

@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { useTaskBoard } from '../../../../context/TaskBoardContext'
+import { useApp } from '../../../../context/AppContext'
 import taskboardClient from '../../../../api/taskboardClient'
 import CanvasToolbar from './CanvasToolbar'
 import CanvasGrid from './CanvasGrid'
@@ -12,6 +13,7 @@ import CanvasFrame from './CanvasFrame'
 import CanvasTextLabel from './CanvasTextLabel'
 import CanvasConnector from './CanvasConnector'
 import CanvasMinimap from './CanvasMinimap'
+import { getProjectFamilyIds } from './projectWorkspaceUtils'
 
 // ─── Empty state ─────────────────────────────────────────────────────────────
 function EmptyCanvas({ onNewProject }) {
@@ -44,7 +46,7 @@ function EmptyCanvas({ onNewProject }) {
         }}>
           This is your visual workspace — like a digital whiteboard for organizing projects.
           Create project folders, drag them anywhere on the canvas, and open each one
-          to reveal its own custom kanban board, files, and notes.
+          to reveal its own inner canvas workspace with tools, metrics, and task generation.
         </p>
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px',
@@ -137,6 +139,7 @@ function SelectionBadge({ count }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function ProjectCanvas() {
   const { state, actions } = useTaskBoard()
+  const { actions: appActions } = useApp()
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [snap, setSnap] = useState(true)
@@ -147,6 +150,7 @@ export default function ProjectCanvas() {
   const [gridStyle, setGridStyle] = useState(() => localStorage.getItem('projecthub-grid') || 'dots')
   const [contextMenu, setContextMenu] = useState(null)
   const [showMinimap, setShowMinimap] = useState(true)
+  const [createParentId, setCreateParentId] = useState(null)
 
   // ── Multi-select state ──────────────────────────────────────────────────────
   const [selectedIds, setSelectedIds] = useState(new Set())
@@ -183,12 +187,13 @@ export default function ProjectCanvas() {
   const handleBgChange = (color) => { setCanvasBg(color); localStorage.setItem('projecthub-bg', color) }
   const handleGridChange = (style) => { setGridStyle(style); localStorage.setItem('projecthub-grid', style) }
 
-  const projects = state.projects.filter(p => p.status !== 'archived' && !p.parentProjectId)
-  const canvasObjects = state.canvasObjects || []
-  const stickies = canvasObjects.filter(o => o.type === 'sticky')
-  const frames = canvasObjects.filter(o => o.type === 'frame')
-  const textLabels = canvasObjects.filter(o => o.type === 'text')
-  const connectors = canvasObjects.filter(o => o.type === 'connector')
+  const allProjects = state.projects.filter(p => p.status !== 'archived')
+  const projects = allProjects.filter(p => !p.parentProjectId)
+  const hubCanvasObjects = (state.canvasObjects || []).filter(o => !o.projectId)
+  const stickies = hubCanvasObjects.filter(o => o.type === 'sticky')
+  const frames = hubCanvasObjects.filter(o => o.type === 'frame')
+  const textLabels = hubCanvasObjects.filter(o => o.type === 'text')
+  const connectors = hubCanvasObjects.filter(o => o.type === 'connector')
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -236,10 +241,10 @@ export default function ProjectCanvas() {
   const getObjectBounds = useCallback((id) => {
     const p = projects.find(pr => pr.id === id)
     if (p) return { x: p.canvasPosition?.x || 0, y: p.canvasPosition?.y || 0, w: 260, h: 160 }
-    const o = canvasObjects.find(co => co.id === id)
+    const o = hubCanvasObjects.find(co => co.id === id)
     if (o) return { x: o.position?.x || 0, y: o.position?.y || 0, w: o.size?.width || 180, h: o.size?.height || 180 }
     return null
-  }, [projects, canvasObjects])
+  }, [projects, hubCanvasObjects])
 
   // ── Lasso hit test ────────────────────────────────────────────────────────
   const computeLassoSelection = useCallback((lassoRect) => {
@@ -263,7 +268,7 @@ export default function ProjectCanvas() {
       const py = p.canvasPosition?.y || 0
       if (overlaps(px, py, 260, 160)) hits.add(p.id)
     })
-    canvasObjects.filter(o => o.type !== 'connector').forEach(o => {
+    hubCanvasObjects.filter(o => o.type !== 'connector').forEach(o => {
       const ox = o.position?.x || 0
       const oy = o.position?.y || 0
       const ow = o.size?.width || 180
@@ -271,7 +276,7 @@ export default function ProjectCanvas() {
       if (overlaps(ox, oy, ow, oh)) hits.add(o.id)
     })
     return hits
-  }, [pan, zoom, projects, canvasObjects])
+  }, [pan, zoom, projects, hubCanvasObjects])
 
   // ── Mouse down ────────────────────────────────────────────────────────────
   const handleMouseDown = useCallback((e) => {
@@ -396,12 +401,82 @@ export default function ProjectCanvas() {
 
     const res = await taskboardClient.createCanvasObject({
       type: 'connector',
+      projectId: null,
       position: { x: 0, y: 0 },
       color: '#71717a',
       data: { sourceId, targetId, style: 'curved', arrow: 'end', label: '' },
     })
     if (res.ok) actions.addCanvasObject(res.data)
   }, [connectMode, actions])
+
+  const createTaskFromProject = useCallback(async (sourceProject) => {
+    const projectRef = typeof sourceProject === 'string'
+      ? allProjects.find(p => p.id === sourceProject)
+      : sourceProject
+    if (!projectRef) return
+
+    try {
+      const parentRes = await taskboardClient.createTask({
+        title: `Project: ${projectRef.name}`,
+        description: `Parent task generated from project folder "${projectRef.name}"`,
+        projectId: projectRef.id,
+        sourceType: 'project-folder',
+        sourceId: projectRef.id,
+        isProjectParentTask: true,
+      })
+      if (!parentRes.ok) throw new Error('Failed to create parent task')
+      actions.addTask(parentRes.data)
+
+      const familyIds = getProjectFamilyIds(projectRef.id, allProjects)
+      const sourceTaskCandidates = state.tasks.filter(task => task.projectId && familyIds.includes(task.projectId))
+      const sourceCanvasCandidates = (state.canvasObjects || []).filter(obj =>
+        obj.projectId && familyIds.includes(obj.projectId) && obj.type !== 'connector',
+      )
+
+      let createdSubtasks = 0
+
+      for (const task of sourceTaskCandidates) {
+        const res = await taskboardClient.createTask({
+          title: `Subtask: ${task.title}`,
+          description: task.description || `Derived from project task ${task.id}`,
+          projectId: task.projectId,
+          parentTaskId: parentRes.data.id,
+          sourceType: 'project-task',
+          sourceId: task.id,
+        })
+        if (res.ok) {
+          actions.addTask(res.data)
+          createdSubtasks += 1
+        }
+      }
+
+      for (const obj of sourceCanvasCandidates) {
+        const res = await taskboardClient.createTask({
+          title: `Canvas Item: ${obj.data?.title || obj.type}`,
+          description: `Derived from ${obj.type} in project canvas`,
+          projectId: obj.projectId,
+          parentTaskId: parentRes.data.id,
+          canvasItemId: obj.id,
+          sourceType: 'project-canvas-item',
+          sourceId: obj.id,
+        })
+        if (res.ok) {
+          actions.addTask(res.data)
+          createdSubtasks += 1
+        }
+      }
+
+      actions.updateProject({ id: projectRef.id, isTaskified: true, parentTaskId: parentRes.data.id })
+      taskboardClient.updateProject(projectRef.id, { isTaskified: true, parentTaskId: parentRes.data.id }).catch(() => {})
+
+      appActions.addToast({
+        type: 'success',
+        message: `Project task created with ${createdSubtasks} subtasks`,
+      })
+    } catch (err) {
+      appActions.addToast({ type: 'error', message: `Failed to create project task: ${err.message}` })
+    }
+  }, [actions, allProjects, appActions, state.canvasObjects, state.tasks])
 
   // ── Context menu actions ──────────────────────────────────────────────────
   const handleContextAction = useCallback(async (action, data) => {
@@ -413,6 +488,7 @@ export default function ProjectCanvas() {
     switch (action) {
       case 'addSticky': {
         const res = await taskboardClient.createCanvasObject({
+          projectId: null,
           type: 'sticky', position: snappedPos,
           size: { width: 180, height: 180 }, color: '#fef08a', data: { text: '' },
         })
@@ -421,6 +497,7 @@ export default function ProjectCanvas() {
       }
       case 'addFrame': {
         const res = await taskboardClient.createCanvasObject({
+          projectId: null,
           type: 'frame', position: snappedPos,
           size: { width: 500, height: 350 }, color: 'rgba(0,212,255,0.04)',
           data: { title: 'Untitled Section', borderColor: 'rgba(0,212,255,0.15)' },
@@ -430,6 +507,7 @@ export default function ProjectCanvas() {
       }
       case 'addText': {
         const res = await taskboardClient.createCanvasObject({
+          projectId: null,
           type: 'text', position: snappedPos, data: { text: 'Label', fontSize: 24 },
         })
         if (res.ok) actions.addCanvasObject(res.data)
@@ -441,17 +519,55 @@ export default function ProjectCanvas() {
         break
       }
       case 'newProject':
+        setCreateParentId(null)
+        setShowCreate(true)
+        break
+      case 'newNestedProject':
+        setCreateParentId(contextMenu?.target?.id || null)
         setShowCreate(true)
         break
       case 'openProject': {
-        const proj = projects.find(p => p.id === contextMenu?.target?.id)
+        const proj = allProjects.find(p => p.id === contextMenu?.target?.id)
         if (proj) { actions.setSelectedProject(proj); actions.setProjectTab('canvas') }
+        break
+      }
+      case 'createTaskFromProject': {
+        const projectId = contextMenu?.target?.id
+        if (projectId) await createTaskFromProject(projectId)
+        break
+      }
+      case 'createTaskFromCanvasItem': {
+        const objectId = contextMenu?.target?.id
+        if (!objectId) break
+        const obj = hubCanvasObjects.find(item => item.id === objectId)
+        if (!obj) break
+        const res = await taskboardClient.createTask({
+          title: obj.data?.title || obj.data?.text || `${obj.type} canvas item`,
+          description: `Generated from Project Hub ${obj.type} item`,
+          canvasItemId: obj.id,
+          sourceType: 'hub-canvas-item',
+          sourceId: obj.id,
+        })
+        if (res.ok) {
+          actions.addTask(res.data)
+          actions.updateCanvasObject({ id: obj.id, data: { ...obj.data, taskId: res.data.id } })
+          taskboardClient.updateCanvasObject(obj.id, { data: { ...obj.data, taskId: res.data.id } }).catch(() => {})
+          appActions.addToast({ type: 'success', message: 'Task created from canvas item' })
+        }
+        break
+      }
+      case 'detachProject': {
+        const projectId = contextMenu?.target?.id
+        if (projectId) {
+          actions.updateProject({ id: projectId, parentProjectId: null })
+          taskboardClient.updateProject(projectId, { parentProjectId: null }).catch(() => {})
+        }
         break
       }
       case 'deleteObject': {
         const id = contextMenu?.target?.id
         if (!id) break
-        const oldObj = canvasObjects.find(o => o.id === id)
+        const oldObj = hubCanvasObjects.find(o => o.id === id)
         actions.removeCanvasObject(id)
         taskboardClient.deleteCanvasObject(id).catch(() => {})
         if (oldObj) {
@@ -479,7 +595,7 @@ export default function ProjectCanvas() {
       case 'updateConnector': {
         const id = contextMenu?.target?.id
         if (id && data) {
-          const existing = canvasObjects.find(o => o.id === id)
+          const existing = hubCanvasObjects.find(o => o.id === id)
           const merged = { ...existing, data: { ...existing?.data, ...data } }
           actions.updateCanvasObject(merged)
           taskboardClient.updateCanvasObject(id, merged).catch(() => {})
@@ -489,7 +605,7 @@ export default function ProjectCanvas() {
       case 'selectAll': {
         const allIds = new Set([
           ...projects.map(p => p.id),
-          ...canvasObjects.filter(o => o.type !== 'connector').map(o => o.id),
+          ...hubCanvasObjects.filter(o => o.type !== 'connector').map(o => o.id),
         ])
         setSelectedIds(allIds)
         break
@@ -497,7 +613,7 @@ export default function ProjectCanvas() {
       default:
         break
     }
-  }, [contextMenu, snap, actions, projects, canvasObjects])
+  }, [contextMenu, snap, actions, projects, allProjects, hubCanvasObjects, createTaskFromProject, appActions])
 
   // ── DnD handlers ──────────────────────────────────────────────────────────
   const handleDragStart = useCallback((event) => {
@@ -510,14 +626,14 @@ export default function ProjectCanvas() {
       selectedIds.forEach(sid => {
         const p = projects.find(pr => pr.id === sid)
         if (p) { baseline[sid] = { ...p.canvasPosition } || { x: 0, y: 0 }; return }
-        const o = canvasObjects.find(co => co.id === sid)
+        const o = hubCanvasObjects.find(co => co.id === sid)
         if (o) baseline[sid] = { ...o.position } || { x: 0, y: 0 }
       })
       groupDragBaseline.current = baseline
     } else {
       groupDragBaseline.current = null
     }
-  }, [selectedIds, projects, canvasObjects])
+  }, [selectedIds, projects, hubCanvasObjects])
 
   const handleDragEnd = useCallback((event) => {
     const { active, delta } = event
@@ -558,12 +674,39 @@ export default function ProjectCanvas() {
 
     // Single move
     const project = projects.find(p => p.id === active.id)
-    const canvasObj = canvasObjects.find(o => o.id === active.id)
+    const canvasObj = hubCanvasObjects.find(o => o.id === active.id)
 
     if (project) {
       const pos = project.canvasPosition || { x: 0, y: 0 }
       const newPos = { x: Math.max(0, applySnap(pos.x + dx)), y: Math.max(0, applySnap(pos.y + dy)) }
       const oldPos = { ...pos }
+
+      const dropCenter = { x: newPos.x + 120, y: newPos.y + 80 }
+      const nestTarget = projects.find((candidate) => (
+        candidate.id !== project.id &&
+        dropCenter.x >= (candidate.canvasPosition?.x || 0) &&
+        dropCenter.x <= (candidate.canvasPosition?.x || 0) + 240 &&
+        dropCenter.y >= (candidate.canvasPosition?.y || 0) &&
+        dropCenter.y <= (candidate.canvasPosition?.y || 0) + 170
+      ))
+
+      if (nestTarget) {
+        const nestedPosition = { x: 80 + (Date.now() % 120), y: 80 + (Date.now() % 80) }
+        actions.updateProject({
+          id: project.id,
+          parentProjectId: nestTarget.id,
+          workspacePosition: nestedPosition,
+          canvasPosition: oldPos,
+        })
+        taskboardClient.updateProject(project.id, {
+          parentProjectId: nestTarget.id,
+          workspacePosition: nestedPosition,
+          canvasPosition: oldPos,
+        }).catch(() => {})
+        appActions.addToast({ type: 'success', message: `Nested "${project.name}" inside "${nestTarget.name}"` })
+        return
+      }
+
       actions.updateProject({ id: project.id, canvasPosition: newPos })
       taskboardClient.updateProject(project.id, { canvasPosition: newPos }).catch(() => {})
       pushUndo(
@@ -581,7 +724,7 @@ export default function ProjectCanvas() {
         () => { actions.updateCanvasObject({ id: canvasObj.id, position: newPos }); taskboardClient.updateCanvasObject(canvasObj.id, { position: newPos }).catch(() => {}) },
       )
     }
-  }, [projects, canvasObjects, zoom, snap, actions, selectedIds])
+  }, [projects, hubCanvasObjects, zoom, snap, actions, selectedIds, appActions])
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────
   useEffect(() => {
@@ -597,6 +740,7 @@ export default function ProjectCanvas() {
       if (e.key === 'n' || e.key === 'N') {
         e.preventDefault()
         const res = await taskboardClient.createCanvasObject({
+          projectId: null,
           type: 'sticky', position: { x: canvasX, y: canvasY },
           size: { width: 180, height: 180 }, color: '#fef08a', data: { text: '' },
         })
@@ -605,6 +749,7 @@ export default function ProjectCanvas() {
       if (e.key === 'f' || e.key === 'F') {
         e.preventDefault()
         const res = await taskboardClient.createCanvasObject({
+          projectId: null,
           type: 'frame', position: { x: canvasX, y: canvasY },
           size: { width: 500, height: 350 }, color: 'rgba(0,212,255,0.04)',
           data: { title: 'Untitled Section', borderColor: 'rgba(0,212,255,0.15)' },
@@ -614,6 +759,7 @@ export default function ProjectCanvas() {
       if (e.key === 't' || e.key === 'T') {
         e.preventDefault()
         const res = await taskboardClient.createCanvasObject({
+          projectId: null,
           type: 'text', position: { x: canvasX, y: canvasY },
           data: { text: 'Label', fontSize: 24 },
         })
@@ -633,11 +779,11 @@ export default function ProjectCanvas() {
         // Zoom-to-fit: compute bounds and set zoom/pan
         const allX = [
           ...projects.map(p => (p.canvasPosition?.x || 0) + 260),
-          ...canvasObjects.filter(o => o.type !== 'connector').map(o => (o.position?.x || 0) + (o.size?.width || 180)),
+          ...hubCanvasObjects.filter(o => o.type !== 'connector').map(o => (o.position?.x || 0) + (o.size?.width || 180)),
         ]
         const allY = [
           ...projects.map(p => (p.canvasPosition?.y || 0) + 160),
-          ...canvasObjects.filter(o => o.type !== 'connector').map(o => (o.position?.y || 0) + (o.size?.height || 180)),
+          ...hubCanvasObjects.filter(o => o.type !== 'connector').map(o => (o.position?.y || 0) + (o.size?.height || 180)),
         ]
         if (allX.length === 0) return
         const minX = 0, minY = 0
@@ -664,7 +810,7 @@ export default function ProjectCanvas() {
         const toDelete = [...selectedIds]
         // Snapshot for undo
         const snapshots = toDelete.map(id => {
-          const o = canvasObjects.find(co => co.id === id)
+          const o = hubCanvasObjects.find(co => co.id === id)
           return o ? { ...o } : null
         }).filter(Boolean)
         toDelete.forEach(id => {
@@ -685,7 +831,7 @@ export default function ProjectCanvas() {
         e.preventDefault()
         setSelectedIds(new Set([
           ...projects.map(p => p.id),
-          ...canvasObjects.filter(o => o.type !== 'connector').map(o => o.id),
+          ...hubCanvasObjects.filter(o => o.type !== 'connector').map(o => o.id),
         ]))
       }
 
@@ -706,23 +852,23 @@ export default function ProjectCanvas() {
 
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [pan, zoom, actions, selectedIds, projects, canvasObjects, connectors])
+  }, [pan, zoom, actions, selectedIds, projects, hubCanvasObjects, connectors])
 
   // ── Canvas dimensions ─────────────────────────────────────────────────────
   const allX = [
     ...projects.map(p => (p.canvasPosition?.x || 0) + 300),
-    ...canvasObjects.map(o => (o.position?.x || 0) + (o.size?.width || 200)),
+    ...hubCanvasObjects.map(o => (o.position?.x || 0) + (o.size?.width || 200)),
   ]
   const allY = [
     ...projects.map(p => (p.canvasPosition?.y || 0) + 220),
-    ...canvasObjects.map(o => (o.position?.y || 0) + (o.size?.height || 200)),
+    ...hubCanvasObjects.map(o => (o.position?.y || 0) + (o.size?.height || 200)),
   ]
   const maxX = Math.max(1200, ...allX)
   const maxY = Math.max(800, ...allY)
 
   const activeProject = activeId ? projects.find(p => p.id === activeId) : null
-  const activeCanvasObj = activeId ? canvasObjects.find(o => o.id === activeId) : null
-  const isEmpty = projects.length === 0 && canvasObjects.length === 0
+  const activeCanvasObj = activeId ? hubCanvasObjects.find(o => o.id === activeId) : null
+  const isEmpty = projects.length === 0 && hubCanvasObjects.length === 0
 
   // ── Connector select handler ──────────────────────────────────────────────
   const handleConnectorSelect = useCallback((id) => {
@@ -819,13 +965,13 @@ export default function ProjectCanvas() {
         <CanvasConnector
           connectors={connectors}
           projects={projects}
-          canvasObjects={canvasObjects}
+          canvasObjects={hubCanvasObjects}
           canvasWidth={maxX}
           canvasHeight={maxY}
           onSelect={handleConnectorSelect}
           selectedIds={[...selectedIds]}
           onUpdate={(id, patch) => {
-            const existing = canvasObjects.find(o => o.id === id)
+            const existing = hubCanvasObjects.find(o => o.id === id)
             if (!existing) return
             const merged = { ...existing, ...patch }
             actions.updateCanvasObject(merged)
@@ -865,6 +1011,7 @@ export default function ProjectCanvas() {
                 isDragging={activeId === p.id}
                 isSelected={isSelected}
                 isConnectSource={isConnectSource}
+                onCreateTaskFromProject={createTaskFromProject}
                 onClick={(e) => {
                   if (connectMode.active) { handleObjectClick(p.id); return }
                   handleCardShiftClick(e, p.id)
@@ -929,7 +1076,7 @@ export default function ProjectCanvas() {
       {/* Minimap */}
       <CanvasMinimap
         projects={projects}
-        canvasObjects={canvasObjects}
+        canvasObjects={hubCanvasObjects}
         pan={pan}
         zoom={zoom}
         viewportW={viewportSize.current.w || window.innerWidth}
@@ -939,7 +1086,11 @@ export default function ProjectCanvas() {
       />
 
       {showCreate && (
-        <ProjectCreateModal existingProjects={projects} onClose={() => setShowCreate(false)} />
+        <ProjectCreateModal
+          existingProjects={allProjects}
+          parentProjectId={createParentId}
+          onClose={() => { setShowCreate(false); setCreateParentId(null) }}
+        />
       )}
     </div>
   )

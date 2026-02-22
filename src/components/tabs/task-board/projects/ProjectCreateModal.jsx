@@ -27,7 +27,8 @@ export default function ProjectCreateModal({ existingProjects = [], onClose, par
     setSaving(true)
     try {
       // Calculate canvas position — place to the right of the last card
-      const positions = existingProjects.map(p => p.canvasPosition || { x: 0, y: 0 })
+      const rootProjects = existingProjects.filter(p => !p.parentProjectId)
+      const positions = rootProjects.map(p => p.canvasPosition || { x: 0, y: 0 })
       const maxX = positions.length > 0 ? Math.max(...positions.map(p => p.x)) : -280
       const canvasPosition = { x: maxX + 280, y: 40 }
 
@@ -41,6 +42,7 @@ export default function ProjectCreateModal({ existingProjects = [], onClose, par
         columns: (selectedTemplate || PROJECT_TEMPLATES.custom).columns,
         canvasPosition,
         parentProjectId,
+        workspacePosition: parentProjectId ? { x: 80, y: 80 } : null,
       }
 
       const res = await taskboardClient.createProject(payload)

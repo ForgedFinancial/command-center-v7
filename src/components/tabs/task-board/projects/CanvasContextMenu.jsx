@@ -74,23 +74,30 @@ export default function CanvasContextMenu({ x, y, target, onClose, onAction }) {
   } else if (target.type === 'project') {
     items = [
       { icon: '📂', label: 'Open Project', action: 'openProject' },
+      { icon: '✅', label: 'Create Task from Project', action: 'createTaskFromProject' },
+      { icon: '🪆', label: 'New Nested Project', action: 'newNestedProject' },
+      { icon: '📤', label: 'Detach to Hub', action: 'detachProject' },
+      { icon: '', label: SEP },
       { icon: '🎨', label: 'Change Color', action: 'showColorSubmenu', submenu: 'projectColor' },
       { icon: '📋', label: 'Duplicate', action: 'duplicate' },
     ]
   } else if (target.type === 'sticky') {
     items = [
       { icon: '✏️', label: 'Edit', action: 'editSticky' },
+      { icon: '✅', label: 'Create Task', action: 'createTaskFromCanvasItem' },
       { icon: '🎨', label: 'Change Color', action: 'showColorSubmenu', submenu: 'stickyColor' },
       { icon: '🗑️', label: 'Delete', action: 'deleteObject', color: '#ef4444' },
     ]
   } else if (target.type === 'frame') {
     items = [
       { icon: '✏️', label: 'Rename', action: 'editFrame' },
+      { icon: '✅', label: 'Create Task', action: 'createTaskFromCanvasItem' },
       { icon: '🗑️', label: 'Delete Frame', action: 'deleteObject', color: '#ef4444' },
     ]
   } else if (target.type === 'text') {
     items = [
       { icon: '✏️', label: 'Edit', action: 'editText' },
+      { icon: '✅', label: 'Create Task', action: 'createTaskFromCanvasItem' },
       { icon: '🗑️', label: 'Delete', action: 'deleteObject', color: '#ef4444' },
     ]
   } else if (target.type === 'connector') {
@@ -106,6 +113,11 @@ export default function CanvasContextMenu({ x, y, target, onClose, onAction }) {
       },
       { icon: '', label: SEP },
       { icon: '🗑️', label: 'Delete Connector', action: 'deleteObject', color: '#ef4444' },
+    ]
+  } else {
+    items = [
+      { icon: '✅', label: 'Create Task', action: 'createTaskFromCanvasItem' },
+      { icon: '🗑️', label: 'Delete', action: 'deleteObject', color: '#ef4444' },
     ]
   }
 

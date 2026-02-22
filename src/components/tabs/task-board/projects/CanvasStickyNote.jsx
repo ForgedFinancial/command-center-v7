@@ -4,7 +4,7 @@ import { CSS } from '@dnd-kit/utilities'
 import taskboardClient from '../../../../api/taskboardClient'
 import { useTaskBoard } from '../../../../context/TaskBoardContext'
 
-export default function CanvasStickyNote({ obj, isDragging = false, isOverlay = false, onContextMenu, isSelected = false, onClick }) {
+export default function CanvasStickyNote({ obj, isDragging = false, isOverlay = false, onContextMenu, isSelected = false, onClick, onCreateTask }) {
   const { actions } = useTaskBoard()
   const [editing, setEditing] = useState(false)
   const [hovered, setHovered] = useState(false)
@@ -96,20 +96,36 @@ export default function CanvasStickyNote({ obj, isDragging = false, isOverlay = 
 
       {/* Delete button on hover */}
       {hovered && !editing && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            actions.removeCanvasObject(obj.id)
-            taskboardClient.deleteCanvasObject(obj.id).catch(() => {})
-          }}
-          onMouseDown={(e) => e.stopPropagation()}
-          style={{
-            position: 'absolute', top: '4px', right: '6px',
-            background: 'rgba(0,0,0,0.2)', border: 'none', borderRadius: '50%',
-            width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', fontSize: '10px', color: textColor, opacity: 0.7,
-          }}
-        >✕</button>
+        <>
+          {onCreateTask && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onCreateTask(obj) }}
+              onMouseDown={(e) => e.stopPropagation()}
+              style={{
+                position: 'absolute', top: '4px', right: '28px',
+                background: 'rgba(0,0,0,0.2)', border: `1px solid ${textColor}55`, borderRadius: '10px',
+                height: '18px', padding: '0 6px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', fontSize: '9px', color: textColor, opacity: 0.8,
+              }}
+            >
+              Task
+            </button>
+          )}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              actions.removeCanvasObject(obj.id)
+              taskboardClient.deleteCanvasObject(obj.id).catch(() => {})
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            style={{
+              position: 'absolute', top: '4px', right: '6px',
+              background: 'rgba(0,0,0,0.2)', border: 'none', borderRadius: '50%',
+              width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', fontSize: '10px', color: textColor, opacity: 0.7,
+            }}
+          >✕</button>
+        </>
       )}
 
       {/* Text */}

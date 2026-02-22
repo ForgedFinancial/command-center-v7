@@ -167,7 +167,6 @@ export default function FloatingCallBar() {
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '0 16px',
       transition: 'transform 200ms ease',
-      transform: 'translateY(0)',
     }}>
       {/* Left: Status + Lead Info */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
