@@ -11,8 +11,9 @@ const fsSync = require('fs');
 const path = require('path');
 
 // ── Config ──
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8549625129:AAF0CSoyXFdFru5eEWQ0mflFZJmdquQ1z-k';
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '5317054921';
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) console.warn('Telegram not configured. Features disabled.');
 const SESSION_FILE = path.join('/home/clawd/claude-comms', 'session.json');
 const COMMS_FILE = path.join('/home/clawd/claude-comms', 'messages.json');
 
@@ -57,6 +58,7 @@ function loadSession() {
 }
 
 function sendTelegram(text) {
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return Promise.resolve(false);
   return new Promise((resolve) => {
     const body = JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text, parse_mode: 'Markdown' });
     const req = https.request({
@@ -83,7 +85,7 @@ function sendTelegram(text) {
  */
 async function createCCNotification({ title, description, type = 'mention', meta = {} }) {
   return new Promise((resolve) => {
-    const apiKey = process.env.CC_API_KEY || process.env.SYNC_API_KEY || '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0';
+    const apiKey = process.env.CC_API_KEY || process.env.SYNC_API_KEY;
     const body = JSON.stringify({ title, description, type, meta });
     const req = require('http').request({
       hostname: 'localhost',
@@ -137,7 +139,7 @@ async function routeToAgent(agentName, message) {
     // Create task via the local API
     const http = require('http');
     return new Promise((resolve) => {
-      const apiKey = process.env.CC_API_KEY || process.env.SYNC_API_KEY || '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0';
+      const apiKey = process.env.CC_API_KEY || process.env.SYNC_API_KEY;
       const body = JSON.stringify({
         type: 'mention',
         title: `[Stand-Up] Boss says: ${message.substring(0, 60)}`,

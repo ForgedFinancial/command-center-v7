@@ -2,8 +2,10 @@ const https = require('https');
 const LOG = (msg) => console.log(`[COLLECTOR:CALENDAR] ${msg}`);
 
 const CALDAV_URL = 'https://caldav.icloud.com';
-const CALDAV_USER = process.env.CALDAV_USER || 'zombiekiller885@icloud.com';
-const CALDAV_PASS = process.env.CALDAV_PASS || 'vibp-ezfp-grpw-koji';
+const CALDAV_USER = process.env.CALDAV_USER;
+const CALDAV_PASS = process.env.CALDAV_PASS;
+
+if (!CALDAV_USER || !CALDAV_PASS) throw new Error('CalDAV credentials not configured');
 
 let data = { events: [], calendars: [], lastPoll: null, error: null };
 let discoveredCalendars = []; // [{name, href}] for createEvent/getCalendars

@@ -11,9 +11,13 @@ const path = require('path');
 const SESSIONS_FILE = path.join(__dirname, 'data', 'sessions.json');
 
 // Single-user credentials — hardcoded, no signup, no other accounts
-const VALID_ACCESS_CODE = 'Nugget123$';
-const VALID_USERNAME = 'DANO';
-const VALID_PASSWORD = 'Newmandan85$';
+const VALID_ACCESS_CODE = process.env.ACCESS_CODE;
+const VALID_USERNAME = process.env.USERNAME;
+const VALID_PASSWORD = process.env.PASSWORD;
+
+if (!VALID_ACCESS_CODE || !VALID_USERNAME || !VALID_PASSWORD) {
+  throw new Error('AUTH credentials not configured');
+}
 
 const SCRYPT_KEYLEN = 64;
 const SCRYPT_COST = 16384;  // N

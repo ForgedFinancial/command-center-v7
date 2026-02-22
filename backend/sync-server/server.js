@@ -1,4 +1,6 @@
 require("dotenv").config();
+const { validateEnv } = require('./validateEnv');
+validateEnv();
 // Command Center Backend API Server
 // Enables bidirectional communication with Openclaw/Claude
 // Version: 1.0.0

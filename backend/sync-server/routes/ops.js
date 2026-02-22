@@ -15,11 +15,13 @@ const crypto = require('crypto');
 const PIPELINE_FILE = '/home/clawd/.openclaw/data/pipeline/build-tasks.json';
 const KNOWLEDGE_FILE = '/home/clawd/.openclaw/data/knowledge/entries.json';
 const TASKS_FILE = '/home/clawd/claude-comms/tasks.json';
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8549625129:AAF0CSoyXFdFru5eEWQ0mflFZJmdquQ1z-k';
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '5317054921';
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) console.warn('Telegram not configured. Features disabled.');
 
 // ── Telegram notifier — fires when Clawd has a task that needs human-loop action ──
 function notifyBoss(message) {
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
   try {
     const https = require('https');
     const body = JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message, parse_mode: 'Markdown' });
@@ -125,7 +127,7 @@ async function triggerDaemonTask(opsTask) {
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(commsPayload),
-          'x-api-key': '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0'
+          'x-api-key': process.env.COMMS_API_KEY || process.env.CC_API_KEY || process.env.SYNC_API_KEY || ''
         }
       }, (res) => {
         let body = '';

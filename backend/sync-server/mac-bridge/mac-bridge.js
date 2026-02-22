@@ -11,7 +11,8 @@ const path = require('path')
 const os = require('os')
 
 const PORT = 7891
-const TOKEN = process.env.MAC_BRIDGE_TOKEN || 'mac-bridge-2026'
+const TOKEN = process.env.MAC_BRIDGE_TOKEN
+if (!TOKEN) throw new Error('MAC_BRIDGE_TOKEN not configured')
 const CHAT_DB = path.join(os.homedir(), 'Library/Messages/chat.db')
 
 // ─── Auth middleware ───────────────────────────────────────────────────────────
@@ -317,5 +318,5 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ mac-bridge running on port ${PORT}`)
   console.log(`   Capabilities: iMessage read/send, dial, FaceTime`)
-  console.log(`   Token: ${TOKEN}`)
+  console.log('   Token: configured ✓')
 })

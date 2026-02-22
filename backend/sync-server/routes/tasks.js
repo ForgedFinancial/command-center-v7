@@ -15,9 +15,10 @@ const https = require('https');
 
 const TASKS_FILE = '/home/clawd/claude-comms/tasks.json';
 const PIPELINE_FILE = '/home/clawd/.openclaw/data/pipeline/build-tasks.json';
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8549625129:AAF0CSoyXFdFru5eEWQ0mflFZJmdquQ1z-k';
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '5317054921';
-const COMMS_API_KEY = process.env.COMMS_API_KEY || '8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0';
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) console.warn('Telegram not configured. Features disabled.');
+const COMMS_API_KEY = process.env.COMMS_API_KEY;
 
 // V2 auto-advance table
 const V2_AUTO_ADVANCE = {
@@ -99,7 +100,7 @@ function v2AutoAdvance(opsTaskId, completedDaemonTask, action) {
     } catch (e) { /* fire-and-forget */ }
 
     // Telegram to Boss when hitting BOSS_REVIEW
-    if (next === 'BOSS_REVIEW') {
+    if (next === 'BOSS_REVIEW' && TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID) {
       const tgMsg = `🔔 Ready for review: *${opsTask.name}* (${opsTaskId}) — Sentinel approved. Check Ops Board.`;
       const tgBody = JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: tgMsg, parse_mode: 'Markdown' });
       try {

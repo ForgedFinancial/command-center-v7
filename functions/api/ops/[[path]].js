@@ -4,6 +4,13 @@ var ALLOWED_ORIGINS = [
   "http://localhost:5173",
 ];
 
+function jsonResponse(body, status, corsHeaders) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json", ...corsHeaders },
+  });
+}
+
 function getCorsHeaders(request) {
   const origin = request.headers.get("Origin") || "";
   const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
@@ -27,7 +34,8 @@ export async function onRequest(context) {
   const path = params.path?.join("/") || "";
   const target = `https://api.forgedfinancial.us/api/ops/${path}${originalUrl.search}`;
 
-  const apiKey = env.SYNC_API_KEY || "8891188897518856408ba17e532456fea5cfb4a4d0de80d1ecbbc8f1aa14e6d0";
+  const apiKey = env.SYNC_API_KEY;
+  if (!apiKey) return jsonResponse({ error: "SYNC_API_KEY not configured" }, 500, corsHeaders);
 
   const headers = new Headers(request.headers);
   headers.set("x-api-key", apiKey);
