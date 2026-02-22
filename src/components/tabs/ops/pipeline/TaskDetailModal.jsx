@@ -436,22 +436,6 @@ export default function TaskDetailModal({ task: initialTask, onClose, onUpdate, 
               </div>
             )}
 
-            {/* Stage move */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ fontSize: '11px', color: 'var(--theme-text-secondary)', marginBottom: '6px', display: 'block' }}>Move to stage</label>
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                {STAGES.filter(s => s !== task.stage).map(s => (
-                  <button key={s} onClick={() => { onUpdate(task.id, { stage: s }); setTask(prev => ({ ...prev, stage: s })) }} style={{
-                    padding: '4px 12px', fontSize: '11px', fontWeight: 500,
-                    backgroundColor: (STAGE_CONFIG[s]?.color || '#666') + '15',
-                    color: STAGE_CONFIG[s]?.color || '#888',
-                    border: `1px solid ${(STAGE_CONFIG[s]?.color || '#666')}40`,
-                    borderRadius: '6px', cursor: 'pointer',
-                  }}>{STAGE_CONFIG[s]?.icon} {STAGE_CONFIG[s]?.label}</button>
-                ))}
-              </div>
-            </div>
-
             {/* Blocker */}
             <div style={{ marginBottom: '16px', padding: '12px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--theme-border)' }}>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
