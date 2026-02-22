@@ -215,15 +215,15 @@ class CRMClient {
 
   // Metric settings
   async getMetricSettings() {
-    return this.request('/metric-settings')
+    return this.request('/settings/metrics')
   }
 
   async updateMetricSetting(id, data) {
-    return this.request(`/metric-settings/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+    return this.request(`/settings/metrics/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
   }
 
   async bulkUpdateMetrics(metrics) {
-    return this.request('/metric-settings/bulk', { method: 'PUT', body: JSON.stringify({ metrics }) })
+    return this.request('/settings/metrics/bulk', { method: 'POST', body: JSON.stringify({ metrics }) })
   }
 
   // SMS templates
@@ -245,16 +245,16 @@ class CRMClient {
   }
 
   async updateTimerConfig(id, data) {
-    return this.request(`/timer-configs/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+    return this.request(`/timer-configs/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
   }
 
   // Notification preferences
   async getNotificationPrefs() {
-    return this.request('/notification-prefs')
+    return this.request('/settings/notifications')
   }
 
   async updateNotificationPrefs(data) {
-    return this.request('/notification-prefs', { method: 'PUT', body: JSON.stringify(data) })
+    return this.request('/settings/notifications', { method: 'PUT', body: JSON.stringify(data) })
   }
 
   // Dashboard
@@ -283,11 +283,11 @@ class CRMClient {
   async listRecordings(query = {}) {
     const params = new URLSearchParams(Object.entries(query).filter(([, v]) => v != null && v !== ''))
     const qs = params.toString() ? `?${params}` : ''
-    return this.request(`/recordings${qs}`)
+    return this.request(`/call-recordings${qs}`)
   }
 
-  async getRecording(id) {
-    return this.request(`/recordings/${id}`)
+  async getRecording(sid) {
+    return this.request(`/calls/${sid}/recording`)
   }
 
   // Voicemail drops
