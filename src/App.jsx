@@ -41,7 +41,11 @@ export function setUIScale(pct) {
 }
 
 function App() {
-  const authenticated = sessionStorage.getItem('forged-os-session') === 'true'
+  const [authenticated, setAuthenticated] = useState(false)
+
+  useEffect(() => {
+    setAuthenticated(sessionStorage.getItem('forged-os-session') === 'true')
+  }, [])
 
   // Apply scale on mount
   useEffect(() => {
@@ -68,7 +72,7 @@ function App() {
   }, [])
 
   if (!authenticated) {
-    return <AuthGate onAuth={() => window.location.reload()} />
+    return <AuthGate onAuth={() => setAuthenticated(true)} />
   }
 
   return (
@@ -78,7 +82,8 @@ function App() {
           <OpsBoardProvider>
             <TaskBoardProvider>
               <CRMProvider>
-                <Toaster position="top-right" />`n                <Shell />
+                <Toaster position="top-right" />
+                <Shell />
                 <FloatingCallBar />
                 <IncomingCallBanner />
                 <DialerModal />

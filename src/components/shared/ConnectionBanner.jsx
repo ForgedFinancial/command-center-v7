@@ -40,7 +40,23 @@ export function ConnectionBanner() {
           animation: 'pulse 1.5s ease-in-out infinite',
         }}
       />
-      Connection lost — retrying...
+      <span>Connection lost — retrying...</span>
+      <button
+        type="button"
+        onClick={() => window.location.reload()}
+        style={{
+          color: '#fff',
+          background: 'transparent',
+          border: '1px solid rgba(255,255,255,0.7)',
+          borderRadius: '4px',
+          padding: '2px 8px',
+          fontSize: '13px',
+          cursor: 'pointer',
+          textDecoration: 'underline',
+        }}
+      >
+        Reconnect
+      </button>
       <style>
         {`
           @keyframes pulse {

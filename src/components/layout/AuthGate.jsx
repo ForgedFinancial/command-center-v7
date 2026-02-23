@@ -181,7 +181,7 @@ function WelcomeScreen({ onComplete }) {
   )
 }
 
-export default function AuthGate({ onAuth }) {
+export default function AuthGate({ onAuth = () => {} }) {
   const [accessCode, setAccessCode] = useState('')
   const [showAccessCode, setShowAccessCode] = useState(false)
   const [showPassword, setShowPassword] = useState(false)

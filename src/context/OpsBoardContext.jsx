@@ -187,80 +187,107 @@ export function OpsBoardProvider({ children }) {
 
   useEffect(() => {
     let ws
+    let reconnectTimer = null
+    let reconnectDelay = 2000
+    let isUnmounted = false
 
-    try {
-      ws = new WebSocket(resolveOpsWsUrl())
-    } catch {
-      dispatch({ type: 'WS_DISCONNECTED' })
-      return undefined
+    const scheduleReconnect = () => {
+      if (isUnmounted || reconnectTimer) return
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null
+        connect()
+      }, reconnectDelay)
+      reconnectDelay = Math.min(reconnectDelay * 2, 30000)
     }
 
-    ws.onopen = () => {
-      dispatch({ type: 'WS_CONNECTED' })
-    }
+    const connect = () => {
+      if (isUnmounted) return
 
-    ws.onclose = () => {
-      dispatch({ type: 'WS_DISCONNECTED' })
-    }
-
-    ws.onerror = () => {
-      dispatch({ type: 'WS_DISCONNECTED' })
-    }
-
-    ws.onmessage = event => {
       try {
-        const data = JSON.parse(event.data)
-
-        if (data.type === 'task.stage.changed' || data.type === 'task.updated' || data.type === 'task.created') {
-          if (data.task) {
-            dispatch({ type: 'RECEIVE_TASK_UPDATE', payload: data.task })
-          }
-          return
-        }
-
-        if (data.type === 'task.archived' && data.taskId) {
-          dispatch({ type: 'REMOVE_TASK', payload: data.taskId })
-          return
-        }
-
-        if (data.type === 'live.log') {
-          dispatch({ type: 'RECEIVE_LIVE_LOG', payload: data })
-          return
-        }
-
-        if (data.type === 'task.gate.failed') {
-          dispatch({
-            type: 'RECEIVE_NOTIFICATION',
-            payload: {
-              type: 'error',
-              message: `Gate failed for ${data.taskId}: ${data.gate}${data.reason ? ` (${data.reason})` : ''}`,
-              timestamp: data.timestamp,
-            },
-          })
-          return
-        }
-
-        if (data.type === 'task.gate.passed') {
-          dispatch({
-            type: 'RECEIVE_NOTIFICATION',
-            payload: {
-              type: 'success',
-              message: `Gate passed for ${data.taskId}: ${data.gate}`,
-              timestamp: data.timestamp,
-            },
-          })
-          return
-        }
-
-        if (data.type === 'notification') {
-          dispatch({ type: 'RECEIVE_NOTIFICATION', payload: data })
-        }
+        ws = new WebSocket(resolveOpsWsUrl())
       } catch {
-        // ignore malformed payload
+        dispatch({ type: 'WS_DISCONNECTED' })
+        scheduleReconnect()
+        return
+      }
+
+      ws.onopen = () => {
+        reconnectDelay = 2000
+        dispatch({ type: 'WS_CONNECTED' })
+      }
+
+      ws.onclose = () => {
+        dispatch({ type: 'WS_DISCONNECTED' })
+        scheduleReconnect()
+      }
+
+      ws.onerror = () => {
+        dispatch({ type: 'WS_DISCONNECTED' })
+        ws?.close()
+      }
+
+      ws.onmessage = event => {
+        try {
+          const data = JSON.parse(event.data)
+
+          if (data.type === 'task.stage.changed' || data.type === 'task.updated' || data.type === 'task.created') {
+            if (data.task) {
+              dispatch({ type: 'RECEIVE_TASK_UPDATE', payload: data.task })
+            }
+            return
+          }
+
+          if (data.type === 'task.archived' && data.taskId) {
+            dispatch({ type: 'REMOVE_TASK', payload: data.taskId })
+            return
+          }
+
+          if (data.type === 'live.log') {
+            dispatch({ type: 'RECEIVE_LIVE_LOG', payload: data })
+            return
+          }
+
+          if (data.type === 'task.gate.failed') {
+            dispatch({
+              type: 'RECEIVE_NOTIFICATION',
+              payload: {
+                type: 'error',
+                message: `Gate failed for ${data.taskId}: ${data.gate}${data.reason ? ` (${data.reason})` : ''}`,
+                timestamp: data.timestamp,
+              },
+            })
+            return
+          }
+
+          if (data.type === 'task.gate.passed') {
+            dispatch({
+              type: 'RECEIVE_NOTIFICATION',
+              payload: {
+                type: 'success',
+                message: `Gate passed for ${data.taskId}: ${data.gate}`,
+                timestamp: data.timestamp,
+              },
+            })
+            return
+          }
+
+          if (data.type === 'notification') {
+            dispatch({ type: 'RECEIVE_NOTIFICATION', payload: data })
+          }
+        } catch {
+          // ignore malformed payload
+        }
       }
     }
 
+    connect()
+
     return () => {
+      isUnmounted = true
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer)
+        reconnectTimer = null
+      }
       ws?.close()
     }
   }, [])
