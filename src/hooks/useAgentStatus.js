@@ -1,6 +1,6 @@
 // ========================================
 // HOOK: useAgentStatus
-// Added: 2026-02-18 by Mason (FF-BLD-001)
+// Active agent stack: clawd, codex, sentinel, kyle
 // Polls /api/agents/status every 30s for real online/offline
 // ========================================
 

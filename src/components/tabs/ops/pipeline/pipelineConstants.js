@@ -3,9 +3,9 @@ export const STAGES = ['INTAKE', 'SPEC', 'REVIEW', 'BUILDING', 'QA', 'BOSS_REVIE
 
 export const STAGE_CONFIG = {
   INTAKE:      { label: 'Intake',       desc: 'Submitted, awaiting pickup',   icon: '📥', color: '#6366f1' },
-  SPEC:        { label: 'Spec',         desc: 'Soren architecting plan',      icon: '📐', color: '#8b5cf6' },
+  SPEC:        { label: 'Spec',         desc: 'Clawd and Codex shaping plan', icon: '📐', color: '#8b5cf6' },
   REVIEW:      { label: 'Review',       desc: 'Agents reviewing spec',        icon: '👁️', color: '#a78bfa' },
-  BUILDING:    { label: 'Building',     desc: 'Mason building',               icon: '🔨', color: '#f59e0b' },
+  BUILDING:    { label: 'Building',     desc: 'Codex building',               icon: '🔨', color: '#f59e0b' },
   QA:          { label: 'QA',           desc: 'Sentinel inspecting',          icon: '🔍', color: '#06b6d4' },
   BOSS_REVIEW: { label: 'Boss Review',  desc: 'Ready for Boss evaluation',    icon: '👔', color: '#10b981' },
   DONE:        { label: 'Done',         desc: 'Approved & closed',            icon: '✅', color: '#22c55e', muted: true },
@@ -14,15 +14,14 @@ export const STAGE_CONFIG = {
 export const AGENTS = {
   dano:     { label: 'Boss',      color: '#f59e0b', icon: '👔' },
   clawd:    { label: 'Clawd',     color: '#8b5cf6', icon: '🐾' },
-  soren:    { label: 'Soren',     color: '#6366f1', icon: '📐' },
-  mason:    { label: 'Mason',     color: '#f97316', icon: '🔨' },
+  codex:    { label: 'Codex',     color: '#f97316', icon: '🔨' },
   sentinel: { label: 'Sentinel',  color: '#06b6d4', icon: '🔍' },
-  kyle:     { label: 'Kyle',      color: '#10b981', icon: '🖥️' },
+  kyle:     { label: 'Kyle',      color: '#f59e0b', icon: '🖥️' },
 }
 
 export const TASK_TYPES = [
-  { value: 'build',    label: '🔨 Build',    desc: 'Mason constructs something new' },
-  { value: 'design',   label: '📐 Design',   desc: 'Soren architects a plan or spec' },
+  { value: 'build',    label: '🔨 Build',    desc: 'Codex constructs something new' },
+  { value: 'design',   label: '📐 Design',   desc: 'Clawd/Codex architect a plan or spec' },
   { value: 'fix',      label: '🔧 Fix',      desc: 'Something is broken, needs repair' },
   { value: 'inspect',  label: '🔍 Inspect',  desc: 'Sentinel audits or reviews' },
   { value: 'research', label: '🔬 Research', desc: 'Investigate and report back' },
@@ -81,12 +80,11 @@ export const TIERS = [
 
 // Smart stage routing: assignee → starting stage
 export const AGENT_STAGE_ROUTING = {
-  soren:    'SPEC',
-  mason:    'BUILDING',
+  codex:    'BUILDING',
   sentinel: 'QA',
+  kyle:     'INTAKE',
   clawd:    'INTAKE',
   dano:     'INTAKE',
-  kyle:     'INTAKE',
 }
 
 // Time-in-stage thresholds (ms) for color coding

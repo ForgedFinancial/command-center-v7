@@ -45,4 +45,4 @@ export const DOC_CATEGORY_CONFIG = {
 
 export const TASK_BOARD_VIEWS = { BOARD: 'board', CALENDAR: 'calendar', PHONE: 'phone', MESSAGES: 'messages', PROJECTS: 'projects', TASKS: 'tasks', DOCUMENTS: 'documents' }
 
-export const AGENT_COLORS = { mason: '#a855f7', sentinel: '#3b82f6', architect: '#f59e0b', clawd: '#4ade80' }
+export const AGENT_COLORS = { clawd: '#8b5cf6', codex: '#f97316', sentinel: '#06b6d4', kyle: '#f59e0b' }

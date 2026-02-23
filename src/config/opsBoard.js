@@ -21,9 +21,9 @@ export const OPS_CLASSIFICATIONS = [
 export const OPS_AGENT_CONFIG = {
   dano: { label: 'DANO', color: '#3b82f6' },
   clawd: { label: 'Clawd', color: '#8b5cf6' },
-  soren: { label: 'Soren', color: '#10b981' },
-  mason: { label: 'Mason', color: '#ef4444' },
+  codex: { label: 'Codex', color: '#f97316' },
   sentinel: { label: 'Sentinel', color: '#06b6d4' },
+  kyle: { label: 'Kyle', color: '#f59e0b' },
 }
 
 export const OPS_PRIORITIES = [

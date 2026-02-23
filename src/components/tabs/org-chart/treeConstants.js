@@ -1,6 +1,6 @@
 // ========================================
 // Tree Org Chart Constants
-// Added: 2026-02-16 by Mason (FF-BLD-001)
+// Lean 4-agent hierarchy constants
 // Replaces radialConstants.js
 // ========================================
 
@@ -14,17 +14,9 @@ export const TIER_COLORS = {
 export const TIER_MAP = {
   ceo: 'ceo',
   clawd: 'coo',
-  architect: 'department',
-  mason: 'department',
+  codex: 'department',
   sentinel: 'department',
   kyle: 'specialist',
-  scout: 'specialist',
-  cartographer: 'specialist',
-  coder: 'specialist',
-  wirer: 'specialist',
-  scribe: 'specialist',
-  probe: 'specialist',
-  auditor: 'specialist',
 };
 
 export const MODEL_DISPLAY = {
@@ -53,12 +45,11 @@ export const KEYFRAMES = `
 }
 `;
 
-export const DEPT_HEADS = ['soren', 'mason', 'sentinel'];
+export const DEPT_HEADS = ['codex', 'sentinel'];
 
 export const SPECIALIST_MAP = {
-  architect: ['scout', 'cartographer'],
-  mason: ['coder', 'wirer', 'scribe'],
-  sentinel: ['probe', 'auditor'],
+  codex: [],
+  sentinel: [],
 };
 
 // Agents that report directly to Clawd but are NOT department heads
