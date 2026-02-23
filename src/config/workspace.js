@@ -7,22 +7,27 @@ export const WORKSPACE_STRUCTURE = {
       {
         id: 'core',
         name: 'Core',
-        coreFiles: ['USER.md', 'IDENTITY.md', 'SOUL.md', 'MEMORY.md', 'SKILLS.md', 'AGENTS.md', 'HEARTBEAT.md', 'TOOLS.md'],
+        coreFiles: ['USER.md', 'IDENTITY.md', 'SOUL.md', 'MEMORY.md', 'AGENTS.md', 'HEARTBEAT.md', 'TOOLS.md', 'BOOTSTRAP.md'],
       },
       {
         id: 'coordination',
         name: 'Coordination',
-        patterns: ['*COMMS*', '*DELEGAT*', '*SYNC*', '*ROSTER*', '*HANDOFF*'],
+        patterns: ['*CORRECTIONS*', '*ENFORCEMENT*', '*OPERATING*', '*PIPELINE*', '*SHARED-LOG*', '*COMMS*', '*DELEGAT*', '*SYNC*', '*ROSTER*', '*HANDOFF*'],
       },
       {
         id: 'strategic',
         name: 'Strategic',
-        patterns: ['*STRATEG*', '*PRIORIT*', '*ROADMAP*', '*BRIEF*', '*VISION*'],
+        patterns: ['*LESSONS*', '*TASK-BRIEF*', '*STRATEG*', '*PRIORIT*', '*ROADMAP*', '*BRIEF*', '*VISION*'],
       },
       {
         id: 'active',
         name: 'Active',
         patterns: ['TASK-*.md', '*-PLAN.md', '*-BUILD-PLAN*.md', '*ACTIVE*'],
+      },
+      {
+        id: 'memory',
+        name: 'Memory',
+        patterns: ['20*-*-*.md', '*compaction*', '*overnight*', '*reflections*'],
       },
     ],
   },
