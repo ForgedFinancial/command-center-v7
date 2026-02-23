@@ -26,45 +26,6 @@ export const WORKSPACE_STRUCTURE = {
       },
     ],
   },
-  soren: {
-    name: 'Soren',
-    role: 'Planner',
-    defaultFolder: 'prompt-enhancement',
-    folders: [
-      {
-        id: 'core',
-        name: 'Core',
-        coreFiles: ['IDENTITY.md', 'SOUL.md', 'MEMORY.md', 'TOOLS.md', 'AGENTS.md'],
-      },
-      {
-        id: 'prompt-enhancement',
-        name: 'Prompt Enhancement',
-        patterns: ['*PROMPT*', '*ENHANCEMENT*', '*PLAN*'],
-      },
-    ],
-  },
-  mason: {
-    name: 'Mason',
-    role: 'Builder',
-    defaultFolder: 'enhancement-prompts',
-    folders: [
-      {
-        id: 'core',
-        name: 'Core',
-        coreFiles: ['IDENTITY.md', 'SOUL.md', 'MEMORY.md', 'TOOLS.md', 'AGENTS.md'],
-      },
-      {
-        id: 'sops',
-        name: 'SOPs',
-        patterns: ['SOP-*.md', '*SOP*', '*DOC*', '*GUIDE*'],
-      },
-      {
-        id: 'enhancement-prompts',
-        name: 'Enhancement Prompts',
-        patterns: ['*PROMPT*', '*ENHANCEMENT*', '*TEMPLATE*'],
-      },
-    ],
-  },
   sentinel: {
     name: 'Sentinel',
     role: 'Inspector',
@@ -101,5 +62,5 @@ export const WORKSPACE_STRUCTURE = {
   },
 }
 
-export const WORKSPACE_AGENT_ORDER = ['clawd', 'soren', 'mason', 'sentinel', 'kyle']
+export const WORKSPACE_AGENT_ORDER = ['clawd', 'sentinel', 'kyle']
 
